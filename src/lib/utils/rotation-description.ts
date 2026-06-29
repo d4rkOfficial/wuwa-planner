@@ -1,0 +1,207 @@
+import type {
+    ActionBlock,
+    KeyOperation,
+    KeyType,
+    KeyMode,
+    StayFieldMarker,
+    Character,
+    CharacterPreset,
+} from '$lib/types'
+
+export interface TimelineItem {
+    block: ActionBlock
+    alias: string
+    charIndex: number
+    prevBlock: ActionBlock | null
+    isSwitch: boolean
+    isSwitchIntro: boolean
+    isSwitchStay: boolean
+    hasStayField: boolean
+}
+
+function keyOpText(op: KeyOperation): string {
+    const k = op.key === 'Z' ? 'LMB' : op.key
+    const m = op.mode
+
+    let base: string
+    if (m === 'preinput_swap' || m === 'preinput_action') {
+        if (k === 'LMB') base = '预Z'
+        else if (k === 'RMB') base = '预闪'
+        else if (k === 'jump') base = '预跳'
+        else base = '预' + k
+    } else if (m === 'rapid_click') {
+        if (k === 'LMB') base = '狂按a'
+        else if (k === 'RMB') base = '狂按闪'
+        else if (k === 'jump') base = '狂按跳'
+        else base = '狂按' + k
+    } else if (m === 'hold') {
+        if (k === 'LMB') base = 'Z'
+        else if (k === 'RMB') base = '长闪'
+        else if (k === 'jump') base = '长跳'
+        else base = '长' + k
+    } else {
+        if (k === 'LMB') base = 'a'
+        else if (k === 'RMB') base = '闪'
+        else if (k === 'jump') base = '跳'
+        else base = k
+    }
+
+    if (op.comboStart && op.comboEnd && op.comboStart > 0 && op.comboEnd > 0) {
+        if (op.comboStart === op.comboEnd) return base + String(op.comboStart)
+        const nums: number[] = []
+        for (let n = op.comboStart; n <= op.comboEnd; n++) nums.push(n)
+        return base + nums.join('')
+    }
+    return base
+}
+
+function hasStayField(
+    block: ActionBlock,
+    allBlocks: ActionBlock[],
+    markers: StayFieldMarker[],
+): boolean {
+    const charBlocks = allBlocks
+        .filter((b) => b.characterId === block.characterId)
+        .sort((a, b) => a.x - b.x)
+    const idx = charBlocks.findIndex((b) => b.id === block.id)
+    if (idx <= 0) return false
+    const prevBlock = charBlocks[idx - 1]
+    return markers.some(
+        (m) => m.fromBlockId === prevBlock.id && m.toBlockId === block.id,
+    )
+}
+
+export function getMergedTimeline(
+    characters: Character[],
+    blocks: ActionBlock[],
+    markers: StayFieldMarker[],
+    presets: CharacterPreset[],
+): TimelineItem[] {
+    function getAlias(charIdx: number): string {
+        const presetId = characters[charIdx]?.presetId
+        if (!presetId) return characters[charIdx]?.name ?? `角色${charIdx + 1}`
+        const preset = presets.find((p) => p.id === presetId)
+        return (
+            preset?.alias ?? characters[charIdx]?.name ?? `角色${charIdx + 1}`
+        )
+    }
+
+    const all = blocks
+        .map((block) => {
+            const charIdx = characters.findIndex(
+                (c) => c.id === block.characterId,
+            )
+            return {
+                block,
+                alias: getAlias(charIdx),
+                charIndex: charIdx,
+            }
+        })
+        .sort((a, b) => a.block.x - b.block.x)
+
+    const result: TimelineItem[] = []
+    for (let i = 0; i < all.length; i++) {
+        const { block, alias, charIndex } = all[i]
+        const prevBlock = i > 0 ? all[i - 1].block : null
+        const isSwitch =
+            prevBlock !== null && prevBlock.characterId !== block.characterId
+        const stay = hasStayField(block, blocks, markers)
+        result.push({
+            block,
+            alias,
+            charIndex,
+            prevBlock,
+            isSwitch,
+            isSwitchIntro: isSwitch && block.isIntro,
+            isSwitchStay: isSwitch && !block.isIntro && stay,
+            hasStayField: stay,
+        })
+    }
+    return result
+}
+
+export function buildTextDescription(items: TimelineItem[]): string {
+    const parts: string[] = []
+    for (let i = 0; i < items.length; i++) {
+        const item = items[i]
+        const ops = visibleOps(item.block.keyOps).map(keyOpText).join('')
+        if (i === 0) {
+            parts.push(`${item.alias}${ops}`)
+        } else if (item.block.characterId === items[i - 1].block.characterId) {
+            parts.push(ops)
+        } else if (item.isSwitchIntro) {
+            parts.push(`，延奏${item.alias}${ops}`)
+        } else if (item.isSwitchStay) {
+            parts.push(`，切回${item.alias}${ops}`)
+        } else {
+            parts.push(`，${item.alias}${ops}`)
+        }
+    }
+    return parts.join('')
+}
+
+function visibleOps(ops: KeyOperation[]): KeyOperation[] {
+    return ops.filter((op) => op.key !== 'intro')
+}
+
+function opsText(ops: KeyOperation[]): string {
+    return visibleOps(ops).map(keyOpText).join('')
+}
+
+export function buildCharLines(
+    characters: Character[],
+    items: TimelineItem[],
+    presets: CharacterPreset[],
+): string {
+    function getAlias(charIdx: number): string {
+        const presetId = characters[charIdx]?.presetId
+        if (!presetId) return characters[charIdx]?.name ?? `角色${charIdx + 1}`
+        const preset = presets.find((p) => p.id === presetId)
+        return (
+            preset?.alias ?? characters[charIdx]?.name ?? `角色${charIdx + 1}`
+        )
+    }
+    const lines: string[] = []
+    for (let ci = 0; ci < characters.length; ci++) {
+        const charItems = items.filter((it) => it.charIndex === ci)
+        if (charItems.length === 0) continue
+        const alias = getAlias(ci)
+        const ops = charItems
+            .map((it, i) => {
+                const opStr = opsText(it.block.keyOps)
+                if (i === 0) return opStr
+                if (it.isSwitchIntro) return `，延奏${alias}${opStr}`
+                if (it.isSwitchStay) return `，切回${alias}${opStr}`
+                if (it.block.characterId !== charItems[i - 1].block.characterId)
+                    return `，${alias}${opStr}`
+                return opStr
+            })
+            .join('')
+        lines.push(`${alias}：${ops}`)
+    }
+    return lines.join('\n')
+}
+
+export function buildIntroLines(items: TimelineItem[]): string {
+    const segments: string[] = []
+    let current: string[] = []
+    for (let i = 0; i < items.length; i++) {
+        const item = items[i]
+        const opStr = opsText(item.block.keyOps)
+        const prev = i > 0 ? items[i - 1] : null
+        if (item.isSwitchIntro) {
+            if (current.length > 0) segments.push(current.join(''))
+            current = [`延奏${item.alias}${opStr}`]
+        } else if (current.length === 0) {
+            current.push(`${item.alias}${opStr}`)
+        } else if (prev && item.block.characterId === prev.block.characterId) {
+            current.push(opStr)
+        } else if (prev && item.isSwitchStay) {
+            current.push(`，切回${item.alias}${opStr}`)
+        } else {
+            current.push(`，${item.alias}${opStr}`)
+        }
+    }
+    if (current.length > 0) segments.push(current.join(''))
+    return segments.join('\n')
+}
