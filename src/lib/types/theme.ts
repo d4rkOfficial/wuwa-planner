@@ -59,4 +59,7 @@ export interface Theme {
     panelBg: string
     ringOffset: string
     keyIconPath: string
+    comboBg: string
+    comboBorder: string
+    comboText: string
 }

@@ -1,61 +1,63 @@
-id,name,nameEn,pinyin,element,weaponType,rarity,alias
+id,name,nameEn,element,weaponType,rarity,alias
 
-sanHua,散华,Sanhua,sanhua,glacio,sword,4,散
-baiZhi,白芷,Baizhi,baizhi,glacio,rectifier,4,白
-lingYang,凌阳,Lingyang,lingyang,glacio,gauntlets,5,凌
-zheZhi,折枝,Zhezhi,zhezhi,glacio,rectifier,5,折
-youHu,釉瑚,Youhu,youhu,glacio,gauntlets,4,釉
-keLaiTa,珂莱塔,Carlotta,kelaita,glacio,sword,5,珂
-luoSeLa,洛瑟菈,Lothera,luosela,glacio,rectifier,5,校长
-feiXue,绯雪,Hiyuki,feixue,glacio,sword,5,绯
+sanHua,散华,Sanhua,glacio,sword,4,散
+baiZhi,白芷,Baizhi,glacio,rectifier,4,白|芷
+lingYang,凌阳,Lingyang,glacio,gauntlets,5,凌|豹
+zheZhi,折枝,Zhezhi,glacio,rectifier,5,折
+youHu,釉瑚,Youhu,glacio,gauntlets,4,釉
+keLaiTa,珂莱塔,Carlotta,glacio,sword,5,珂
+luoSeLa,洛瑟菈,Lothera,glacio,rectifier,5,洛|校|校长
+feiXue,绯雪,Hiyuki,glacio,sword,5,绯|雪
+Suisui,穗穗,Suisui,glacio,rectifier,5,穗
 
-chiXia,炽霞,Chixia,chixia,fusion,sword,4,小芳
-anKe,安可,Encore,anke,fusion,rectifier,5,安
-moTeFei,莫特斐,Mortefi,motefei,fusion,sword,4,莫特斐
-changLi,长离,Changli,changli,fusion,sword,5,离
-buLanTe,布兰特,Brant,bulante,fusion,sword,5,船长
-luPa,露帕,Lupa,lupa,fusion,broadblade,5,露帕
-jiaBeiLiNa,嘉贝莉娜,Jiabellina,jiabeilina,fusion,sword,5,嘉贝
-moNing,莫宁,Morning,moning,fusion,broadblade,5,莫
-aiMiSi,爱弥斯,Amis,aimisi,fusion,sword,5,爱
-daNiYa,达妮娅,Dania,daniya,fusion,rectifier,5,达
+chiXia,炽霞,Chixia,fusion,sword,4,小芳
+anKe,安可,Encore,fusion,rectifier,5,安
+moTeFei,莫特斐,Mortefi,fusion,sword,4,莫
+changLi,长离,Changli,fusion,sword,5,长|离
+buLanTe,布兰特,Brant,fusion,sword,5,船长
+luPa,露帕,Lupa,fusion,broadblade,5,露
+jiaBeiLiNa,嘉贝莉娜,Galbrena,fusion,sword,5,嘉|嘉贝
+moNing,莫宁,Mornye,fusion,broadblade,5,莫
+aiMiSi,爱弥斯,Amis,fusion,sword,5,爱|小爱
+daNiYa,达妮娅,Denia,fusion,rectifier,5,达
 
-kaKaLuo,卡卡罗,Calcharo,kakaluo,electro,broadblade,5,牢卡
-yinLin,吟霖,Yinlin,yinlin,electro,rectifier,5,吟
-yuanWu,渊武,Yuanwu,yuanwu,electro,gauntlets,4,渊
-xiangLiYao,相里要,Xiangli Yao,xiangliyao,electro,gauntlets,5,相
-dengDeng,灯灯,Dengdeng,dengdeng,electro,broadblade,4,灯
-aoGuSiTa,奥古斯塔,Augusta,aogusita,electro,broadblade,5,奥
-buLing,卜灵,Buling,buling,electro,rectifier,4,卜
-liBeiKa,丽贝卡,Rebecca,libeika,electro,sword,5,丽
-piaoBoZheDaoDian,漂泊者·导电,Rover (Electro),piaobozhe,electro,sword,5,雷主
+kaKaLuo,卡卡罗,Calcharo,electro,broadblade,5,卡|牢卡
+yinLin,吟霖,Yinlin,electro,rectifier,5,吟
+yuanWu,渊武,Yuanwu,electro,gauntlets,4,渊
+xiangLiYao,相里要,Xiangli Yao,electro,gauntlets,5,相|里
+dengDeng,灯灯,Dengdeng,electro,broadblade,4,灯
+aoGuSiTa,奥古斯塔,Augusta,electro,broadblade,5,日|奥古
+buLing,卜灵,Buling,electro,rectifier,4,卜
+liBeiKa,丽贝卡,Rebecca,electro,sword,5,丽
+piaoBoZheDaoDian,漂泊者·导电,Rover (Electro),electro,sword,5,雷主
 
-yangYang,秧秧,Yangyang,yangyang,aero,sword,4,风秧
-qiuShui,秋水,Qiushui,qiushui,aero,sword,4,秋
-jiYan,忌炎,Jiyan,jiyan,aero,broadblade,5,忌
-jianXin,鉴心,Jianxin,jianxin,aero,gauntlets,5,鉴
-xiaKong,夏空,Xiakong,xiakong,aero,sword,5,夏
-piaoBoZheQiDong,漂泊者·气动,Rover (Aero),piaobozhe,aero,sword,5,风主
-kaTiXiYa,卡提希娅,Cartethyia,katixiya,aero,sword,5,卡提
-youNuo,尤诺,Euno,younuo,aero,gauntlets,5,尤
-qiuYuan,仇远,Qiuyuan,qiuyuan,aero,sword,5,仇
-xiGeLiKa,西格莉卡,Cicilia,xigelika,aero,gauntlets,5,西
+yangYang,秧秧,Yangyang,aero,sword,4,秧
+qiuShui,秋水,Qiushui,aero,sword,4,秋
+jiYan,忌炎,Jiyan,aero,broadblade,5,忌
+jianXin,鉴心,Jianxin,aero,gauntlets,5,鉴
+xiaKong,夏空,Ciaccona,aero,sword,5,夏
+piaoBoZheQiDong,漂泊者·气动,Rover (Aero),aero,sword,5,风主
+kaTiXiYa,卡提希娅,Cartethyia,aero,sword,5,卡|卡提
+youNuo,尤诺,Luno,aero,gauntlets,5,月
+qiuYuan,仇远,Qiuyuan,aero,sword,5,仇
+xiGeLiKa,西格莉卡,Shigurika,aero,gauntlets,5,西|西格
 
-weiLiNai,维里奈,Verina,weilinai,spectro,rectifier,5,维
-piaoBoZheYanShe,漂泊者·衍射,Rover (Spectro),piaobozhe,spectro,sword,5,光主
-jinXi,今汐,Jinhsi,jinxi,spectro,broadblade,5,今
-shouAnRen,守岸人,Shorekeeper,shouanren,spectro,rectifier,5,守
-feiBi,菲比,Phoebe,feibi,spectro,rectifier,5,菲
-zanNi,赞妮,Zani,zanni,spectro,gauntlets,5,赞
-linNai,琳奈,Linnai,linnai,spectro,sword,5,琳
-luHeSi,陆·赫斯,Lu Hess,luhesi,spectro,gauntlets,5,陆
-luXi,露西,Lucy,luxi,spectro,sword,5,露西
-taoQi,桃祈,Taoqi,taoqi,havoc,broadblade,4,桃
+weiLiNai,维里奈,Verina,spectro,rectifier,5,维|奈
+piaoBoZheYanShe,漂泊者·衍射,Rover (Spectro),spectro,sword,5,光主
+jinXi,今汐,Jinhsi,spectro,broadblade,5,今|汐
+shouAnRen,守岸人,Shorekeeper,spectro,rectifier,5,守|岸
+feiBi,菲比,Phoebe,spectro,rectifier,5,菲
+zanNi,赞妮,Zani,spectro,gauntlets,5,赞
+linNai,琳奈,Lynae,spectro,sword,5,琳
+luHeSi,陆·赫斯,Luuk Herssen,spectro,gauntlets,5,陆|校医
+luXi,露西,Lucy,spectro,sword,5,露
 
-danJin,丹瑾,Danjin,danjin,havoc,sword,4,丹
-chun,椿,Camellya,chun,havoc,sword,5,椿
-piaoBoZheYanMie,漂泊者·湮灭,Rover (Havoc),piaobozhe,havoc,sword,5,暗主
-luoKeKe,洛可可,Roccia,luokeke,havoc,gauntlets,5,牢洛
-kanTeLeiLa,坎特蕾拉,Cantarella,kanteleila,havoc,rectifier,5,坎
-fuLuoLuo,弗洛洛,Phrololo,fuluoluo,havoc,rectifier,5,弗
-qianXiao,千咲,Chisa,qianxiao,havoc,broadblade,5,千
+taoQi,桃祈,Taoqi,havoc,broadblade,4,桃
+danJin,丹瑾,Danjin,havoc,sword,4,丹
+chun,椿,Camellya,havoc,sword,5,椿
+piaoBoZheYanMie,漂泊者·湮灭,Rover (Havoc),havoc,sword,5,暗主
+luoKeKe,洛可可,Roccia,havoc,gauntlets,5,洛|牢洛
+kanTeLeiLa,坎特蕾拉,Cantarella,havoc,rectifier,5,坎|蕾|家住
+fuLuoLuo,弗洛洛,Phrolova,havoc,rectifier,5,弗
+qianXiao,千咲,Chisa,havoc,broadblade,5,千
+yangYangXuanLing,秧秧·玄翎,Yangyang XuanLing,havoc,sword,5,秧|玄翎

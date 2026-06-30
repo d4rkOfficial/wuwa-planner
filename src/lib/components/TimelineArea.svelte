@@ -5,10 +5,12 @@
         KeyType,
         KeyMode,
     } from '$lib/types'
+    import { MODE_LABELS } from '$lib/data/labels'
     import { planner } from '$lib/stores/planner.svelte'
     import CharacterTrack from './CharacterTrack.svelte'
     import ArrowOverlay from './ArrowOverlay.svelte'
     import KeyIcon from './KeyIcon.svelte'
+    import ComboNumbers from './ComboNumbers.svelte'
 
     let {
         selectedKey,
@@ -21,14 +23,6 @@
         comboA?: number
         comboB?: number
     } = $props()
-
-    const modeLabels: Record<string, string> = {
-        click: '',
-        hold: '长按',
-        preinput_swap: '预↔',
-        preinput_action: '预→',
-        rapid_click: '连击',
-    }
 
     let viewportWidth = $state(
         typeof window !== 'undefined' ? window.innerWidth : 1024,
@@ -461,50 +455,14 @@
                                             />
                                         </span>
                                         {#if op.comboStart && op.comboEnd && op.comboStart > 0 && op.comboEnd > 0}
-                                            {@const cn =
-                                                op.comboStart === op.comboEnd ?
-                                                    String(op.comboStart)
-                                                :   Array.from(
-                                                        {
-                                                            length:
-                                                                op.comboEnd -
-                                                                op.comboStart +
-                                                                1,
-                                                        },
-                                                        (_, i) =>
-                                                            op.comboStart! + i,
-                                                    ).join('')}
-                                            {@const cbg =
-                                                planner.theme.key === 'dark' ?
-                                                    '#e4e4e7'
-                                                :   '#fafafa'}
-                                            <span
-                                                class="-ml-2 pl-2 pr-1 rounded h-5 flex items-center font-black"
-                                                style="border-top: 1.5px solid {(
-                                                    planner.theme.key === 'dark'
-                                                ) ?
-                                                    '#a1a1aa'
-                                                :   '#a3a3a3'}; border-right: 1.5px solid {(
-                                                    planner.theme.key === 'dark'
-                                                ) ?
-                                                    '#a1a1aa'
-                                                :   '#a3a3a3'}; border-bottom: 1.5px solid {(
-                                                    planner.theme.key === 'dark'
-                                                ) ?
-                                                    '#a1a1aa'
-                                                :   '#a3a3a3'}; font-size: 10px; padding-top: 0; padding-bottom: 0; background: linear-gradient(to right, transparent 0%, {cbg} 25%, {cbg} 100%); color: {(
-                                                    planner.theme.key === 'dark'
-                                                ) ?
-                                                    '#18181b'
-                                                :   '#0a0a0a'};">{cn}</span
-                                            >
+                                            <ComboNumbers start={op.comboStart} end={op.comboEnd} theme={planner.theme} />
                                         {/if}
                                         <span
                                             class="flex-1 text-xs"
                                             style="color: {planner.theme
                                                 .textSecondary};"
                                         >
-                                            {modeLabels[op.mode] || '单击'}
+                                            {MODE_LABELS[op.mode] || '单击'}
                                         </span>
                                         <button
                                             class="flex h-5 w-5 items-center justify-center rounded text-[10px]"

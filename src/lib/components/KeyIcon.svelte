@@ -1,5 +1,6 @@
 <script lang="ts">
     import type { KeyType, KeyMode } from '$lib/types'
+    import { KEY_LABELS } from '$lib/data/labels'
     import { planner } from '$lib/stores/planner.svelte'
 
     let {
@@ -34,21 +35,6 @@
 
     let imgPath = $derived(`${planner.theme.keyIconPath}${imgName}.svg`)
     let imgFailed = $state(false)
-
-    const LABELS: Record<string, string> = {
-        LMB: '左',
-        RMB: '闪',
-        intro: '变',
-        jump: '跳',
-        Q: 'Q',
-        E: 'E',
-        R: 'R',
-        T: 'T',
-        F: 'F',
-        Z: 'Z',
-        X: '下',
-        V: '空',
-    }
 </script>
 
 <div class="{sizes[size]} inline-flex items-center justify-center" title={key}>
@@ -62,7 +48,7 @@
         />
     {:else}
         <span class="text-xs font-bold" style="color: {color ?? '#555'};">
-            {LABELS[key] ?? key}
+            {KEY_LABELS[key] ?? key}
         </span>
     {/if}
 </div>

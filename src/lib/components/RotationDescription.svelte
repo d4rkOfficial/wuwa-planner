@@ -12,6 +12,7 @@
         loadCharacterPresets,
     } from '$lib/data/characters'
     import KeyIcon from './KeyIcon.svelte'
+    import ComboNumbers from './ComboNumbers.svelte'
     import type { TimelineItem } from '$lib/utils/rotation-description'
     import type { CharacterPreset } from '$lib/types'
 
@@ -181,42 +182,7 @@
                                     {/each}
                                 </div>
                                 {#if op.comboStart && op.comboEnd && op.comboStart > 0 && op.comboEnd > 0}
-                                    {@const cn =
-                                        op.comboStart === op.comboEnd ?
-                                            String(op.comboStart)
-                                        :   Array.from(
-                                                {
-                                                    length:
-                                                        op.comboEnd -
-                                                        op.comboStart +
-                                                        1,
-                                                },
-                                                (_, i) => op.comboStart! + i,
-                                            ).join('')}
-                                    {@const dbg =
-                                        planner.theme.key === 'dark' ?
-                                            '#e4e4e7'
-                                        :   '#fafafa'}
-                                    <span
-                                        class="-ml-2 pl-2 pr-1 rounded h-5 flex items-center font-black"
-                                        style="border-top: 1.5px solid {(
-                                            planner.theme.key === 'dark'
-                                        ) ?
-                                            '#a1a1aa'
-                                        :   '#a3a3a3'}; border-right: 1.5px solid {(
-                                            planner.theme.key === 'dark'
-                                        ) ?
-                                            '#a1a1aa'
-                                        :   '#a3a3a3'}; border-bottom: 1.5px solid {(
-                                            planner.theme.key === 'dark'
-                                        ) ?
-                                            '#a1a1aa'
-                                        :   '#a3a3a3'}; font-size: 10px; padding-top: 0; padding-bottom: 0; background: linear-gradient(to right, transparent 0%, {dbg} 25%, {dbg} 100%); color: {(
-                                            planner.theme.key === 'dark'
-                                        ) ?
-                                            '#18181b'
-                                        :   '#0a0a0a'};">{cn}</span
-                                    >
+                                    <ComboNumbers start={op.comboStart} end={op.comboEnd} theme={planner.theme} />
                                 {/if}
                             {/each}
                         </div>

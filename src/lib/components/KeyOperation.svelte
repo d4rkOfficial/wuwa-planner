@@ -1,5 +1,6 @@
 <script lang="ts">
     import type { KeyOperation, Theme } from '$lib/types'
+    import { MODE_LABELS } from '$lib/data/labels'
     import KeyIcon from './KeyIcon.svelte'
 
     let {
@@ -12,15 +13,7 @@
         draggable?: boolean
     } = $props()
 
-    const modeLabels: Record<string, string> = {
-        click: '',
-        hold: '长按',
-        preinput_swap: '预↔',
-        preinput_action: '预→',
-        rapid_click: '连击',
-    }
-
-    const modeColors = $derived(theme.modeColors)
+    let modeColors = $derived(theme.modeColors)
 
     function showModeLabel(): boolean {
         if (op.key === 'LMB' && op.mode === 'hold') return false
@@ -43,7 +36,7 @@
             class="text-[10px] font-bold leading-none"
             style="color: {modeColors[op.mode]};"
         >
-            {modeLabels[op.mode]}
+            {MODE_LABELS[op.mode]}
         </span>
         <KeyIcon
             key={op.key}

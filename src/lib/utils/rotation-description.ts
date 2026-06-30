@@ -7,6 +7,7 @@ import type {
     Character,
     CharacterPreset,
 } from '$lib/types'
+import { resolveTeamAliases } from './resolveTeamAliases'
 
 export interface TimelineItem {
     block: ActionBlock
@@ -17,6 +18,53 @@ export interface TimelineItem {
     isSwitchIntro: boolean
     isSwitchStay: boolean
     hasStayField: boolean
+}
+
+function resolveCharAliases(
+    characters: Character[],
+    presets: CharacterPreset[],
+): string[] {
+    const aliasLists: string[][] = []
+    const names: string[] = []
+    for (let i = 0; i < characters.length; i++) {
+        const char = characters[i]
+        const presetId = char?.presetId
+        if (!presetId) {
+            aliasLists.push([char?.name ?? `角色${i + 1}`])
+            names.push(char?.name ?? `角色${i + 1}`)
+        } else {
+            const preset = presets.find((p) => p.id === presetId)
+            if (preset) {
+                aliasLists.push([...preset.aliases])
+                names.push(preset.name)
+            } else {
+                aliasLists.push([char?.name ?? `角色${i + 1}`])
+                names.push(char?.name ?? `角色${i + 1}`)
+            }
+        }
+    }
+
+    for (let i = 0; i < aliasLists.length; i++) {
+        aliasLists[i].push(names[i])
+    }
+
+    const aliasCount = new Map<string, number>()
+    for (const list of aliasLists) {
+        const seen = new Set<string>()
+        for (const a of list) {
+            if (!seen.has(a)) {
+                aliasCount.set(a, (aliasCount.get(a) || 0) + 1)
+                seen.add(a)
+            }
+        }
+    }
+
+    for (let i = 0; i < aliasLists.length; i++) {
+        const filtered = aliasLists[i].filter(a => aliasCount.get(a) === 1)
+        aliasLists[i] = filtered.length > 0 ? filtered : [names[i]]
+    }
+
+    return resolveTeamAliases(aliasLists)
 }
 
 function keyOpText(op: KeyOperation): string {
@@ -77,14 +125,7 @@ export function getMergedTimeline(
     markers: StayFieldMarker[],
     presets: CharacterPreset[],
 ): TimelineItem[] {
-    function getAlias(charIdx: number): string {
-        const presetId = characters[charIdx]?.presetId
-        if (!presetId) return characters[charIdx]?.name ?? `角色${charIdx + 1}`
-        const preset = presets.find((p) => p.id === presetId)
-        return (
-            preset?.alias ?? characters[charIdx]?.name ?? `角色${charIdx + 1}`
-        )
-    }
+    const resolvedAliases = resolveCharAliases(characters, presets)
 
     const all = blocks
         .map((block) => {
@@ -93,7 +134,7 @@ export function getMergedTimeline(
             )
             return {
                 block,
-                alias: getAlias(charIdx),
+                alias: resolvedAliases[charIdx] ?? `角色${charIdx + 1}`,
                 charIndex: charIdx,
             }
         })
@@ -153,19 +194,12 @@ export function buildCharLines(
     items: TimelineItem[],
     presets: CharacterPreset[],
 ): string {
-    function getAlias(charIdx: number): string {
-        const presetId = characters[charIdx]?.presetId
-        if (!presetId) return characters[charIdx]?.name ?? `角色${charIdx + 1}`
-        const preset = presets.find((p) => p.id === presetId)
-        return (
-            preset?.alias ?? characters[charIdx]?.name ?? `角色${charIdx + 1}`
-        )
-    }
+    const resolvedAliases = resolveCharAliases(characters, presets)
     const lines: string[] = []
     for (let ci = 0; ci < characters.length; ci++) {
         const charItems = items.filter((it) => it.charIndex === ci)
         if (charItems.length === 0) continue
-        const alias = getAlias(ci)
+        const alias = resolvedAliases[ci]
         const ops = charItems
             .map((it, i) => {
                 const opStr = opsText(it.block.keyOps)

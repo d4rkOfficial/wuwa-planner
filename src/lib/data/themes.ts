@@ -89,6 +89,9 @@ export const PRESET_THEMES: Theme[] = [
         panelBg: '#18181b',
         ringOffset: '#18181b',
         keyIconPath: '/images/keys/',
+        comboBg: '#e4e4e7',
+        comboBorder: '#a1a1aa',
+        comboText: '#18181b',
     },
     {
         name: '白天',
@@ -175,6 +178,9 @@ export const PRESET_THEMES: Theme[] = [
         panelBg: '#f0f4f8',
         ringOffset: '#ffffff',
         keyIconPath: '/images/keys-light/',
+        comboBg: '#fafafa',
+        comboBorder: '#a3a3a3',
+        comboText: '#0a0a0a',
     },
 ]
 
@@ -190,42 +196,42 @@ export function findTheme(key: string): Theme {
 
 export const ELEMENT_GRADIENTS: Record<string, [string, string, string]> = {
     glacio: [
-        'linear-gradient(135deg, #7dd3fc, #38bdf8)',
         'linear-gradient(135deg, #38bdf8, #0ea5e9)',
         'linear-gradient(135deg, #0ea5e9, #0284c7)',
+        'linear-gradient(135deg, #0284c7, #0369a1)',
     ],
     fusion: [
-        'linear-gradient(135deg, #fbbf24, #f97316)',
+        'linear-gradient(135deg, #fb923c, #f97316)',
         'linear-gradient(135deg, #f97316, #ea580c)',
-        'linear-gradient(135deg, #ea580c, #dc2626)',
+        'linear-gradient(135deg, #ea580c, #c2410c)',
     ],
     electro: [
-        'linear-gradient(135deg, #d8b4fe, #c084fc)',
         'linear-gradient(135deg, #c084fc, #a855f7)',
         'linear-gradient(135deg, #a855f7, #7c3aed)',
+        'linear-gradient(135deg, #7c3aed, #6d28d9)',
     ],
     aero: [
-        'linear-gradient(135deg, #6ee7b7, #34d399)',
-        'linear-gradient(135deg, #34d399, #10b981)',
-        'linear-gradient(135deg, #10b981, #059669)',
+        'linear-gradient(135deg, #2dd4bf, #14b8a6)',
+        'linear-gradient(135deg, #14b8a6, #0d9488)',
+        'linear-gradient(135deg, #0d9488, #0f766e)',
     ],
     spectro: [
-        'linear-gradient(135deg, #fef08a, #fde047)',
         'linear-gradient(135deg, #fde047, #facc15)',
         'linear-gradient(135deg, #facc15, #eab308)',
+        'linear-gradient(135deg, #eab308, #ca8a04)',
     ],
     havoc: [
-        'linear-gradient(135deg, #fca5a5, #f87171)',
-        'linear-gradient(135deg, #f87171, #ef4444)',
-        'linear-gradient(135deg, #ef4444, #dc2626)',
+        'linear-gradient(135deg, #fb7185, #f43f5e)',
+        'linear-gradient(135deg, #f43f5e, #e11d48)',
+        'linear-gradient(135deg, #e11d48, #be123c)',
     ],
 }
 
 export const ELEMENT_BORDER_COLORS: Record<string, [string, string, string]> = {
-    glacio: ['#7dd3fc', '#38bdf8', '#0ea5e9'],
-    fusion: ['#fbbf24', '#f97316', '#ea580c'],
-    electro: ['#d8b4fe', '#c084fc', '#a855f7'],
-    aero: ['#6ee7b7', '#34d399', '#10b981'],
-    spectro: ['#fef08a', '#fde047', '#facc15'],
-    havoc: ['#fca5a5', '#f87171', '#ef4444'],
+    glacio: ['#38bdf8', '#0ea5e9', '#0284c7'],
+    fusion: ['#fb923c', '#f97316', '#ea580c'],
+    electro: ['#c084fc', '#a855f7', '#7c3aed'],
+    aero: ['#2dd4bf', '#14b8a6', '#0d9488'],
+    spectro: ['#fde047', '#facc15', '#eab308'],
+    havoc: ['#fb7185', '#f43f5e', '#e11d48'],
 }

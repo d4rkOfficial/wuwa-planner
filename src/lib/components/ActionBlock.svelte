@@ -2,6 +2,7 @@
     import { onMount } from 'svelte'
     import type { ActionBlock, Theme } from '$lib/types'
     import KeyOperationComp from './KeyOperation.svelte'
+    import ComboNumbers from './ComboNumbers.svelte'
     import { planner } from '$lib/stores/planner.svelte'
 
     let {
@@ -90,34 +91,7 @@
                     <KeyOperationComp {op} {theme} draggable={true} />
                 </div>
                 {#if op.comboStart && op.comboEnd && op.comboStart > 0 && op.comboEnd > 0}
-                    {@const nums =
-                        op.comboStart === op.comboEnd ?
-                            String(op.comboStart)
-                        :   Array.from(
-                                { length: op.comboEnd - op.comboStart + 1 },
-                                (_, i) => op.comboStart! + i,
-                            ).join('')}
-                    {@const bg = theme.key === 'dark' ? '#e4e4e7' : '#fafafa'}
-                    <div
-                        class="-ml-2 pl-2 pr-1 rounded h-5 flex items-center font-black"
-                        style="border-top: 1.5px solid {theme.key === 'dark' ?
-                            '#a1a1aa'
-                        :   '#a3a3a3'}; border-right: 1.5px solid {(
-                            theme.key === 'dark'
-                        ) ?
-                            '#a1a1aa'
-                        :   '#a3a3a3'}; border-bottom: 1.5px solid {(
-                            theme.key === 'dark'
-                        ) ?
-                            '#a1a1aa'
-                        :   '#a3a3a3'}; font-size: 10px; padding-top: 0; padding-bottom: 0; background: linear-gradient(to right, transparent 0%, {bg} 25%, {bg} 100%); color: {(
-                            theme.key === 'dark'
-                        ) ?
-                            '#18181b'
-                        :   '#0a0a0a'};"
-                    >
-                        {nums}
-                    </div>
+                    <ComboNumbers start={op.comboStart} end={op.comboEnd} {theme} />
                 {/if}
             {/each}
         </div>

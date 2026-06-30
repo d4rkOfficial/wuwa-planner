@@ -24,6 +24,9 @@
             comboA = v
             if (comboB < v) comboB = v
         }
+        if (comboA > 9) {
+            resetCombo()
+        }
     }
 
     function setComboB(v: number) {
@@ -33,6 +36,9 @@
         } else {
             comboB = v
             if (comboA > v) comboA = v
+        }
+        if (comboB > 9) {
+            resetCombo()
         }
     }
 

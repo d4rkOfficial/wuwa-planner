@@ -16,11 +16,10 @@ export interface CharacterPreset {
     id: string
     name: string
     nameEn: string
-    pinyin: string
+    aliases: string[]
     element: ElementType
     weaponType: WeaponType
     rarity: 4 | 5
-    alias: string
 }
 
 export interface Character {

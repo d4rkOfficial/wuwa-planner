@@ -290,7 +290,7 @@
             onmouseleave={(e) => {
                 ;(e.currentTarget as HTMLElement).style.background = t.buttonBg
             }}
-            onclick={handleImportProjectJSON}>导入工程</button
+            onclick={handleImportProjectJSON}>从Json导入工程</button
         >
     </div>
 </div>

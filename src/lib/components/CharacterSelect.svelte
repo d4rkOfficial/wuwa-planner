@@ -4,8 +4,8 @@
     import {
         loadCharacterPresets,
         getCharacterPresets,
-        elementTypeMap,
     } from '$lib/data/characters'
+    import { ELEMENT_TYPE_MAP } from '$lib/data/labels'
     import { planner } from '$lib/stores/planner.svelte'
     import StarRating from './StarRating.svelte'
 
@@ -247,7 +247,7 @@
                                 class="mb-1 px-1 text-[11px] font-bold uppercase tracking-wider"
                                 style="color: {planner.theme.textSecondary};"
                             >
-                                {elementTypeMap[element] || element}
+                                {ELEMENT_TYPE_MAP[element] || element}
                             </div>
                             {#each presets as preset}
                                 {@const sel = character.presetId === preset.id}
@@ -328,12 +328,12 @@
                 {#each elementOrder as el}
                     <button
                         class="h-7 w-7 overflow-hidden rounded opacity-60 transition-opacity hover:opacity-100"
-                        title={elementTypeMap[el] || el}
+                        title={ELEMENT_TYPE_MAP[el] || el}
                         onclick={() => scrollToElement(el)}
                     >
                         <img
                             src={`/images/elements/${el}.png`}
-                            alt={elementTypeMap[el] || el}
+                            alt={ELEMENT_TYPE_MAP[el] || el}
                             class="h-full w-full object-cover"
                         />
                     </button>
