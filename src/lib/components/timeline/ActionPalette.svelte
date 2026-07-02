@@ -253,7 +253,7 @@
                         onclick={() => (strong = !strong)}
                         title="强化"
                     >
-                        <StrongBadge size={16} color={theme.key === 'light' ? '#000000' : '#ef4444'} />
+                        <StrongBadge size={16} color={theme.strongBadgeColor} />
                     </button>
                     <div class="flex items-center gap-1 flex-1 min-w-20">
                         <input

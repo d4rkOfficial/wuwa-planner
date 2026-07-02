@@ -15,8 +15,8 @@
         return arr.join('');
     });
 
-    let bgColor = $derived(theme.key === 'light' ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.1)');
-    let textColor = $derived(theme.key === 'light' ? '#000000' : '#ffffff');
+    let bgColor = $derived(theme.tagBg);
+    let textColor = $derived(theme.tagText);
 </script>
 
 {#if nums}

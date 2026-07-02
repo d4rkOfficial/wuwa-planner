@@ -2,16 +2,17 @@
     import { onMount } from 'svelte'
     import { planner } from '$lib/stores/planner.svelte'
     import { projects } from '$lib/stores/projects.svelte'
+    import { themeStore } from '$lib/stores/themes.svelte'
     import { loadCharacterPresets } from '$lib/data/characters'
-    import { getPresetThemes } from '$lib/data/themes'
-    import type { Theme } from '$lib/types'
     import Sidebar from './Sidebar.svelte'
-    import AlertDialog from './AlertDialog.svelte'
-    import TimelineArea from './TimelineArea.svelte'
-    import ActionPalette from './ActionPalette.svelte'
-    import CharacterSelect from './CharacterSelect.svelte'
-    import RotationDescription from './RotationDescription.svelte'
-    import WrappedTimeline from './WrappedTimeline.svelte'
+    import AlertDialog from './ui/AlertDialog.svelte'
+    import TimelineArea from './timeline/TimelineArea.svelte'
+    import ActionPalette from './timeline/ActionPalette.svelte'
+    import CharacterSelect from './character/CharacterSelect.svelte'
+    import RotationDescription from './timeline/RotationDescription.svelte'
+    import WrappedTimeline from './timeline/WrappedTimeline.svelte'
+    import Modal from './ui/Modal.svelte'
+    import ThemeManager from './theme/ThemeManager.svelte'
     import type { KeyType, KeyMode } from '$lib/types'
 
     let selectedKey = $state<KeyType>('Q')
@@ -28,7 +29,7 @@
     let lastSaveTime = $state<string>('')
     let showDescription = $state(false)
     let themeOpen = $state(false)
-    let presets = $state<Theme[]>(getPresetThemes())
+    let themeManagerOpen = $state(false)
 
     onMount(() => {
         loadCharacterPresets().then(() => {
@@ -255,44 +256,53 @@
                             planner.theme.textSecondary
                     }}
                     onclick={() => (themeOpen = !themeOpen)}
-                    >{presets.find((t) => t.key === planner.theme.key)?.name ??
+                    >{themeStore.getTheme(themeStore.activeThemeId)?.name ??
                         '主题'}</button
                 >
                 {#if themeOpen}
                     <!-- svelte-ignore a11y_no_static_element_interactions -->
                     <!-- svelte-ignore a11y_click_events_have_key_events -->
                     <div
-                        class="absolute right-0 top-full mt-1 w-24 rounded-lg py-1 shadow-xl z-50"
+                        class="absolute right-0 top-full mt-1 w-36 rounded-lg py-1 shadow-xl z-50"
                         style="border: 1px solid {planner.theme
                             .contextBorder}; background: {planner.theme
                             .contextBg};"
                         onclick={() => (themeOpen = false)}
                     >
-                        {#each presets as t}
+                        {#each themeStore.getAllThemes() as t}
                             <button
                                 class="flex w-full items-center px-3 py-1.5 text-left text-xs transition-colors"
-                                style="color: {t.key === planner.theme.key ?
+                                style="color: {themeStore.activeThemeId === t.id ?
                                     planner.theme.accentText
                                 :   planner.theme.textSecondary};"
                                 onmouseenter={(e) => {
-                                    if (t.key !== planner.theme.key)
+                                    if (themeStore.activeThemeId !== t.id)
                                         (
                                             e.target as HTMLElement
                                         ).style.background =
                                             planner.theme.contextHover
                                 }}
                                 onmouseleave={(e) => {
-                                    if (t.key !== planner.theme.key)
+                                    if (themeStore.activeThemeId !== t.id)
                                         (
                                             e.target as HTMLElement
                                         ).style.background = ''
                                 }}
                                 onclick={() => {
-                                    planner.setTheme(t.key)
+                                    planner.setTheme(t.id)
                                     themeOpen = false
                                 }}>{t.name}</button
                             >
                         {/each}
+                        <div class="border-t mt-1 pt-1" style="border-color: {planner.theme.border};">
+                            <button
+                                class="flex w-full items-center px-3 py-1.5 text-left text-xs transition-colors"
+                                style="color: {planner.theme.accentText};"
+                                onmouseenter={(e) => {(e.target as HTMLElement).style.background = planner.theme.contextHover}}
+                                onmouseleave={(e) => {(e.target as HTMLElement).style.background = ''}}
+                                onclick={() => { themeOpen = false; themeManagerOpen = true; }}
+                            >管理主题</button>
+                        </div>
                     </div>
                 {/if}
             </div>
@@ -478,4 +488,12 @@
     {/if}
 
     <AlertDialog />
+
+    <Modal
+        open={themeManagerOpen}
+        title="主题管理"
+        onclose={() => (themeManagerOpen = false)}
+    >
+        <ThemeManager onclose={() => (themeManagerOpen = false)} />
+    </Modal>
 </div>

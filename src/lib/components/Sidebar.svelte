@@ -36,7 +36,7 @@
     ): string | null {
         const char = project.characters[slotIndex]
         if (!char?.presetId) return null
-        return `/images/avatars/${char.presetId}.png`
+        return planner.theme.avatarOverrides?.[char.presetId] ?? `/images/avatars/${char.presetId}.png`
     }
 
     function getCharName(project: ProjectData, slotIndex: number): string {

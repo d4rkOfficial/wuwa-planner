@@ -1,4 +1,5 @@
 import type { CharacterPreset, ElementType } from '$lib/types'
+import { customPresetsStore } from '$lib/stores/customPresets.svelte'
 
 let _cache: CharacterPreset[] | null = null
 
@@ -54,5 +55,6 @@ export async function loadCharacterPresets(): Promise<CharacterPreset[]> {
 }
 
 export function getCharacterPresets(): CharacterPreset[] {
-    return _cache ?? []
+    const builtin = _cache ?? []
+    return sortPresets([...builtin, ...customPresetsStore.getCustomPresets()])
 }

@@ -68,7 +68,7 @@ function resolveCharAliases(
 }
 
 function keyOpText(op: KeyOperation): string {
-    const k = op.key === 'Z' ? 'LMB' : op.key
+    const k = op.key
     const kLabel = k === 'X' ? '下落' : k === 'F' ? '处决' : k
     const m = op.mode
 

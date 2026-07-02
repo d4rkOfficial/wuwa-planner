@@ -1,14 +1,13 @@
 export interface Theme {
+    id: string
     name: string
     key: string
+    isBuiltin?: boolean
+    baseTheme?: 'dark' | 'light'
+    fontFamily: string
+
     background: string
     trackBg: string
-    text: string
-    textSecondary: string
-    mutedText: string
-    fontFamily: string
-    nodeColors: Record<string, string>
-    modeColors: Record<string, string>
     sidebarBg: string
     sidebarBorder: string
     sidebarText: string
@@ -16,50 +15,65 @@ export interface Theme {
     sidebarHover: string
     border: string
     borderLight: string
-    inputBg: string
-    inputBorder: string
-    buttonBg: string
-    buttonHover: string
-    buttonText: string
+    panelBg: string
+    exportBg: string
     modalBg: string
     modalBorder: string
     contextBg: string
     contextBorder: string
     contextHover: string
-    scrollbarTrack: string
-    scrollbarThumb: string
-    scrollbarThumbHover: string
-    dangerText: string
-    dangerHover: string
-    accentText: string
-    accentHover: string
-    stayField: string
-    wrapIndicator: string
-    segmentLabel: string
-    divider: string
+    inputBg: string
+    inputBorder: string
+    buttonBg: string
+    buttonHover: string
+    buttonText: string
     blockBorder: string
     blockCompactBorder: string
     blockCompactBg: string
     diagramItemBorder: string
-    badgeText: string
-    fallbackTrack: string
-    starRarity5: string
-    starRarity4: string
-    starRoverGradient: string
+    deleteBtnBorder: string
+    deleteBtnHover: string
+    scrollbarTrack: string
+    scrollbarThumb: string
+    scrollbarThumbHover: string
+    divider: string
+    ringOffset: string
     overlayBackdrop: string
-    avatarText: string
     dragOverBg: string
     selectedModeBg: string
     selectedModeRing: string
-    deleteBtnBorder: string
-    deleteBtnHover: string
     alertBtnBg: string
     confirmBtnBg: string
-    exportBg: string
-    panelBg: string
-    ringOffset: string
-    keyIconPath: string
+
+    text: string
+    textSecondary: string
+    mutedText: string
+    badgeText: string
+    avatarText: string
+    accentText: string
+    dangerText: string
+    dangerHover: string
+    accentHover: string
+    segmentLabel: string
+    comboText: string
+    strongBadgeColor: string
+    tagText: string
+
+    nodeColors: Record<string, string>
+    modeColors: Record<string, string>
+    stayField: string
+    wrapIndicator: string
+    starRarity5: string
+    starRarity4: string
+    starRoverGradient: string
+    fallbackTrack: string
+
     comboBg: string
     comboBorder: string
-    comboText: string
+    tagBg: string
+
+    keyIconPath?: string
+    keyIcons?: Record<string, string>
+    strongBadgeIcon?: string
+    avatarOverrides?: Record<string, string>
 }

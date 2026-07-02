@@ -12,6 +12,7 @@
     import KeyIcon from './KeyIcon.svelte'
     import ComboNumbers from './ComboNumbers.svelte'
     import StrongBadge from './StrongBadge.svelte'
+    import Avatar from '../character/Avatar.svelte'
 
     let {
         selectedKey,
@@ -70,9 +71,7 @@
         return Math.max(viewportWidth, rightEdge + viewportWidth / 2)
     })
 
-    let strongBadgeColor = $derived(
-        planner.theme.key === 'light' ? '#000000' : '#ef4444',
-    )
+    let strongBadgeColor = $derived(planner.theme.strongBadgeColor)
 
     let contextBlock = $state<ActionBlock | null>(null)
     let contextPos = $state({ x: 0, y: 0 })
@@ -291,27 +290,13 @@
                 <!-- svelte-ignore a11y_no_static_element_interactions -->
                 <!-- svelte-ignore a11y_click_events_have_key_events -->
                 <div
-                    class="relative h-10 w-10 overflow-hidden rounded-full"
+                    class="relative h-10 w-10 shrink-0 overflow-hidden rounded-full"
                     style="border: 2px solid {planner.getTrackColor(char.id, i)
-                        .border}; margin-top: 8px; margin-left: 8px; flex-shrink: 0;"
+                        .border}; margin-top: 8px; margin-left: 8px;"
                     title={char.name}
                     onclick={() => handleAvatarClick(char.id)}
                 >
-                    {#if char.presetId}
-                        <img
-                            src={`/images/avatars/${char.presetId}.png`}
-                            alt={char.name}
-                            class="absolute inset-0 z-10 h-full w-full object-cover"
-                            onerror={(e) =>
-                                ((e.target as HTMLElement).style.display =
-                                    'none')}
-                        />
-                    {/if}
-                    <div
-                        class="flex h-full w-full items-center justify-center text-sm font-bold text-white"
-                    >
-                        {char.name.charAt(0)}
-                    </div>
+                    <Avatar presetId={char.presetId} name={char.name} size="lg" />
                 </div>
             {/each}
         </div>
@@ -476,7 +461,7 @@
                                             <ComboNumbers start={op.comboStart} end={op.comboEnd} theme={planner.theme} />
                                         {/if}
                                         {#if op.comment}
-                                            <span class="text-[10px] ml-0.5 rounded px-1" style="background: {planner.theme.key === 'light' ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.1)'}; color: {planner.theme.key === 'light' ? '#000000' : '#ffffff'};">{op.comment}</span>
+                                            <span class="text-[10px] ml-0.5 rounded px-1" style="background: {planner.theme.tagBg}; color: {planner.theme.tagText};">{op.comment}</span>
                                         {/if}
                                         <span
                                             class="flex-1 text-xs"

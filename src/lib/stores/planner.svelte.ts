@@ -1,10 +1,10 @@
 import {
     getDefaultTheme,
-    findTheme,
     ELEMENT_GRADIENTS,
     ELEMENT_BORDER_COLORS,
 } from '../data/themes'
 import { getCharacterPresets } from '../data/characters'
+import { themeStore } from './themes.svelte'
 import type {
     Character,
     ActionBlock,
@@ -26,7 +26,7 @@ function createPlannerStore() {
 
     let blocks = $state<ActionBlock[]>([])
     let stayFieldMarkers = $state<StayFieldMarker[]>([])
-    let theme = $state<Theme>(getDefaultTheme())
+    let theme = $derived(themeStore.getActiveTheme())
     let selectedBlockId = $state<string | null>(null)
     let title = $state<string>('未命名轴')
     let description = $state<string>('')
@@ -221,12 +221,18 @@ function createPlannerStore() {
         stayFieldMarkers = data.rotation.stayFieldMarkers
         title = data.metadata.title
         description = data.metadata.description
+        if ('theme' in data && data.theme) {
+            const baseTheme = themeStore.getTheme(data.theme.baseTheme) ?? getDefaultTheme()
+            const merged = { ...baseTheme, ...data.theme.overrides, id: data.theme.id, name: data.theme.name }
+            themeStore.addCustomTheme(merged as Theme)
+            themeStore.setActiveTheme(data.theme.id)
+        }
         updateIntroFlags()
     }
 
     function exportRotation(): RotationExport {
-        return {
-            version: '1.0',
+        const base = {
+            version: '2.0' as const,
             metadata: {
                 title,
                 description,
@@ -236,8 +242,39 @@ function createPlannerStore() {
             team: characters,
             rotation: {
                 blocks,
-                swapLinks: [],
                 stayFieldMarkers,
+            },
+        }
+        if (theme.isBuiltin) return base
+        const overrides: Record<string, unknown> = {}
+        const skipKeys = new Set([
+            'id', 'name', 'key', 'isBuiltin', 'baseTheme', 'fontFamily',
+            'nodeColors', 'modeColors', 'keyIconPath', 'keyIcons',
+            'strongBadgeIcon', 'avatarOverrides',
+        ])
+        for (const [k, v] of Object.entries(theme)) {
+            if (k === 'id' || k === 'name' || k === 'isBuiltin') continue
+            if (k === 'baseTheme' || k === 'key' || k === 'fontFamily') {
+                overrides[k] = v
+                continue
+            }
+            if (!skipKeys.has(k)) {
+                overrides[k] = v
+            }
+        }
+        overrides.keyIcons = theme.keyIcons
+        overrides.keyIconPath = theme.keyIconPath
+        overrides.strongBadgeIcon = theme.strongBadgeIcon
+        overrides.avatarOverrides = theme.avatarOverrides
+        overrides.nodeColors = theme.nodeColors
+        overrides.modeColors = theme.modeColors
+        return {
+            ...base,
+            theme: {
+                id: theme.id,
+                name: theme.name,
+                baseTheme: theme.baseTheme ?? 'dark',
+                overrides,
             },
         }
     }
@@ -322,8 +359,8 @@ function createPlannerStore() {
         description = ''
     }
 
-    function setTheme(key: string) {
-        theme = findTheme(key)
+    function setTheme(id: string) {
+        themeStore.setActiveTheme(id)
     }
 
     return {
@@ -353,9 +390,6 @@ function createPlannerStore() {
         },
         set description(v: string) {
             description = v
-        },
-        set theme(v: Theme) {
-            theme = v
         },
         set characters(v: Character[]) {
             characters = v

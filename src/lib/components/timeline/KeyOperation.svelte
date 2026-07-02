@@ -15,7 +15,7 @@
     } = $props()
 
     let modeColors = $derived(theme.modeColors)
-    let strongBadgeColor = $derived(theme.key === 'light' ? '#000000' : '#ef4444')
+    let strongBadgeColor = $derived(theme.strongBadgeColor)
 
     function showModeLabel(): boolean {
         if (op.key === 'LMB' && op.mode === 'hold') return false

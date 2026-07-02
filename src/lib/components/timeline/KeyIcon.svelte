@@ -30,10 +30,14 @@
     let imgName = $derived.by(() => {
         if (key === 'LMB' && (isHold || isPreinput)) return 'lmb_hold'
         const lower = key.toLowerCase()
-        return lower === 'z' ? 'z' : lower
+        return lower
     })
 
-    let imgPath = $derived(`${planner.theme.keyIconPath}${imgName}.svg`)
+    let imgPath = $derived.by(() => {
+        const theme = planner.theme
+        if (theme.keyIcons?.[imgName]) return theme.keyIcons[imgName]
+        return `${theme.keyIconPath ?? '/images/keys/'}${imgName}.svg`
+    })
     let imgFailed = $state(false)
 </script>
 

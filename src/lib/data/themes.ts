@@ -3,10 +3,33 @@ import type { Theme } from '../types'
 const BASE_FONT =
     "'SimHei', 'Hei', 'Noto Sans SC', 'Microsoft YaHei', sans-serif"
 
+const KEY_ICONS_DARK: Record<string, string> = {
+    lmb: '/images/keys/lmb.svg',
+    lmb_hold: '/images/keys/lmb_hold.svg',
+    rmb: '/images/keys/rmb.svg',
+    q: '/images/keys/q.svg',
+    e: '/images/keys/e.svg',
+    r: '/images/keys/r.svg',
+    t: '/images/keys/t.svg',
+    f: '/images/keys/f.svg',
+    x: '/images/keys/x.svg',
+    v: '/images/keys/v.svg',
+    intro: '/images/keys/intro.svg',
+    jump: '/images/keys/jump.svg',
+}
+
+const KEY_ICONS_LIGHT: Record<string, string> = {}
+for (const [k, v] of Object.entries(KEY_ICONS_DARK)) {
+    KEY_ICONS_LIGHT[k] = v.replace('/keys/', '/keys-light/')
+}
+
 export const PRESET_THEMES: Theme[] = [
     {
+        id: 'dark',
         name: '夜间',
         key: 'dark',
+        isBuiltin: true,
+        baseTheme: 'dark',
         background: '#0f0f1a',
         trackBg: '#16161f',
         text: '#e0e0e0',
@@ -21,7 +44,6 @@ export const PRESET_THEMES: Theme[] = [
             R: '#fbbf24',
             T: '#34d399',
             F: '#f87171',
-            Z: '#2dd4bf',
             X: '#f97316',
             V: '#a1a1aa',
             jump: '#f9a8d4',
@@ -63,6 +85,9 @@ export const PRESET_THEMES: Theme[] = [
         dangerHover: '#3f3f46',
         accentText: '#22d3ee',
         accentHover: '#3f3f46',
+        strongBadgeColor: '#ef4444',
+        tagBg: 'rgba(255,255,255,0.1)',
+        tagText: '#ffffff',
         stayField: '#22d3ee',
         wrapIndicator: 'rgba(255,255,255,0.2)',
         segmentLabel: '#52525b',
@@ -89,13 +114,19 @@ export const PRESET_THEMES: Theme[] = [
         panelBg: '#18181b',
         ringOffset: '#18181b',
         keyIconPath: '/images/keys/',
+        keyIcons: KEY_ICONS_DARK,
+        strongBadgeIcon: undefined,
+        avatarOverrides: undefined,
         comboBg: '#e4e4e7',
         comboBorder: '#a1a1aa',
         comboText: '#18181b',
     },
     {
+        id: 'light',
         name: '白天',
         key: 'light',
+        isBuiltin: true,
+        baseTheme: 'light',
         background: '#f0f4f8',
         trackBg: '#e4e8ed',
         text: '#111827',
@@ -110,7 +141,6 @@ export const PRESET_THEMES: Theme[] = [
             R: '#d97706',
             T: '#059669',
             F: '#dc2626',
-            Z: '#4f46e5',
             X: '#ea580c',
             V: '#6b7280',
             jump: '#e11d48',
@@ -152,6 +182,9 @@ export const PRESET_THEMES: Theme[] = [
         dangerHover: '#f3f4f6',
         accentText: '#0e7490',
         accentHover: '#f3f4f6',
+        strongBadgeColor: '#000000',
+        tagBg: 'rgba(0,0,0,0.08)',
+        tagText: '#000000',
         stayField: '#0e7490',
         wrapIndicator: 'rgba(0,0,0,0.1)',
         segmentLabel: '#9ca3af',
@@ -178,6 +211,9 @@ export const PRESET_THEMES: Theme[] = [
         panelBg: '#f0f4f8',
         ringOffset: '#ffffff',
         keyIconPath: '/images/keys-light/',
+        keyIcons: KEY_ICONS_LIGHT,
+        strongBadgeIcon: undefined,
+        avatarOverrides: undefined,
         comboBg: '#fafafa',
         comboBorder: '#a3a3a3',
         comboText: '#0a0a0a',

@@ -83,7 +83,9 @@
         :   undefined,
     )
     let avatarPath = $derived(
-        currentPreset ? `/images/avatars/${currentPreset.id}.png` : null,
+        currentPreset ?
+            (planner.theme.avatarOverrides?.[currentPreset.id] ?? `/images/avatars/${currentPreset.id}.png`)
+        :   null,
     )
     let avatarFailed = $state(false)
 
@@ -275,7 +277,7 @@
                                         class="relative h-10 w-10 shrink-0 overflow-hidden rounded-full"
                                     >
                                         <img
-                                            src={`/images/avatars/${preset.id}.png`}
+                                            src={planner.theme.avatarOverrides?.[preset.id] ?? `/images/avatars/${preset.id}.png`}
                                             alt={preset.name}
                                             class="absolute inset-0 z-10 h-full w-full object-cover"
                                             onerror={(e) =>

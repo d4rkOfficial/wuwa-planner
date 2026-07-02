@@ -4,6 +4,7 @@
     import ActionBlockComp from './ActionBlock.svelte'
     import type { ActionBlock } from '$lib/types'
     import { toPng } from 'html-to-image'
+    import Avatar from '../character/Avatar.svelte'
 
     let container = $state<HTMLDivElement | null>(null)
     let canvas = $state<HTMLCanvasElement | null>(null)
@@ -435,9 +436,11 @@
         e.preventDefault()
         contextMenu = { x: e.clientX, y: e.clientY }
     }
+
     function handleDocClick() {
         contextMenu = null
     }
+
     async function handleDownload() {
         contextMenu = null
         if (!container) return
@@ -454,6 +457,7 @@
             /* ignore */
         }
     }
+    
     onMount(() => {
         document.addEventListener('click', handleDocClick)
         return () => document.removeEventListener('click', handleDocClick)
@@ -515,22 +519,7 @@
                                         2}px;"
                                     title={char.name}
                                 >
-                                    {#if char.presetId}
-                                        <img
-                                            src={`/images/avatars/${char.presetId}.png`}
-                                            alt={char.name}
-                                            class="absolute inset-0 h-full w-full object-cover"
-                                            onerror={(e) =>
-                                                ((
-                                                    e.target as HTMLElement
-                                                ).style.display = 'none')}
-                                        />
-                                    {/if}
-                                    <div
-                                        class="flex h-full w-full items-center justify-center text-[10px] font-bold text-white"
-                                    >
-                                        {char.name.charAt(0)}
-                                    </div>
+                                    <Avatar presetId={char.presetId} name={char.name} size="md" />
                                 </div>
                             {/each}
                         </div>

@@ -6,7 +6,6 @@ export type KeyType =
     | 'R'
     | 'T'
     | 'F'
-    | 'Z'
     | 'X'
     | 'V'
     | 'intro'
