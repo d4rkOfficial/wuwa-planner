@@ -34,7 +34,8 @@
     let cropSize = $state(200)
     let zoom = $state(1)
 
-    let dragMode: 'move' | 'resize-tl' | 'resize-tr' | 'resize-bl' | 'resize-br' | null = $state(null)
+    let dragMode: 'move' | 'resize-tl' | 'resize-tr' | 'resize-bl' | 'resize-br' | null =
+        $state(null)
     let dragStart = { mx: 0, my: 0, cx: 0, cy: 0, cs: 0 }
 
     let hasAdjusted = $state(false)
@@ -104,7 +105,9 @@
         ctx.drawImage(image, dispOffX, dispOffY, dispW, dispH)
 
         ctx.fillStyle = 'rgba(0,0,0,0.55)'
-        const dx = cropDispX, dy = cropDispY, ds = cropDispSize
+        const dx = cropDispX,
+            dy = cropDispY,
+            ds = cropDispSize
         ctx.fillRect(0, 0, cw, dy)
         ctx.fillRect(0, dy + ds, cw, ch - dy - ds)
         ctx.fillRect(0, dy, dx, ds)
@@ -130,9 +133,16 @@
             const pctx = previewCanvasEl.getContext('2d')
             if (pctx) {
                 pctx.clearRect(0, 0, outputSize, outputSize)
-                pctx.drawImage(image,
-                    Math.round(cropX), Math.round(cropY), Math.round(cropSize), Math.round(cropSize),
-                    0, 0, outputSize, outputSize,
+                pctx.drawImage(
+                    image,
+                    Math.round(cropX),
+                    Math.round(cropY),
+                    Math.round(cropSize),
+                    Math.round(cropSize),
+                    0,
+                    0,
+                    outputSize,
+                    outputSize,
                 )
             }
         }
@@ -166,8 +176,12 @@
             return
         }
 
-        if (mx >= cropDispX && mx <= cropDispX + cropDispSize &&
-            my >= cropDispY && my <= cropDispY + cropDispSize) {
+        if (
+            mx >= cropDispX &&
+            mx <= cropDispX + cropDispSize &&
+            my >= cropDispY &&
+            my <= cropDispY + cropDispSize
+        ) {
             dragMode = 'move'
             dragStart = { mx, my, cx: cropX, cy: cropY, cs: cropSize }
             e.preventDefault()
@@ -192,7 +206,9 @@
             return
         }
 
-        const cx = dragStart.cx, cy = dragStart.cy, cs = dragStart.cs
+        const cx = dragStart.cx,
+            cy = dragStart.cy,
+            cs = dragStart.cs
 
         if (dragMode === 'resize-br') {
             let ns = Math.max(20, cs + Math.max(dx, dy))
@@ -255,11 +271,6 @@
         oncancel()
     }
 
-    async function handleBackdropClick(e: MouseEvent) {
-        if (e.target !== e.currentTarget) return
-        await tryClose()
-    }
-
     function doCrop() {
         if (!image) return
         const canvas = document.createElement('canvas')
@@ -267,9 +278,16 @@
         canvas.height = outputSize
         const ctx = canvas.getContext('2d')
         if (!ctx) return
-        ctx.drawImage(image,
-            Math.round(cropX), Math.round(cropY), Math.round(cropSize), Math.round(cropSize),
-            0, 0, outputSize, outputSize,
+        ctx.drawImage(
+            image,
+            Math.round(cropX),
+            Math.round(cropY),
+            Math.round(cropSize),
+            Math.round(cropSize),
+            0,
+            0,
+            outputSize,
+            outputSize,
         )
         oncrop(canvas.toDataURL())
     }
@@ -306,7 +324,6 @@
 <div
     class="fixed inset-0 z-50 flex items-center justify-center"
     style="background: {t.overlayBackdrop};"
-    onclick={handleBackdropClick}
     role="dialog"
     aria-modal="true"
     tabindex="-1"
@@ -315,15 +332,24 @@
         class="rounded-lg shadow-2xl flex flex-col"
         style="border: 1px solid {t.modalBorder}; background: {t.modalBg}; max-width: 90vw; max-height: 90vh;"
     >
-        <div class="flex items-center gap-2 px-4 py-3 shrink-0" style="border-bottom: 1px solid {t.border};">
+        <div
+            class="flex items-center gap-2 px-4 py-3 shrink-0"
+            style="border-bottom: 1px solid {t.border};"
+        >
             <span class="text-sm font-semibold flex-1" style="color: {t.text};">裁剪图片</span>
             <button
-                class="text-xs transition-colors"
+                class="flex h-7 w-7 items-center justify-center rounded-md text-sm transition-colors"
                 style="color: {t.textSecondary};"
-                onmouseenter={(e) => (e.currentTarget.style.color = t.text)}
-                onmouseleave={(e) => (e.currentTarget.style.color = t.textSecondary)}
-                onclick={tryClose}
-            >✕</button>
+                onmouseenter={(e) => {
+                    ;(e.currentTarget as HTMLElement).style.background = t.buttonHover
+                    ;(e.currentTarget as HTMLElement).style.color = t.text
+                }}
+                onmouseleave={(e) => {
+                    ;(e.currentTarget as HTMLElement).style.background = ''
+                    ;(e.currentTarget as HTMLElement).style.color = t.textSecondary
+                }}
+                onclick={tryClose}>✕</button
+            >
         </div>
         <div class="p-4 flex gap-4 overflow-y-auto min-h-0 scrollable-area">
             <div
@@ -348,32 +374,43 @@
                         width={outputSize}
                         height={outputSize}
                         class="rounded border shrink-0"
-                        style="border-color: {t.border}; width: {outputSize * 2}px; height: {outputSize * 2}px; image-rendering: auto;"
+                        style="border-color: {t.border}; width: {outputSize *
+                            2}px; height: {outputSize * 2}px; image-rendering: auto;"
                     ></canvas>
-                    <div class="text-[10px]" style="color: {t.mutedText};">{outputSize}×{outputSize} 预览</div>
-                    <div class="text-xs" style="color: {t.textSecondary};">{(cropSize / nw * 100).toFixed(0)}%</div>
+                    <div class="text-[10px]" style="color: {t.mutedText};">
+                        {outputSize}×{outputSize} 预览
+                    </div>
+                    <div class="text-xs" style="color: {t.textSecondary};">
+                        {((cropSize / nw) * 100).toFixed(0)}%
+                    </div>
                     <div class="flex items-center gap-1">
                         <button
                             class="rounded px-2 py-1 text-[10px] transition-colors"
                             style="color: {t.textSecondary}; border: 1px solid {t.border};"
                             onclick={() => rotate(-90)}
-                            title="向左旋转 90°"
-                        >↺ 90°</button>
+                            title="向左旋转 90°">↺ 90°</button
+                        >
                         <button
                             class="rounded px-2 py-1 text-[10px] transition-colors"
                             style="color: {t.textSecondary}; border: 1px solid {t.border};"
                             onclick={() => rotate(90)}
-                            title="向右旋转 90°"
-                        >↻ 90°</button>
+                            title="向右旋转 90°">↻ 90°</button
+                        >
                     </div>
-                    <div class="text-[10px]" style="color: {t.mutedText};">拖拽移动 · 四角缩放 · 滚轮缩放</div>
+                    <div class="text-[10px]" style="color: {t.mutedText};">
+                        拖拽移动 · 四角缩放 · 滚轮缩放
+                    </div>
                     <div class="flex gap-2 mt-auto">
-                        <button class="rounded px-3 py-1.5 text-xs transition-colors"
+                        <button
+                            class="rounded px-3 py-1.5 text-xs transition-colors"
                             style="background: {t.buttonBg}; color: {t.buttonText}; border: 1px solid {t.border};"
-                            onclick={tryClose}>取消</button>
-                        <button class="rounded px-3 py-1.5 text-xs transition-colors"
+                            onclick={tryClose}>取消</button
+                        >
+                        <button
+                            class="rounded px-3 py-1.5 text-xs transition-colors"
                             style="background: {t.confirmBtnBg}; color: #ffffff;"
-                            onclick={doCrop}>确认裁剪</button>
+                            onclick={doCrop}>确认裁剪</button
+                        >
                     </div>
                 </div>
             {/if}
@@ -389,10 +426,10 @@
         background: transparent;
     }
     .scrollable-area::-webkit-scrollbar-thumb {
-        background: rgba(255,255,255,0.15);
+        background: rgba(255, 255, 255, 0.15);
         border-radius: 3px;
     }
     .scrollable-area::-webkit-scrollbar-thumb:hover {
-        background: rgba(255,255,255,0.25);
+        background: rgba(255, 255, 255, 0.25);
     }
 </style>

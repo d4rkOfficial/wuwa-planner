@@ -45,8 +45,7 @@
                         const srcLeft = srcBlock.x
                         const srcRight = srcBlock.x + srcWidth
 
-                        const inside =
-                            dx >= srcLeft - TOL && dx <= srcRight + TOL
+                        const inside = dx >= srcLeft - TOL && dx <= srcRight + TOL
                         if (!inside) continue
 
                         const dstEl = document.querySelector(
@@ -58,20 +57,15 @@
                         const dstRect = dstEl.getBoundingClientRect()
 
                         const x = dstRect.left - svgRect.left
-                        const srcY =
-                            srcIdx > dstIdx ? srcRect.top : srcRect.bottom
-                        const dstY =
-                            srcIdx > dstIdx ? dstRect.bottom : dstRect.top
+                        const srcY = srcIdx > dstIdx ? srcRect.top : srcRect.bottom
+                        const dstY = srcIdx > dstIdx ? dstRect.bottom : dstRect.top
                         const y1 = srcY - svgRect.top
                         const y2 = dstY - svgRect.top
 
                         if (x <= 0 || y1 <= 0 || y2 <= 0) continue
 
                         const path = `M ${x} ${y1} L ${x} ${y2}`
-                        const color = planner.getTrackColor(
-                            chars[srcIdx].id,
-                            srcIdx,
-                        ).border
+                        const color = planner.getTrackColor(chars[srcIdx].id, srcIdx).border
 
                         result.push({
                             path,

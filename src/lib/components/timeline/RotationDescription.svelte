@@ -7,10 +7,7 @@
         buildCharLines,
         buildIntroLines,
     } from '$lib/utils/rotation-description'
-    import {
-        getCharacterPresets,
-        loadCharacterPresets,
-    } from '$lib/data/characters'
+    import { getCharacterPresets, loadCharacterPresets } from '$lib/data/characters'
     import type { CharacterPreset } from '$lib/types'
 
     let { fillHeight = false }: { fillHeight?: boolean } = $props()
@@ -22,12 +19,7 @@
     })
 
     let merged = $derived(
-        getMergedTimeline(
-            planner.characters,
-            planner.blocks,
-            planner.stayFieldMarkers,
-            presets,
-        ),
+        getMergedTimeline(planner.characters, planner.blocks, planner.stayFieldMarkers, presets),
     )
     let text = $derived(buildTextDescription(merged))
 
@@ -80,8 +72,7 @@
 >
     <div
         class="flex-1 min-w-0 overflow-y-auto rounded-lg p-3"
-        style="border: 1px solid {planner.theme
-            .divider}; background: {planner.theme
+        style="border: 1px solid {planner.theme.divider}; background: {planner.theme
             .trackBg}; scrollbar-width: thin;"
     >
         {#if merged.length === 0}
@@ -107,27 +98,23 @@
 {#if copyMenuOpen}
     <div
         class="fixed z-50 w-44 rounded-lg py-1 shadow-xl"
-        style="left: {copyMenuX}px; top: {copyMenuY}px; border: 1px solid {planner
-            .theme.contextBorder}; background: {planner.theme.contextBg};"
+        style="left: {copyMenuX}px; top: {copyMenuY}px; border: 1px solid {planner.theme
+            .contextBorder}; background: {planner.theme.contextBg};"
     >
         <button
             class="flex w-full items-center px-4 py-2 text-left text-xs transition-colors"
             style="color: {planner.theme.text};"
             onmouseenter={(e) =>
-                ((e.currentTarget as HTMLElement).style.background =
-                    planner.theme.contextHover)}
-            onmouseleave={(e) =>
-                ((e.currentTarget as HTMLElement).style.background = '')}
+                ((e.currentTarget as HTMLElement).style.background = planner.theme.contextHover)}
+            onmouseleave={(e) => ((e.currentTarget as HTMLElement).style.background = '')}
             onclick={copyByChar}>复制（按角色分行）</button
         >
         <button
             class="flex w-full items-center px-4 py-2 text-left text-xs transition-colors"
             style="color: {planner.theme.text};"
             onmouseenter={(e) =>
-                ((e.currentTarget as HTMLElement).style.background =
-                    planner.theme.contextHover)}
-            onmouseleave={(e) =>
-                ((e.currentTarget as HTMLElement).style.background = '')}
+                ((e.currentTarget as HTMLElement).style.background = planner.theme.contextHover)}
+            onmouseleave={(e) => ((e.currentTarget as HTMLElement).style.background = '')}
             onclick={copyByIntro}>复制（按变奏分行）</button
         >
     </div>

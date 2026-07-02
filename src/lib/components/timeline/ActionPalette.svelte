@@ -115,10 +115,8 @@
                 ;(e.currentTarget as HTMLElement).style.color = theme.text
             }}
             onmouseleave={(e) => {
-                ;(e.currentTarget as HTMLElement).style.borderColor =
-                    theme.border
-                ;(e.currentTarget as HTMLElement).style.color =
-                    theme.textSecondary
+                ;(e.currentTarget as HTMLElement).style.borderColor = theme.border
+                ;(e.currentTarget as HTMLElement).style.color = theme.textSecondary
             }}
             draggable="true"
             ondragstart={startDrag}
@@ -138,37 +136,29 @@
                 {#each keyTypes as kt}
                     <button
                         class={'flex items-stretch gap-1.5 rounded px-1.5 py-1.5 sm:py-2 transition-colors ' +
-                            (selectedKey === kt.key ?
-                                'ring-2 ring-offset-1'
-                            :   '')}
+                            (selectedKey === kt.key ? 'ring-2 ring-offset-1' : '')}
                         style="
 							border: 1px solid {theme.nodeColors[kt.key] ?? theme.fallbackTrack}40;
-							background: {selectedKey === kt.key ?
-                            (theme.nodeColors[kt.key] ?? theme.fallbackTrack) +
-                            '20'
-                        :   'transparent'};
+							background: {selectedKey === kt.key
+                            ? (theme.nodeColors[kt.key] ?? theme.fallbackTrack) + '20'
+                            : 'transparent'};
 							color: {theme.text};
 							ring-color: {theme.nodeColors[kt.key] ?? theme.fallbackTrack}80;
 							--tw-ring-offset-color: {theme.ringOffset};
 						"
                         onclick={() => (selectedKey = kt.key)}
                     >
-                        <div
-                            class="flex items-center justify-center shrink-0 aspect-square"
-                        >
+                        <div class="flex items-center justify-center shrink-0 aspect-square">
                             <KeyIcon
                                 key={kt.key}
                                 size="md"
                                 color={theme.nodeColors[kt.key]}
-                                mode={selectedKey === 'LMB' ? selectedMode : (
-                                    undefined
-                                )}
+                                mode={selectedKey === 'LMB' ? selectedMode : undefined}
                             />
                         </div>
                         <span
                             class="flex items-center font-bold text-[10px] sm:text-xs leading-tight"
-                            style="color: {theme.textSecondary};"
-                            >{kt.desc}</span
+                            style="color: {theme.textSecondary};">{kt.desc}</span
                         >
                     </button>
                 {/each}
@@ -230,8 +220,7 @@
                         class="rounded border px-2.5 py-1 text-[11px] font-medium shrink-0 transition-colors"
                         style="border-color: {theme.border}; color: {theme.mutedText};"
                         onmouseenter={(e) => {
-                            ;(e.currentTarget as HTMLElement).style.background =
-                                theme.buttonHover
+                            ;(e.currentTarget as HTMLElement).style.background = theme.buttonHover
                         }}
                         onmouseleave={(e) => {
                             ;(e.currentTarget as HTMLElement).style.background = ''
@@ -249,11 +238,17 @@
                 <div class="flex items-center gap-2 flex-wrap">
                     <button
                         class="flex h-7 w-7 items-center justify-center rounded border text-xs font-bold transition-colors"
-                        style="border-color: {strong ? theme.accentText : theme.border}; background: {strong ? theme.selectedModeBg : 'transparent'}; color: {strong ? theme.accentText : theme.textSecondary};"
+                        style="border-color: {strong
+                            ? theme.accentText
+                            : theme.border}; background: {strong
+                            ? theme.selectedModeBg
+                            : 'transparent'}; color: {strong
+                            ? theme.accentText
+                            : theme.textSecondary};"
                         onclick={() => (strong = !strong)}
                         title="强化"
                     >
-                        <StrongBadge size={16} color={theme.strongBadgeColor} />
+                        <StrongBadge size={16} />
                     </button>
                     <div class="flex items-center gap-1 flex-1 min-w-20">
                         <input
@@ -272,14 +267,14 @@
                             class="rounded border px-1.5 py-1 text-[10px] font-medium shrink-0 transition-colors"
                             style="border-color: {theme.border}; color: {theme.mutedText};"
                             onmouseenter={(e) => {
-                                ;(e.currentTarget as HTMLElement).style.background = theme.buttonHover
+                                ;(e.currentTarget as HTMLElement).style.background =
+                                    theme.buttonHover
                             }}
                             onmouseleave={(e) => {
                                 ;(e.currentTarget as HTMLElement).style.background = ''
                             }}
                             onclick={() => (comment = '')}
-                            title="清除备注"
-                        >清空</button
+                            title="清除备注">清空</button
                         >
                     </div>
                 </div>
@@ -296,20 +291,17 @@
                     <button
                         class={'flex flex-col items-center justify-center gap-0.5 rounded px-2 py-1.5 sm:py-2 text-[11px] sm:text-sm transition-colors ' +
                             (selectedMode === m.key ? '' : '')}
-                        style="border: 1px solid {selectedMode === m.key ?
-                            theme.accentText
-                        :   theme.border}; color: {theme.text}; background: {(
-                            selectedMode === m.key
-                        ) ?
-                            theme.selectedModeBg
-                        :   'transparent'}; {selectedMode === m.key ?
-                            `box-shadow: 0 0 0 1px ${theme.selectedModeRing};`
-                        :   ''}"
+                        style="border: 1px solid {selectedMode === m.key
+                            ? theme.accentText
+                            : theme.border}; color: {theme.text}; background: {selectedMode ===
+                        m.key
+                            ? theme.selectedModeBg
+                            : 'transparent'}; {selectedMode === m.key
+                            ? `box-shadow: 0 0 0 1px ${theme.selectedModeRing};`
+                            : ''}"
                         onclick={() => (selectedMode = m.key)}
                     >
-                        <span class="font-bold leading-tight text-center"
-                            >{m.title}</span
-                        >
+                        <span class="font-bold leading-tight text-center">{m.title}</span>
                         <span
                             class="hidden sm:block text-[10px] sm:text-xs font-medium leading-tight text-center"
                             style="color: {theme.textSecondary};">{m.desc}</span

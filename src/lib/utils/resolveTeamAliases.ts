@@ -13,7 +13,7 @@ export function resolveTeamAliases(aliasLists: string[][]): string[] {
             for (const c of map.values()) if (c > 1) dup += c - 1
 
             const len = current.reduce((s, a) => s + a.length, 0)
-            const primary = indices.filter(i => i === 0).length
+            const primary = indices.filter((i) => i === 0).length
             const score: [number, number, number] = [dup, len, -primary]
 
             if (

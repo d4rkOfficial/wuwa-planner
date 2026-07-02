@@ -56,7 +56,6 @@ export interface Theme {
     accentHover: string
     segmentLabel: string
     comboText: string
-    strongBadgeColor: string
     tagText: string
 
     nodeColors: Record<string, string>

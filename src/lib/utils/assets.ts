@@ -18,7 +18,10 @@ export function cropToSquare(dataUri: string, size: number = 256): Promise<strin
             canvas.width = size
             canvas.height = size
             const ctx = canvas.getContext('2d')
-            if (!ctx) { reject(new Error('Failed to get canvas context')); return }
+            if (!ctx) {
+                reject(new Error('Failed to get canvas context'))
+                return
+            }
             ctx.drawImage(img, offsetX, offsetY, side, side, 0, 0, size, size)
             resolve(canvas.toDataURL())
         }
@@ -39,15 +42,15 @@ export async function urlToDataURI(url: string): Promise<string> {
     })
 }
 
-export async function embedThemeAssets(theme: Record<string, unknown>): Promise<Record<string, unknown>> {
+export async function embedThemeAssets(
+    theme: Record<string, unknown>,
+): Promise<Record<string, unknown>> {
     const result = { ...theme }
     const keyIcons = result.keyIcons as Record<string, string> | undefined
     if (keyIcons) {
         const embedded: Record<string, string> = {}
         for (const [k, v] of Object.entries(keyIcons)) {
-            embedded[k] = v.startsWith('http') || v.startsWith('/')
-                ? await urlToDataURI(v)
-                : v
+            embedded[k] = v.startsWith('http') || v.startsWith('/') ? await urlToDataURI(v) : v
         }
         result.keyIcons = embedded
     }
@@ -59,9 +62,7 @@ export async function embedThemeAssets(theme: Record<string, unknown>): Promise<
     if (avatars) {
         const embedded: Record<string, string> = {}
         for (const [k, v] of Object.entries(avatars)) {
-            embedded[k] = v.startsWith('http') || v.startsWith('/')
-                ? await urlToDataURI(v)
-                : v
+            embedded[k] = v.startsWith('http') || v.startsWith('/') ? await urlToDataURI(v) : v
         }
         result.avatarOverrides = embedded
     }

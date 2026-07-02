@@ -25,21 +25,21 @@
 </script>
 
 <div class="flex items-center gap-2">
-    <span class="text-xs min-w-28 shrink-0 truncate" style="color: {theme.textSecondary};">{label}</span>
+    <span class="text-xs min-w-28 shrink-0 truncate" style="color: {theme.textSecondary};"
+        >{label}</span
+    >
     <div
         class="w-8 h-8 rounded shrink-0 flex items-center justify-center"
         style="border: 1px solid {theme.inputBorder}; background: {theme.inputBg};"
     >
-        <input
-            type="color"
-            class="w-6 h-6 rounded cursor-pointer border-0 p-0 block"
-            bind:value
-        />
+        <input type="color" class="w-6 h-6 rounded cursor-pointer border-0 p-0 block" bind:value />
     </div>
     <input
         type="text"
         class="flex-1 rounded border bg-transparent px-2 py-1.5 text-xs outline-none font-mono transition-colors"
-        style="border-color: {hexInvalid ? theme.dangerText : theme.inputBorder}; color: {theme.text};"
+        style="border-color: {hexInvalid
+            ? theme.dangerText
+            : theme.inputBorder}; color: {theme.text};"
         bind:value
     />
     {#if hasChanges}
@@ -48,8 +48,10 @@
             style="color: {theme.textSecondary};"
             onmouseenter={(e) => (e.currentTarget.style.color = theme.text)}
             onmouseleave={(e) => (e.currentTarget.style.color = theme.textSecondary)}
-            onclick={() => { if (defaultValue !== undefined) value = defaultValue; }}
-            title="重置为默认值"
-        >↺</button>
+            onclick={() => {
+                if (defaultValue !== undefined) value = defaultValue
+            }}
+            title="重置为默认值">↺</button
+        >
     {/if}
 </div>

@@ -7,6 +7,7 @@
     import AvatarSelect from '../character/AvatarSelect.svelte'
     import CropDialog from './CropDialog.svelte'
     import type { Theme, CharacterPreset } from '$lib/types'
+    import StrongBadge from '../timeline/StrongBadge.svelte'
 
     let {
         theme,
@@ -29,7 +30,13 @@
     let showAvatarSelect = $state(false)
     let showCropDialog = $state(false)
     let cropImageUrl = $state('')
-    let cropTarget = $state<{ type: 'icon'; iconId: string } | { type: 'avatar'; index: number } | null>(null)
+    let cropTarget = $state<
+        | { type: 'icon'; iconId: string }
+        | { type: 'avatar'; index: number }
+        | { type: 'strongIcon' }
+        | null
+    >(null)
+    let strongIconValue = $state('')
 
     let initialFormData = $state<Record<string, string>>({})
     let initialNodeColors = $state<Record<string, string>>({})
@@ -52,9 +59,23 @@
     ]
 
     const NODE_COLOR_KEYS = [
-        'LMB', 'RMB', 'Q', 'E', 'R', 'T', 'F', 'X', 'V',
-        'jump', 'intro', 'swap',
-        'click', 'hold', 'preinput_swap', 'preinput_action', 'rapid_click',
+        'LMB',
+        'RMB',
+        'Q',
+        'E',
+        'R',
+        'T',
+        'F',
+        'X',
+        'V',
+        'jump',
+        'intro',
+        'swap',
+        'click',
+        'hold',
+        'preinput_swap',
+        'preinput_action',
+        'rapid_click',
     ]
 
     const MODE_COLOR_KEYS = ['hold', 'preinput_swap', 'preinput_action', 'rapid_click']
@@ -64,26 +85,67 @@
     const NODE_GROUP_PREINPUT = ['preinput_swap', 'preinput_action', 'rapid_click']
 
     const COLOR_FIELDS: (keyof Theme)[] = [
-        'name', 'fontFamily',
-        'background', 'trackBg', 'text', 'textSecondary', 'mutedText',
-        'panelBg', 'exportBg', 'sidebarBg', 'sidebarBorder',
-        'sidebarText', 'sidebarTextActive', 'sidebarHover',
-        'border', 'borderLight', 'divider', 'inputBg', 'inputBorder',
-        'buttonBg', 'buttonHover', 'buttonText',
-        'blockBorder', 'blockCompactBorder', 'blockCompactBg',
-        'diagramItemBorder', 'deleteBtnBorder', 'deleteBtnHover',
-        'scrollbarTrack', 'scrollbarThumb', 'scrollbarThumbHover',
-        'ringOffset', 'overlayBackdrop', 'dragOverBg',
-        'selectedModeBg', 'selectedModeRing',
-        'alertBtnBg', 'confirmBtnBg',
-        'modalBg', 'modalBorder', 'contextBg', 'contextBorder', 'contextHover',
-        'badgeText', 'avatarText', 'accentText', 'accentHover',
-        'dangerText', 'dangerHover',
-        'segmentLabel', 'comboText', 'strongBadgeColor',
-        'tagBg', 'tagText',
-        'stayField', 'wrapIndicator', 'fallbackTrack',
-        'comboBg', 'comboBorder',
-        'starRarity5', 'starRarity4', 'starRoverGradient',
+        'name',
+        'fontFamily',
+        'background',
+        'trackBg',
+        'text',
+        'textSecondary',
+        'mutedText',
+        'panelBg',
+        'exportBg',
+        'sidebarBg',
+        'sidebarBorder',
+        'sidebarText',
+        'sidebarTextActive',
+        'sidebarHover',
+        'border',
+        'borderLight',
+        'divider',
+        'inputBg',
+        'inputBorder',
+        'buttonBg',
+        'buttonHover',
+        'buttonText',
+        'blockBorder',
+        'blockCompactBorder',
+        'blockCompactBg',
+        'diagramItemBorder',
+        'deleteBtnBorder',
+        'deleteBtnHover',
+        'scrollbarTrack',
+        'scrollbarThumb',
+        'scrollbarThumbHover',
+        'ringOffset',
+        'overlayBackdrop',
+        'dragOverBg',
+        'selectedModeBg',
+        'selectedModeRing',
+        'alertBtnBg',
+        'confirmBtnBg',
+        'modalBg',
+        'modalBorder',
+        'contextBg',
+        'contextBorder',
+        'contextHover',
+        'badgeText',
+        'avatarText',
+        'accentText',
+        'accentHover',
+        'dangerText',
+        'dangerHover',
+        'segmentLabel',
+        'comboText',
+        'tagBg',
+        'tagText',
+        'stayField',
+        'wrapIndicator',
+        'fallbackTrack',
+        'comboBg',
+        'comboBorder',
+        'starRarity5',
+        'starRarity4',
+        'starRoverGradient',
     ]
 
     function getPresetName(presetId: string): string {
@@ -115,11 +177,16 @@
                 if (v && !v.startsWith('/')) keyIconValues[k] = v
             }
         }
+        strongIconValue = theme.strongBadgeIcon ?? ''
         avatarEntries = []
         if (theme.avatarOverrides) {
             for (const [presetId, url] of Object.entries(theme.avatarOverrides)) {
                 if (url) {
-                    avatarEntries.push({ presetId, name: getPresetName(presetId), avatarUrl: url })
+                    avatarEntries.push({
+                        presetId,
+                        name: getPresetName(presetId),
+                        avatarUrl: url,
+                    })
                 }
             }
         }
@@ -134,6 +201,7 @@
             nodeColors: nodeColorValues,
             modeColors: modeColorValues,
             keyIcons: { ...theme.keyIcons, ...keyIconValues },
+            strongBadgeIcon: strongIconValue || undefined,
             avatarOverrides: Object.fromEntries(
                 avatarEntries.filter((e) => e.presetId).map((e) => [e.presetId, e.avatarUrl]),
             ),
@@ -172,11 +240,23 @@
         avatarEntries = avatarEntries.filter((_, i) => i !== index)
     }
 
+    async function handleStrongIconFileSelected(file: File) {
+        cropImageUrl = await fileToDataURI(file)
+        cropTarget = { type: 'strongIcon' }
+        showCropDialog = true
+    }
+
+    function handleStrongIconReset() {
+        strongIconValue = ''
+    }
+
     function handleCropResult(croppedUrl: string) {
         const t = cropTarget
         if (!t) return
         if (t.type === 'icon') {
             keyIconValues = { ...keyIconValues, [t.iconId]: croppedUrl }
+        } else if (t.type === 'strongIcon') {
+            strongIconValue = croppedUrl
         } else {
             avatarEntries = avatarEntries.map((e, i) =>
                 i === t.index ? { ...e, avatarUrl: croppedUrl } : e,
@@ -209,115 +289,442 @@
         <CollapsibleSection label="基本信息" open={true}>
             <div class="flex items-center gap-3">
                 <span class="text-xs w-20 shrink-0" style="color: {t.textSecondary};">名称</span>
-                <input type="text" class="flex-1 rounded border bg-transparent px-2 py-1.5 text-xs outline-none"
-                    style="border-color: {t.inputBorder}; color: {t.text};" bind:value={formData.name} />
+                <input
+                    type="text"
+                    class="flex-1 rounded border bg-transparent px-2 py-1.5 text-xs outline-none"
+                    style="border-color: {t.inputBorder}; color: {t.text};"
+                    bind:value={formData.name}
+                />
             </div>
             <div class="flex items-center gap-3">
                 <span class="text-xs w-20 shrink-0" style="color: {t.textSecondary};">字体</span>
-                <input type="text" class="flex-1 rounded border bg-transparent px-2 py-1.5 text-xs outline-none"
-                    style="border-color: {t.inputBorder}; color: {t.text};" bind:value={formData.fontFamily} />
+                <input
+                    type="text"
+                    class="flex-1 rounded border bg-transparent px-2 py-1.5 text-xs outline-none"
+                    style="border-color: {t.inputBorder}; color: {t.text};"
+                    bind:value={formData.fontFamily}
+                />
             </div>
         </CollapsibleSection>
 
         <!-- 配色 -->
         <CollapsibleSection label="配色">
             <CollapsibleSection label="核心">
-                <ColorRow label="背景" bind:value={formData.background} defaultValue={initialFormData.background} theme={t} />
-                <ColorRow label="轨道" bind:value={formData.trackBg} defaultValue={initialFormData.trackBg} theme={t} />
-                <ColorRow label="回退轨道" bind:value={formData.fallbackTrack} defaultValue={initialFormData.fallbackTrack} theme={t} />
-                <ColorRow label="面板" bind:value={formData.panelBg} defaultValue={initialFormData.panelBg} theme={t} />
-                <ColorRow label="导出背景" bind:value={formData.exportBg} defaultValue={initialFormData.exportBg} theme={t} />
-                <ColorRow label="文字" bind:value={formData.text} defaultValue={initialFormData.text} theme={t} />
-                <ColorRow label="次要文字" bind:value={formData.textSecondary} defaultValue={initialFormData.textSecondary} theme={t} />
-                <ColorRow label="弱化文字" bind:value={formData.mutedText} defaultValue={initialFormData.mutedText} theme={t} />
+                <ColorRow
+                    label="背景"
+                    bind:value={formData.background}
+                    defaultValue={initialFormData.background}
+                    theme={t}
+                />
+                <ColorRow
+                    label="轨道"
+                    bind:value={formData.trackBg}
+                    defaultValue={initialFormData.trackBg}
+                    theme={t}
+                />
+                <ColorRow
+                    label="回退轨道"
+                    bind:value={formData.fallbackTrack}
+                    defaultValue={initialFormData.fallbackTrack}
+                    theme={t}
+                />
+                <ColorRow
+                    label="面板"
+                    bind:value={formData.panelBg}
+                    defaultValue={initialFormData.panelBg}
+                    theme={t}
+                />
+                <ColorRow
+                    label="导出背景"
+                    bind:value={formData.exportBg}
+                    defaultValue={initialFormData.exportBg}
+                    theme={t}
+                />
+                <ColorRow
+                    label="文字"
+                    bind:value={formData.text}
+                    defaultValue={initialFormData.text}
+                    theme={t}
+                />
+                <ColorRow
+                    label="次要文字"
+                    bind:value={formData.textSecondary}
+                    defaultValue={initialFormData.textSecondary}
+                    theme={t}
+                />
+                <ColorRow
+                    label="弱化文字"
+                    bind:value={formData.mutedText}
+                    defaultValue={initialFormData.mutedText}
+                    theme={t}
+                />
             </CollapsibleSection>
             <CollapsibleSection label="侧栏">
-                <ColorRow label="侧栏背景" bind:value={formData.sidebarBg} defaultValue={initialFormData.sidebarBg} theme={t} />
-                <ColorRow label="侧栏边框" bind:value={formData.sidebarBorder} defaultValue={initialFormData.sidebarBorder} theme={t} />
-                <ColorRow label="侧栏文字" bind:value={formData.sidebarText} defaultValue={initialFormData.sidebarText} theme={t} />
-                <ColorRow label="侧栏激活" bind:value={formData.sidebarTextActive} defaultValue={initialFormData.sidebarTextActive} theme={t} />
-                <ColorRow label="侧栏悬停" bind:value={formData.sidebarHover} defaultValue={initialFormData.sidebarHover} theme={t} />
+                <ColorRow
+                    label="侧栏背景"
+                    bind:value={formData.sidebarBg}
+                    defaultValue={initialFormData.sidebarBg}
+                    theme={t}
+                />
+                <ColorRow
+                    label="侧栏边框"
+                    bind:value={formData.sidebarBorder}
+                    defaultValue={initialFormData.sidebarBorder}
+                    theme={t}
+                />
+                <ColorRow
+                    label="侧栏文字"
+                    bind:value={formData.sidebarText}
+                    defaultValue={initialFormData.sidebarText}
+                    theme={t}
+                />
+                <ColorRow
+                    label="侧栏激活"
+                    bind:value={formData.sidebarTextActive}
+                    defaultValue={initialFormData.sidebarTextActive}
+                    theme={t}
+                />
+                <ColorRow
+                    label="侧栏悬停"
+                    bind:value={formData.sidebarHover}
+                    defaultValue={initialFormData.sidebarHover}
+                    theme={t}
+                />
             </CollapsibleSection>
             <CollapsibleSection label="UI">
-                <ColorRow label="边框" bind:value={formData.border} defaultValue={initialFormData.border} theme={t} />
-                <ColorRow label="浅边框" bind:value={formData.borderLight} defaultValue={initialFormData.borderLight} theme={t} />
-                <ColorRow label="分割线" bind:value={formData.divider} defaultValue={initialFormData.divider} theme={t} />
-                <ColorRow label="段标签" bind:value={formData.segmentLabel} defaultValue={initialFormData.segmentLabel} theme={t} />
-                <ColorRow label="输入框背景" bind:value={formData.inputBg} defaultValue={initialFormData.inputBg} theme={t} />
-                <ColorRow label="输入框边框" bind:value={formData.inputBorder} defaultValue={initialFormData.inputBorder} theme={t} />
-                <ColorRow label="按钮背景" bind:value={formData.buttonBg} defaultValue={initialFormData.buttonBg} theme={t} />
-                <ColorRow label="按钮悬停" bind:value={formData.buttonHover} defaultValue={initialFormData.buttonHover} theme={t} />
-                <ColorRow label="按钮文字" bind:value={formData.buttonText} defaultValue={initialFormData.buttonText} theme={t} />
-                <ColorRow label="Block边框" bind:value={formData.blockBorder} defaultValue={initialFormData.blockBorder} theme={t} />
-                <ColorRow label="Block紧凑边框" bind:value={formData.blockCompactBorder} defaultValue={initialFormData.blockCompactBorder} theme={t} />
-                <ColorRow label="Block紧凑背景" bind:value={formData.blockCompactBg} defaultValue={initialFormData.blockCompactBg} theme={t} />
-                <ColorRow label="图项边框" bind:value={formData.diagramItemBorder} defaultValue={initialFormData.diagramItemBorder} theme={t} />
-                <ColorRow label="删除按钮边框" bind:value={formData.deleteBtnBorder} defaultValue={initialFormData.deleteBtnBorder} theme={t} />
-                <ColorRow label="删除按钮悬停" bind:value={formData.deleteBtnHover} defaultValue={initialFormData.deleteBtnHover} theme={t} />
-                <ColorRow label="滚动条轨道" bind:value={formData.scrollbarTrack} defaultValue={initialFormData.scrollbarTrack} theme={t} />
-                <ColorRow label="滚动条滑块" bind:value={formData.scrollbarThumb} defaultValue={initialFormData.scrollbarThumb} theme={t} />
-                <ColorRow label="滚动条悬停" bind:value={formData.scrollbarThumbHover} defaultValue={initialFormData.scrollbarThumbHover} theme={t} />
-                <ColorRow label="Ring偏移" bind:value={formData.ringOffset} defaultValue={initialFormData.ringOffset} theme={t} />
+                <ColorRow
+                    label="边框"
+                    bind:value={formData.border}
+                    defaultValue={initialFormData.border}
+                    theme={t}
+                />
+                <ColorRow
+                    label="浅边框"
+                    bind:value={formData.borderLight}
+                    defaultValue={initialFormData.borderLight}
+                    theme={t}
+                />
+                <ColorRow
+                    label="分割线"
+                    bind:value={formData.divider}
+                    defaultValue={initialFormData.divider}
+                    theme={t}
+                />
+                <ColorRow
+                    label="段标签"
+                    bind:value={formData.segmentLabel}
+                    defaultValue={initialFormData.segmentLabel}
+                    theme={t}
+                />
+                <ColorRow
+                    label="输入框背景"
+                    bind:value={formData.inputBg}
+                    defaultValue={initialFormData.inputBg}
+                    theme={t}
+                />
+                <ColorRow
+                    label="输入框边框"
+                    bind:value={formData.inputBorder}
+                    defaultValue={initialFormData.inputBorder}
+                    theme={t}
+                />
+                <ColorRow
+                    label="按钮背景"
+                    bind:value={formData.buttonBg}
+                    defaultValue={initialFormData.buttonBg}
+                    theme={t}
+                />
+                <ColorRow
+                    label="按钮悬停"
+                    bind:value={formData.buttonHover}
+                    defaultValue={initialFormData.buttonHover}
+                    theme={t}
+                />
+                <ColorRow
+                    label="按钮文字"
+                    bind:value={formData.buttonText}
+                    defaultValue={initialFormData.buttonText}
+                    theme={t}
+                />
+                <ColorRow
+                    label="Block边框"
+                    bind:value={formData.blockBorder}
+                    defaultValue={initialFormData.blockBorder}
+                    theme={t}
+                />
+                <ColorRow
+                    label="Block紧凑边框"
+                    bind:value={formData.blockCompactBorder}
+                    defaultValue={initialFormData.blockCompactBorder}
+                    theme={t}
+                />
+                <ColorRow
+                    label="Block紧凑背景"
+                    bind:value={formData.blockCompactBg}
+                    defaultValue={initialFormData.blockCompactBg}
+                    theme={t}
+                />
+                <ColorRow
+                    label="图项边框"
+                    bind:value={formData.diagramItemBorder}
+                    defaultValue={initialFormData.diagramItemBorder}
+                    theme={t}
+                />
+                <ColorRow
+                    label="删除按钮边框"
+                    bind:value={formData.deleteBtnBorder}
+                    defaultValue={initialFormData.deleteBtnBorder}
+                    theme={t}
+                />
+                <ColorRow
+                    label="删除按钮悬停"
+                    bind:value={formData.deleteBtnHover}
+                    defaultValue={initialFormData.deleteBtnHover}
+                    theme={t}
+                />
+                <ColorRow
+                    label="滚动条轨道"
+                    bind:value={formData.scrollbarTrack}
+                    defaultValue={initialFormData.scrollbarTrack}
+                    theme={t}
+                />
+                <ColorRow
+                    label="滚动条滑块"
+                    bind:value={formData.scrollbarThumb}
+                    defaultValue={initialFormData.scrollbarThumb}
+                    theme={t}
+                />
+                <ColorRow
+                    label="滚动条悬停"
+                    bind:value={formData.scrollbarThumbHover}
+                    defaultValue={initialFormData.scrollbarThumbHover}
+                    theme={t}
+                />
+                <ColorRow
+                    label="Ring偏移"
+                    bind:value={formData.ringOffset}
+                    defaultValue={initialFormData.ringOffset}
+                    theme={t}
+                />
             </CollapsibleSection>
             <CollapsibleSection label="弹窗/菜单">
-                <ColorRow label="弹窗背景" bind:value={formData.modalBg} defaultValue={initialFormData.modalBg} theme={t} />
-                <ColorRow label="弹窗边框" bind:value={formData.modalBorder} defaultValue={initialFormData.modalBorder} theme={t} />
-                <ColorRow label="确认按钮" bind:value={formData.confirmBtnBg} defaultValue={initialFormData.confirmBtnBg} theme={t} />
-                <ColorRow label="警告按钮" bind:value={formData.alertBtnBg} defaultValue={initialFormData.alertBtnBg} theme={t} />
-                <ColorRow label="菜单背景" bind:value={formData.contextBg} defaultValue={initialFormData.contextBg} theme={t} />
-                <ColorRow label="菜单边框" bind:value={formData.contextBorder} defaultValue={initialFormData.contextBorder} theme={t} />
-                <ColorRow label="菜单悬停" bind:value={formData.contextHover} defaultValue={initialFormData.contextHover} theme={t} />
-                <ColorRow label="遮罩" bind:value={formData.overlayBackdrop} defaultValue={initialFormData.overlayBackdrop} theme={t} />
+                <ColorRow
+                    label="弹窗背景"
+                    bind:value={formData.modalBg}
+                    defaultValue={initialFormData.modalBg}
+                    theme={t}
+                />
+                <ColorRow
+                    label="弹窗边框"
+                    bind:value={formData.modalBorder}
+                    defaultValue={initialFormData.modalBorder}
+                    theme={t}
+                />
+                <ColorRow
+                    label="确认按钮"
+                    bind:value={formData.confirmBtnBg}
+                    defaultValue={initialFormData.confirmBtnBg}
+                    theme={t}
+                />
+                <ColorRow
+                    label="警告按钮"
+                    bind:value={formData.alertBtnBg}
+                    defaultValue={initialFormData.alertBtnBg}
+                    theme={t}
+                />
+                <ColorRow
+                    label="菜单背景"
+                    bind:value={formData.contextBg}
+                    defaultValue={initialFormData.contextBg}
+                    theme={t}
+                />
+                <ColorRow
+                    label="菜单边框"
+                    bind:value={formData.contextBorder}
+                    defaultValue={initialFormData.contextBorder}
+                    theme={t}
+                />
+                <ColorRow
+                    label="菜单悬停"
+                    bind:value={formData.contextHover}
+                    defaultValue={initialFormData.contextHover}
+                    theme={t}
+                />
+                <ColorRow
+                    label="遮罩"
+                    bind:value={formData.overlayBackdrop}
+                    defaultValue={initialFormData.overlayBackdrop}
+                    theme={t}
+                />
             </CollapsibleSection>
             <CollapsibleSection label="标签/角标">
-                <ColorRow label="标签背景" bind:value={formData.tagBg} defaultValue={initialFormData.tagBg} theme={t} />
-                <ColorRow label="标签文字" bind:value={formData.tagText} defaultValue={initialFormData.tagText} theme={t} />
-                <ColorRow label="强颜色" bind:value={formData.strongBadgeColor} defaultValue={initialFormData.strongBadgeColor} theme={t} />
-                <ColorRow label="连段背景" bind:value={formData.comboBg} defaultValue={initialFormData.comboBg} theme={t} />
-                <ColorRow label="连段边框" bind:value={formData.comboBorder} defaultValue={initialFormData.comboBorder} theme={t} />
-                <ColorRow label="连段文字" bind:value={formData.comboText} defaultValue={initialFormData.comboText} theme={t} />
-                <ColorRow label="角标文字" bind:value={formData.badgeText} defaultValue={initialFormData.badgeText} theme={t} />
-                <ColorRow label="头像文字" bind:value={formData.avatarText} defaultValue={initialFormData.avatarText} theme={t} />
-                <ColorRow label="星级5" bind:value={formData.starRarity5} defaultValue={initialFormData.starRarity5} theme={t} />
-                <ColorRow label="星级4" bind:value={formData.starRarity4} defaultValue={initialFormData.starRarity4} theme={t} />
+                <ColorRow
+                    label="标签背景"
+                    bind:value={formData.tagBg}
+                    defaultValue={initialFormData.tagBg}
+                    theme={t}
+                />
+                <ColorRow
+                    label="标签文字"
+                    bind:value={formData.tagText}
+                    defaultValue={initialFormData.tagText}
+                    theme={t}
+                />
+                <ColorRow
+                    label="连段背景"
+                    bind:value={formData.comboBg}
+                    defaultValue={initialFormData.comboBg}
+                    theme={t}
+                />
+                <ColorRow
+                    label="连段边框"
+                    bind:value={formData.comboBorder}
+                    defaultValue={initialFormData.comboBorder}
+                    theme={t}
+                />
+                <ColorRow
+                    label="连段文字"
+                    bind:value={formData.comboText}
+                    defaultValue={initialFormData.comboText}
+                    theme={t}
+                />
+                <ColorRow
+                    label="角标文字"
+                    bind:value={formData.badgeText}
+                    defaultValue={initialFormData.badgeText}
+                    theme={t}
+                />
+                <ColorRow
+                    label="头像文字"
+                    bind:value={formData.avatarText}
+                    defaultValue={initialFormData.avatarText}
+                    theme={t}
+                />
+                <ColorRow
+                    label="星级5"
+                    bind:value={formData.starRarity5}
+                    defaultValue={initialFormData.starRarity5}
+                    theme={t}
+                />
+                <ColorRow
+                    label="星级4"
+                    bind:value={formData.starRarity4}
+                    defaultValue={initialFormData.starRarity4}
+                    theme={t}
+                />
                 <div class="flex items-center gap-3">
-                    <span class="text-xs min-w-28 shrink-0 truncate" style="color: {t.textSecondary};">漂泊者渐变</span>
-                    <input type="text" class="flex-1 rounded border bg-transparent px-2 py-1.5 text-xs outline-none font-mono"
-                        style="border-color: {t.inputBorder}; color: {t.text};" bind:value={formData.starRoverGradient} />
+                    <span
+                        class="text-xs min-w-28 shrink-0 truncate"
+                        style="color: {t.textSecondary};">漂泊者渐变</span
+                    >
+                    <input
+                        type="text"
+                        class="flex-1 rounded border bg-transparent px-2 py-1.5 text-xs outline-none font-mono"
+                        style="border-color: {t.inputBorder}; color: {t.text};"
+                        bind:value={formData.starRoverGradient}
+                    />
                 </div>
             </CollapsibleSection>
             <CollapsibleSection label="交互">
-                <ColorRow label="强调文字" bind:value={formData.accentText} defaultValue={initialFormData.accentText} theme={t} />
-                <ColorRow label="强调悬停" bind:value={formData.accentHover} defaultValue={initialFormData.accentHover} theme={t} />
-                <ColorRow label="危险文字" bind:value={formData.dangerText} defaultValue={initialFormData.dangerText} theme={t} />
-                <ColorRow label="危险悬停" bind:value={formData.dangerHover} defaultValue={initialFormData.dangerHover} theme={t} />
-                <ColorRow label="驻场" bind:value={formData.stayField} defaultValue={initialFormData.stayField} theme={t} />
-                <ColorRow label="换行指示" bind:value={formData.wrapIndicator} defaultValue={initialFormData.wrapIndicator} theme={t} />
-                <ColorRow label="拖放背景" bind:value={formData.dragOverBg} defaultValue={initialFormData.dragOverBg} theme={t} />
-                <ColorRow label="选择模式背景" bind:value={formData.selectedModeBg} defaultValue={initialFormData.selectedModeBg} theme={t} />
-                <ColorRow label="选择模式边框" bind:value={formData.selectedModeRing} defaultValue={initialFormData.selectedModeRing} theme={t} />
+                <ColorRow
+                    label="强调文字（主颜色）"
+                    bind:value={formData.accentText}
+                    defaultValue={initialFormData.accentText}
+                    theme={t}
+                />
+                <ColorRow
+                    label="强调悬停"
+                    bind:value={formData.accentHover}
+                    defaultValue={initialFormData.accentHover}
+                    theme={t}
+                />
+                <ColorRow
+                    label="危险文字"
+                    bind:value={formData.dangerText}
+                    defaultValue={initialFormData.dangerText}
+                    theme={t}
+                />
+                <ColorRow
+                    label="危险悬停"
+                    bind:value={formData.dangerHover}
+                    defaultValue={initialFormData.dangerHover}
+                    theme={t}
+                />
+                <ColorRow
+                    label="驻场"
+                    bind:value={formData.stayField}
+                    defaultValue={initialFormData.stayField}
+                    theme={t}
+                />
+                <ColorRow
+                    label="换行指示"
+                    bind:value={formData.wrapIndicator}
+                    defaultValue={initialFormData.wrapIndicator}
+                    theme={t}
+                />
+                <ColorRow
+                    label="拖放背景"
+                    bind:value={formData.dragOverBg}
+                    defaultValue={initialFormData.dragOverBg}
+                    theme={t}
+                />
+                <ColorRow
+                    label="选择模式背景"
+                    bind:value={formData.selectedModeBg}
+                    defaultValue={initialFormData.selectedModeBg}
+                    theme={t}
+                />
+                <ColorRow
+                    label="选择模式边框"
+                    bind:value={formData.selectedModeRing}
+                    defaultValue={initialFormData.selectedModeRing}
+                    theme={t}
+                />
                 <CollapsibleSection label="模式颜色">
                     {#each MODE_COLOR_KEYS as key}
-                        <ColorRow label={key} bind:value={modeColorValues[key]} defaultValue={initialModeColors[key]} theme={t} />
+                        <ColorRow
+                            label={key}
+                            bind:value={modeColorValues[key]}
+                            defaultValue={initialModeColors[key]}
+                            theme={t}
+                        />
                     {/each}
                 </CollapsibleSection>
                 <CollapsibleSection label="按键颜色">
                     <div class="flex flex-col gap-0">
-                        <span class="text-[10px] font-semibold px-1 py-0.5" style="color: {t.mutedText};">基础操作</span>
                         {#each NODE_GROUP_BASIC as key}
-                            <ColorRow label={key} bind:value={nodeColorValues[key]} defaultValue={initialNodeColors[key]} theme={t} />
+                            <ColorRow
+                                label={key}
+                                bind:value={nodeColorValues[key]}
+                                defaultValue={initialNodeColors[key]}
+                                theme={t}
+                            />
                         {/each}
                     </div>
+
+                    <div class="bg-neutral-500 opacity-25 w-full h-[0.1px]"></div>
+
                     <div class="flex flex-col gap-0">
-                        <span class="text-[10px] font-semibold px-1 py-0.5" style="color: {t.mutedText};">修饰</span>
                         {#each NODE_GROUP_MODIFIERS as key}
-                            <ColorRow label={key} bind:value={nodeColorValues[key]} defaultValue={initialNodeColors[key]} theme={t} />
+                            <ColorRow
+                                label={key}
+                                bind:value={nodeColorValues[key]}
+                                defaultValue={initialNodeColors[key]}
+                                theme={t}
+                            />
                         {/each}
                     </div>
+
+                    <div class="bg-neutral-500 opacity-25 w-full h-[0.1px]"></div>
+
                     <div class="flex flex-col gap-0">
-                        <span class="text-[10px] font-semibold px-1 py-0.5" style="color: {t.mutedText};">预输入</span>
                         {#each NODE_GROUP_PREINPUT as key}
-                            <ColorRow label={key} bind:value={nodeColorValues[key]} defaultValue={initialNodeColors[key]} theme={t} />
+                            <ColorRow
+                                label={key}
+                                bind:value={nodeColorValues[key]}
+                                defaultValue={initialNodeColors[key]}
+                                theme={t}
+                            />
                         {/each}
                     </div>
                 </CollapsibleSection>
@@ -327,61 +734,133 @@
         <!-- 按键图标 -->
         <CollapsibleSection label="按键图标" open={false}>
             <div class="grid grid-cols-2 gap-2">
-            {#each KEY_ICON_DEFS as def}
-                <div class="flex items-center gap-2">
-                    <span class="text-xs w-20 shrink-0" style="color: {t.textSecondary};">{def.label}</span>
-                    <div class="w-7 h-7 shrink-0 flex items-center justify-center rounded"
-                        style="border: 1px solid {t.border}; background: {t.inputBg};">
+                {#each KEY_ICON_DEFS as def}
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs w-20 shrink-0" style="color: {t.textSecondary};"
+                            >{def.label}</span
+                        >
+                        <div
+                            class="w-7 h-7 shrink-0 flex items-center justify-center rounded"
+                            style="border: 1px solid {t.border}; background: {t.inputBg};"
+                        >
+                            {#if keyIconValues[def.id]}
+                                <img
+                                    src={keyIconValues[def.id]}
+                                    alt={def.label}
+                                    class="h-5 w-5 object-contain"
+                                />
+                            {:else if theme.keyIcons?.[def.id]}
+                                <img
+                                    src={theme.keyIcons[def.id]}
+                                    alt={def.label}
+                                    class="h-5 w-5 object-contain"
+                                    onerror={(e) => {
+                                        ;(e.target as HTMLElement).style.display = 'none'
+                                    }}
+                                />
+                            {:else}
+                                <span class="text-[10px]" style="color: {t.mutedText};">无</span>
+                            {/if}
+                        </div>
+                        <label
+                            class="text-[10px] px-1.5 py-0.5 rounded cursor-pointer transition-colors"
+                            style="color: {t.accentText}; border: 1px solid {t.accentText};"
+                        >
+                            上传
+                            <input
+                                type="file"
+                                accept="image/*"
+                                class="hidden"
+                                onchange={(e) => {
+                                    const file = (e.target as HTMLInputElement).files?.[0]
+                                    if (file) handleIconFileSelected(def.id, file)
+                                    ;(e.target as HTMLInputElement).value = ''
+                                }}
+                            />
+                        </label>
                         {#if keyIconValues[def.id]}
-                            <img src={keyIconValues[def.id]} alt={def.label} class="h-5 w-5 object-contain" />
-                        {:else if theme.keyIcons?.[def.id]}
-                            <img src={theme.keyIcons[def.id]} alt={def.label} class="h-5 w-5 object-contain"
-                                onerror={(e) => { (e.target as HTMLElement).style.display = 'none'; }} />
-                        {:else}
-                            <span class="text-[10px]" style="color: {t.mutedText};">无</span>
+                            <button
+                                class="text-[10px] px-1.5 py-0.5 rounded transition-colors"
+                                style="color: {t.dangerText};"
+                                onclick={() => handleIconReset(def.id)}>重置</button
+                            >
                         {/if}
                     </div>
-                    <label
-                        class="text-[10px] px-1.5 py-0.5 rounded cursor-pointer transition-colors"
-                        style="color: {t.accentText}; border: 1px solid {t.accentText};"
-                    >
-                        上传
-                        <input type="file" accept="image/*" class="hidden"
-                            onchange={(e) => {
-                                const file = (e.target as HTMLInputElement).files?.[0];
-                                if (file) handleIconFileSelected(def.id, file);
-                                (e.target as HTMLInputElement).value = '';
+                {/each}
+            </div>
+            <div class="flex items-center gap-2 mt-1">
+                <span class="text-xs min-w-20 shrink-0 truncate" style="color: {t.textSecondary};"
+                    >强化</span
+                >
+                <div
+                    class="w-7 h-7 shrink-0 flex items-center justify-center rounded"
+                    style="border: 1px solid {t.border}; background: {t.inputBg};"
+                >
+                    {#if strongIconValue}
+                        <img src={strongIconValue} alt="强" class="h-5 w-5 object-contain" />
+                    {:else if theme.strongBadgeIcon}
+                        <img
+                            src={theme.strongBadgeIcon}
+                            alt="强"
+                            class="h-5 w-5 object-contain"
+                            onerror={(e) => {
+                                ;(e.target as HTMLElement).style.display = 'none'
                             }}
                         />
-                    </label>
-                    {#if keyIconValues[def.id]}
-                        <button
-                            class="text-[10px] px-1.5 py-0.5 rounded transition-colors"
-                            style="color: {t.dangerText};"
-                            onclick={() => handleIconReset(def.id)}
-                        >重置</button>
+                    {:else}
+                        <!-- <span class="text-[10px]" style="color: {t.mutedText};">无</span> -->
+                        <StrongBadge />
                     {/if}
                 </div>
-            {/each}
+                <label
+                    class="text-[10px] px-1.5 py-0.5 rounded cursor-pointer transition-colors"
+                    style="color: {t.accentText}; border: 1px solid {t.accentText};"
+                >
+                    上传
+                    <input
+                        type="file"
+                        accept="image/*"
+                        class="hidden"
+                        onchange={(e) => {
+                            const file = (e.target as HTMLInputElement).files?.[0]
+                            if (file) handleStrongIconFileSelected(file)
+                            ;(e.target as HTMLInputElement).value = ''
+                        }}
+                    />
+                </label>
+                {#if strongIconValue}
+                    <button
+                        class="text-[10px] px-1.5 py-0.5 rounded transition-colors"
+                        style="color: {t.dangerText};"
+                        onclick={handleStrongIconReset}>重置</button
+                    >
+                {/if}
             </div>
         </CollapsibleSection>
 
         <!-- 角色头像 -->
         <CollapsibleSection label="角色头像" open={false}>
-            <button
-                class="w-full rounded px-2 py-1 text-xs transition-colors"
-                style="color: {t.accentText}; border: 1px solid {t.accentText};"
-                onclick={() => (showAvatarSelect = true)}
-            >+ 添加角色</button>
             {#each avatarEntries as entry, i}
                 <div class="flex items-center gap-2">
-                    <div class="w-7 h-7 shrink-0 rounded-full overflow-hidden flex items-center justify-center"
-                        style="border: 1px solid {t.border}; background: {t.inputBg};">
+                    <div
+                        class="w-7 h-7 shrink-0 rounded-full overflow-hidden flex items-center justify-center"
+                        style="border: 1px solid {t.border}; background: {t.inputBg};"
+                    >
                         {#if entry.avatarUrl}
-                            <img src={entry.avatarUrl} alt={entry.name} class="h-full w-full object-cover" />
+                            <img
+                                src={entry.avatarUrl}
+                                alt={entry.name}
+                                class="h-full w-full object-cover"
+                            />
                         {:else}
-                            <img src="/images/avatars/{entry.presetId}.png" alt={entry.name} class="h-full w-full object-cover"
-                                onerror={(e) => { (e.target as HTMLElement).style.display = 'none'; }} />
+                            <img
+                                src="/images/avatars/{entry.presetId}.png"
+                                alt={entry.name}
+                                class="h-full w-full object-cover"
+                                onerror={(e) => {
+                                    ;(e.target as HTMLElement).style.display = 'none'
+                                }}
+                            />
                         {/if}
                     </div>
                     <span class="text-xs flex-1" style="color: {t.text};">{entry.name}</span>
@@ -390,34 +869,48 @@
                         style="color: {t.accentText}; border: 1px solid {t.accentText};"
                     >
                         上传
-                        <input type="file" accept="image/*" class="hidden"
+                        <input
+                            type="file"
+                            accept="image/*"
+                            class="hidden"
                             onchange={(e) => {
-                                const file = (e.target as HTMLInputElement).files?.[0];
-                                if (file) handleAvatarFileSelected(i, file);
-                                (e.target as HTMLInputElement).value = '';
+                                const file = (e.target as HTMLInputElement).files?.[0]
+                                if (file) handleAvatarFileSelected(i, file)
+                                ;(e.target as HTMLInputElement).value = ''
                             }}
                         />
                     </label>
                     <button
                         class="text-[10px] px-1.5 py-0.5 rounded transition-colors"
                         style="color: {t.dangerText};"
-                        onclick={() => handleAvatarRemove(i)}
-                    >删除</button>
+                        onclick={() => handleAvatarRemove(i)}>删除</button
+                    >
                 </div>
             {/each}
-            {#if avatarEntries.length === 0}
-                <div class="text-xs py-2 text-center" style="color: {t.mutedText};">尚未添加自定义角色头像</div>
-            {/if}
+
+            <button
+                class="my-3 w-full rounded px-2 py-1 text-xs transition-colors"
+                style="color: {t.accentText}; border: 1px solid {t.accentText};"
+                onclick={() => (showAvatarSelect = true)}
+                >{#if avatarEntries.length === 0}
+                    + 添加第一个自定义头像
+                {:else}+ 继续添加自定义头像
+                {/if}</button
+            >
         </CollapsibleSection>
     </div>
 
     <div class="flex justify-end gap-2 shrink-0">
-        <button class="rounded px-3 py-1.5 text-xs transition-colors"
+        <button
+            class="rounded px-3 py-1.5 text-xs transition-colors"
             style="background: {t.buttonBg}; color: {t.buttonText}; border: 1px solid {t.border};"
-            onclick={oncancel}>取消</button>
-        <button class="rounded px-3 py-1.5 text-xs transition-colors"
+            onclick={oncancel}>取消</button
+        >
+        <button
+            class="rounded px-3 py-1.5 text-xs transition-colors"
             style="background: {t.confirmBtnBg}; color: #ffffff;"
-            onclick={handleSave}>保存</button>
+            onclick={handleSave}>保存</button
+        >
     </div>
 </div>
 
@@ -432,7 +925,7 @@
 {#if showCropDialog && cropImageUrl}
     <CropDialog
         imageUrl={cropImageUrl}
-        outputSize={cropTarget?.type === 'icon' ? 64 : 128}
+        outputSize={cropTarget?.type === 'icon' ? 64 : cropTarget?.type === 'strongIcon' ? 32 : 128}
         oncrop={handleCropResult}
         oncancel={handleCropCancel}
     />

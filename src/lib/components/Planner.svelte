@@ -69,10 +69,7 @@
         const root = document.documentElement
         root.style.setProperty('--color-scrollbar-track', t.scrollbarTrack)
         root.style.setProperty('--color-scrollbar-thumb', t.scrollbarThumb)
-        root.style.setProperty(
-            '--color-scrollbar-thumb-hover',
-            t.scrollbarThumbHover,
-        )
+        root.style.setProperty('--color-scrollbar-thumb-hover', t.scrollbarThumbHover)
         root.style.setProperty('--color-theme-text', t.text)
         root.style.setProperty('--color-theme-text-secondary', t.textSecondary)
         root.style.setProperty('--color-theme-bg', t.background)
@@ -98,18 +95,7 @@
     }
 
     const immediateHoldKeys = new Set(['z'])
-    const keyOrder: KeyType[] = [
-        'LMB',
-        'RMB',
-        'Q',
-        'E',
-        'R',
-        'T',
-        'F',
-        'X',
-        'V',
-        'jump',
-    ]
+    const keyOrder: KeyType[] = ['LMB', 'RMB', 'Q', 'E', 'R', 'T', 'F', 'X', 'V', 'jump']
     const modeOrder: KeyMode[] = [
         'click',
         'hold',
@@ -151,8 +137,7 @@
         if (key === 'w') {
             e.preventDefault()
             const idx = modeOrder.indexOf(selectedMode)
-            selectedMode =
-                modeOrder[(idx + 1 + modeOrder.length) % modeOrder.length]
+            selectedMode = modeOrder[(idx + 1 + modeOrder.length) % modeOrder.length]
             return
         }
 
@@ -160,8 +145,7 @@
             e.preventDefault()
             const idx = keyOrder.indexOf(selectedKey)
             const dir = key === 'arrowup' ? -1 : 1
-            selectedKey =
-                keyOrder[(idx + dir + keyOrder.length) % keyOrder.length]
+            selectedKey = keyOrder[(idx + dir + keyOrder.length) % keyOrder.length]
             return
         }
 
@@ -169,8 +153,7 @@
             e.preventDefault()
             const idx = modeOrder.indexOf(selectedMode)
             const dir = key === 'arrowright' ? 1 : -1
-            selectedMode =
-                modeOrder[(idx + dir + modeOrder.length) % modeOrder.length]
+            selectedMode = modeOrder[(idx + dir + modeOrder.length) % modeOrder.length]
             return
         }
     }
@@ -193,10 +176,7 @@
     style="font-family: {planner.theme.fontFamily};"
     oncontextmenu={(e) => e.preventDefault()}
 >
-    <Sidebar
-        collapsed={sidebarCollapsed}
-        ontoggle={() => (sidebarCollapsed = !sidebarCollapsed)}
-    />
+    <Sidebar collapsed={sidebarCollapsed} ontoggle={() => (sidebarCollapsed = !sidebarCollapsed)} />
 
     <div
         class="flex flex-1 flex-col transition-all duration-200"
@@ -210,15 +190,12 @@
                 class="flex h-7 w-7 shrink-0 items-center justify-center rounded text-sm transition-colors"
                 style="color: {planner.theme.textSecondary};"
                 onmouseenter={(e) => {
-                    ;(e.currentTarget as HTMLElement).style.background =
-                        planner.theme.buttonHover
-                    ;(e.currentTarget as HTMLElement).style.color =
-                        planner.theme.text
+                    ;(e.currentTarget as HTMLElement).style.background = planner.theme.buttonHover
+                    ;(e.currentTarget as HTMLElement).style.color = planner.theme.text
                 }}
                 onmouseleave={(e) => {
                     ;(e.currentTarget as HTMLElement).style.background = ''
-                    ;(e.currentTarget as HTMLElement).style.color =
-                        planner.theme.textSecondary
+                    ;(e.currentTarget as HTMLElement).style.color = planner.theme.textSecondary
                 }}
                 onclick={() => (sidebarCollapsed = !sidebarCollapsed)}
                 >{sidebarCollapsed ? '☰' : '✕'}</button
@@ -230,63 +207,53 @@
                     const v = (e.target as HTMLInputElement).value
                     titleValue = v
                     planner.title = v
-                    if (projects.activeId)
-                        projects.renameProject(projects.activeId, v)
+                    if (projects.activeId) projects.renameProject(projects.activeId, v)
                 }}
                 class="min-w-0 flex-1 rounded px-2 py-1 text-sm font-bold"
-                style="border: 1px solid {planner.theme
-                    .inputBorder}; background: {planner.theme
+                style="border: 1px solid {planner.theme.inputBorder}; background: {planner.theme
                     .inputBg}; color: {planner.theme.text};"
                 placeholder="工程名称"
             />
             <div class="relative shrink-0">
                 <button
-                    class="rounded px-2 py-1 text-[11px] font-medium transition-colors"
-                    style="border: 1px solid {planner.theme
-                        .inputBorder}; color: {planner.theme.textSecondary};"
+                    class="font-black rounded px-2 py-1 text-[11px] transition-colors"
+                    style="border: 1px solid {planner.theme.inputBorder}; color: {planner.theme
+                        .textSecondary};"
                     onmouseenter={(e) => {
                         ;(e.currentTarget as HTMLElement).style.background =
                             planner.theme.buttonHover
-                        ;(e.currentTarget as HTMLElement).style.color =
-                            planner.theme.text
+                        ;(e.currentTarget as HTMLElement).style.color = planner.theme.text
                     }}
                     onmouseleave={(e) => {
                         ;(e.currentTarget as HTMLElement).style.background = ''
-                        ;(e.currentTarget as HTMLElement).style.color =
-                            planner.theme.textSecondary
+                        ;(e.currentTarget as HTMLElement).style.color = planner.theme.textSecondary
                     }}
                     onclick={() => (themeOpen = !themeOpen)}
-                    >{themeStore.getTheme(themeStore.activeThemeId)?.name ??
-                        '主题'}</button
+                    >{themeStore.getTheme(themeStore.activeThemeId)?.name ?? '主题'}</button
                 >
                 {#if themeOpen}
                     <!-- svelte-ignore a11y_no_static_element_interactions -->
                     <!-- svelte-ignore a11y_click_events_have_key_events -->
                     <div
                         class="absolute right-0 top-full mt-1 w-36 rounded-lg py-1 shadow-xl z-50"
-                        style="border: 1px solid {planner.theme
-                            .contextBorder}; background: {planner.theme
-                            .contextBg};"
+                        style="border: 1px solid {planner.theme.contextBorder}; background: {planner
+                            .theme.contextBg};"
                         onclick={() => (themeOpen = false)}
                     >
                         {#each themeStore.getAllThemes() as t}
                             <button
                                 class="flex w-full items-center px-3 py-1.5 text-left text-xs transition-colors"
-                                style="color: {themeStore.activeThemeId === t.id ?
-                                    planner.theme.accentText
-                                :   planner.theme.textSecondary};"
+                                style="color: {themeStore.activeThemeId === t.id
+                                    ? planner.theme.accentText
+                                    : planner.theme.textSecondary};"
                                 onmouseenter={(e) => {
                                     if (themeStore.activeThemeId !== t.id)
-                                        (
-                                            e.target as HTMLElement
-                                        ).style.background =
+                                        (e.target as HTMLElement).style.background =
                                             planner.theme.contextHover
                                 }}
                                 onmouseleave={(e) => {
                                     if (themeStore.activeThemeId !== t.id)
-                                        (
-                                            e.target as HTMLElement
-                                        ).style.background = ''
+                                        (e.target as HTMLElement).style.background = ''
                                 }}
                                 onclick={() => {
                                     planner.setTheme(t.id)
@@ -294,32 +261,40 @@
                                 }}>{t.name}</button
                             >
                         {/each}
-                        <div class="border-t mt-1 pt-1" style="border-color: {planner.theme.border};">
+                        <div
+                            class="border-t mt-1 pt-1"
+                            style="border-color: {planner.theme.border};"
+                        >
                             <button
                                 class="flex w-full items-center px-3 py-1.5 text-left text-xs transition-colors"
                                 style="color: {planner.theme.accentText};"
-                                onmouseenter={(e) => {(e.target as HTMLElement).style.background = planner.theme.contextHover}}
-                                onmouseleave={(e) => {(e.target as HTMLElement).style.background = ''}}
-                                onclick={() => { themeOpen = false; themeManagerOpen = true; }}
-                            >管理主题</button>
+                                onmouseenter={(e) => {
+                                    ;(e.target as HTMLElement).style.background =
+                                        planner.theme.contextHover
+                                }}
+                                onmouseleave={(e) => {
+                                    ;(e.target as HTMLElement).style.background = ''
+                                }}
+                                onclick={() => {
+                                    themeOpen = false
+                                    themeManagerOpen = true
+                                }}>管理主题</button
+                            >
                         </div>
                     </div>
                 {/if}
             </div>
             <button
-                class="shrink-0 rounded px-2.5 py-1 text-[11px] font-medium transition-colors"
-                style="border: 1px solid {planner.theme
-                    .inputBorder}; color: {planner.theme.textSecondary};"
+                class="font-black shrink-0 rounded px-2.5 py-1 text-[11px] transition-colors"
+                style="border: 1px solid {planner.theme.inputBorder}; color: {planner.theme
+                    .textSecondary};"
                 onmouseenter={(e) => {
-                    ;(e.currentTarget as HTMLElement).style.background =
-                        planner.theme.buttonHover
-                    ;(e.currentTarget as HTMLElement).style.color =
-                        planner.theme.text
+                    ;(e.currentTarget as HTMLElement).style.background = planner.theme.buttonHover
+                    ;(e.currentTarget as HTMLElement).style.color = planner.theme.text
                 }}
                 onmouseleave={(e) => {
                     ;(e.currentTarget as HTMLElement).style.background = ''
-                    ;(e.currentTarget as HTMLElement).style.color =
-                        planner.theme.textSecondary
+                    ;(e.currentTarget as HTMLElement).style.color = planner.theme.textSecondary
                 }}
                 onclick={() => (showDescription = true)}>总览</button
             >
@@ -346,14 +321,13 @@
                 </div>
                 <div
                     class="relative flex min-w-0 flex-col rounded-lg px-4 py-3"
-                    style="border: 1px solid {planner.theme
-                        .border}; background: {planner.theme.panelBg};"
+                    style="border: 1px solid {planner.theme.border}; background: {planner.theme
+                        .panelBg};"
                 >
                     <div class="mb-2 flex items-center justify-between">
                         <span
                             class="text-[11px] font-bold"
-                            style="color: {planner.theme.textSecondary};"
-                            >队伍配置</span
+                            style="color: {planner.theme.textSecondary};">队伍配置</span
                         >
                     </div>
                     <div class="flex flex-1 items-center justify-center gap-2">
@@ -361,10 +335,8 @@
                             <div class="flex flex-col items-center gap-1">
                                 <span
                                     class="text-center text-[10px] font-bold leading-tight"
-                                    style="color: {planner.getTrackColor(
-                                        char.id,
-                                        i,
-                                    ).border};">{char.name}</span
+                                    style="color: {planner.getTrackColor(char.id, i).border};"
+                                    >{char.name}</span
                                 >
                                 <CharacterSelect
                                     character={char}
@@ -373,16 +345,12 @@
                                 />
                                 <span
                                     class="text-[11px] font-medium"
-                                    style="color: {planner.theme
-                                        .textSecondary};"
-                                    >{planner.getCharacterBlocks(char.id)
-                                        .length}</span
+                                    style="color: {planner.theme.textSecondary};"
+                                    >{planner.getCharacterBlocks(char.id).length}</span
                                 >
                             </div>
                             {#if i < planner.characters.length - 1}
-                                <div class="text-lg font-bold text-zinc-400">
-                                    →
-                                </div>
+                                <div class="text-lg font-bold text-zinc-400">→</div>
                             {/if}
                         {/each}
                     </div>
@@ -400,32 +368,24 @@
     </div>
 
     {#if showDescription}
-        <!-- svelte-ignore a11y_no_static_element_interactions -->
-        <!-- svelte-ignore a11y_click_events_have_key_events -->
         <div
             class="fixed inset-0 z-50 flex items-center justify-center"
             style="background: {planner.theme.overlayBackdrop};"
-            onclick={(e) => {
-                if (e.target === e.currentTarget) showDescription = false
-            }}
         >
             <div
                 class="flex w-[92vw] max-w-6xl h-[90vh] flex-col rounded-xl shadow-2xl"
-                style="border: 1px solid {planner.theme
-                    .modalBorder}; background: {planner.theme.modalBg};"
+                style="border: 1px solid {planner.theme.modalBorder}; background: {planner.theme
+                    .modalBg};"
             >
                 <div
                     class="flex items-center justify-between px-5 py-3 shrink-0"
                     style="border-bottom: 1px solid {planner.theme.border};"
                 >
                     <div class="flex items-center gap-3">
-                        <span
-                            class="text-sm font-bold"
-                            style="color: {planner.theme.text};">工程总览</span
+                        <span class="text-sm font-bold" style="color: {planner.theme.text};"
+                            >工程总览</span
                         >
-                        <span
-                            class="text-xs"
-                            style="color: {planner.theme.mutedText};"
+                        <span class="text-xs" style="color: {planner.theme.mutedText};"
                             >{planner.title}</span
                         >
                     </div>
@@ -435,27 +395,22 @@
                         onmouseenter={(e) => {
                             ;(e.currentTarget as HTMLElement).style.background =
                                 planner.theme.buttonHover
-                            ;(e.currentTarget as HTMLElement).style.color =
-                                planner.theme.text
+                            ;(e.currentTarget as HTMLElement).style.color = planner.theme.text
                         }}
                         onmouseleave={(e) => {
-                            ;(e.currentTarget as HTMLElement).style.background =
-                                ''
+                            ;(e.currentTarget as HTMLElement).style.background = ''
                             ;(e.currentTarget as HTMLElement).style.color =
                                 planner.theme.textSecondary
                         }}
                         onclick={() => (showDescription = false)}>✕</button
                     >
                 </div>
-                <div
-                    class="flex flex-1 flex-col min-h-0 overflow-y-auto scrollbar-dark-thick"
-                >
+                <div class="flex flex-1 flex-col min-h-0 overflow-y-auto scrollbar-dark-thick">
                     <div class="shrink-0 pt-4 pb-3 px-5">
                         <div class="flex items-center gap-2 mb-3">
                             <span
                                 class="text-xs font-semibold"
-                                style="color: {planner.theme.textSecondary};"
-                                >排轴总览</span
+                                style="color: {planner.theme.textSecondary};">排轴总览</span
                             >
                             <div
                                 class="h-px flex-1"
@@ -472,8 +427,7 @@
                         <div class="flex items-center gap-2 mb-2">
                             <span
                                 class="text-xs font-semibold"
-                                style="color: {planner.theme.textSecondary};"
-                                >文字轴</span
+                                style="color: {planner.theme.textSecondary};">文字轴</span
                             >
                             <div
                                 class="h-px flex-1"
@@ -489,11 +443,7 @@
 
     <AlertDialog />
 
-    <Modal
-        open={themeManagerOpen}
-        title="主题管理"
-        onclose={() => (themeManagerOpen = false)}
-    >
+    <Modal open={themeManagerOpen} title="主题管理" onclose={() => (themeManagerOpen = false)}>
         <ThemeManager onclose={() => (themeManagerOpen = false)} />
     </Modal>
 </div>

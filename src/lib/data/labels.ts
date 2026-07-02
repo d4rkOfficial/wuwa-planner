@@ -7,8 +7,17 @@ export const MODE_LABELS: Record<string, string> = {
 }
 
 export const KEY_LABELS: Record<string, string> = {
-    LMB: '左', RMB: '闪', intro: '变', jump: '跳',
-    Q: 'Q', E: 'E', R: 'R', T: 'T', F: 'F', X: '下', V: '空',
+    LMB: '左',
+    RMB: '闪',
+    intro: '变',
+    jump: '跳',
+    Q: 'Q',
+    E: 'E',
+    R: 'R',
+    T: 'T',
+    F: 'F',
+    X: '下',
+    V: '空',
 }
 
 export const ELEMENT_TYPE_MAP: Record<string, string> = {

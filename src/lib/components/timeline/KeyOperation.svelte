@@ -15,7 +15,6 @@
     } = $props()
 
     let modeColors = $derived(theme.modeColors)
-    let strongBadgeColor = $derived(theme.strongBadgeColor)
 
     function showModeLabel(): boolean {
         if (op.key === 'LMB' && op.mode === 'hold') return false
@@ -27,7 +26,7 @@
     <div class="relative inline-flex">
         {#if op.strong}
             <div class="absolute -left-1.5 -top-3 z-10">
-                <StrongBadge size={12} color={strongBadgeColor} />
+                <StrongBadge size={12} />
             </div>
         {/if}
         <KeyIcon key={op.key} size="sm" color={theme.nodeColors[op.key]} />
@@ -43,34 +42,24 @@
     >
         {#if op.strong}
             <div class="absolute -left-1.5 -top-3 z-10">
-                <StrongBadge size={12} color={strongBadgeColor} />
+                <StrongBadge size={12} />
             </div>
         {/if}
         <span
-            class="text-[10px] font-bold leading-none"
+            class="text-[10px] font-bold leading-none whitespace-nowrap"
             style="color: {modeColors[op.mode]};"
         >
             {MODE_LABELS[op.mode]}
         </span>
-        <KeyIcon
-            key={op.key}
-            size="sm"
-            color={theme.nodeColors[op.key]}
-            mode={op.mode}
-        />
+        <KeyIcon key={op.key} size="sm" color={theme.nodeColors[op.key]} mode={op.mode} />
     </div>
 {:else}
     <div class="relative inline-flex">
         {#if op.strong}
             <div class="absolute -left-1.5 -top-3 z-10">
-                <StrongBadge size={12} color={strongBadgeColor} />
+                <StrongBadge size={12} />
             </div>
         {/if}
-        <KeyIcon
-            key={op.key}
-            size="sm"
-            color={theme.nodeColors[op.key]}
-            mode={op.mode}
-        />
+        <KeyIcon key={op.key} size="sm" color={theme.nodeColors[op.key]} mode={op.mode} />
     </div>
 {/if}

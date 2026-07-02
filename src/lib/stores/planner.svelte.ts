@@ -1,8 +1,4 @@
-import {
-    getDefaultTheme,
-    ELEMENT_GRADIENTS,
-    ELEMENT_BORDER_COLORS,
-} from '../data/themes'
+import { getDefaultTheme, ELEMENT_GRADIENTS, ELEMENT_BORDER_COLORS } from '../data/themes'
 import { getCharacterPresets } from '../data/characters'
 import { themeStore } from './themes.svelte'
 import type {
@@ -78,19 +74,13 @@ function createPlannerStore() {
             return { ...b, keyOps: newOps }
         })
         const block = blocks.find((b) => b.id === blockId)
-        if (
-            block &&
-            block.keyOps.length === 0 &&
-            block.customIcons.length === 0
-        ) {
+        if (block && block.keyOps.length === 0 && block.customIcons.length === 0) {
             removeBlock(blockId)
         }
     }
 
     function updateBlock(blockId: string, partial: Partial<ActionBlock>) {
-        blocks = blocks.map((b) =>
-            b.id === blockId ? { ...b, ...partial } : b,
-        )
+        blocks = blocks.map((b) => (b.id === blockId ? { ...b, ...partial } : b))
     }
 
     function mergeBlocks(srcId: string, targetId: string) {
@@ -98,8 +88,7 @@ function createPlannerStore() {
         const target = blocks.find((b) => b.id === targetId)
         if (!src || !target) return
         blocks = blocks.map((b) => {
-            if (b.id === targetId)
-                return { ...b, keyOps: [...b.keyOps, ...src.keyOps] }
+            if (b.id === targetId) return { ...b, keyOps: [...b.keyOps, ...src.keyOps] }
             return b
         })
         removeBlock(srcId)
@@ -139,9 +128,7 @@ function createPlannerStore() {
     function toggleStayField(blockId: string) {
         const block = blocks.find((b) => b.id === blockId)
         if (!block) return
-        const charBlocks = getCharacterBlocks(block.characterId).toSorted(
-            (a, b) => a.x - b.x,
-        )
+        const charBlocks = getCharacterBlocks(block.characterId).toSorted((a, b) => a.x - b.x)
         const idx = charBlocks.findIndex((b) => b.id === blockId)
         if (idx <= 0) return
         const prevBlock = charBlocks[idx - 1]
@@ -149,9 +136,7 @@ function createPlannerStore() {
             (m) => m.fromBlockId === prevBlock.id && m.toBlockId === blockId,
         )
         if (existing) {
-            stayFieldMarkers = stayFieldMarkers.filter(
-                (m) => m.id !== existing.id,
-            )
+            stayFieldMarkers = stayFieldMarkers.filter((m) => m.id !== existing.id)
         } else {
             addStayFieldMarker(block.characterId, prevBlock.id, blockId)
         }
@@ -173,12 +158,7 @@ function createPlannerStore() {
         })
     }
 
-    function moveKeyOpToNewBlock(
-        srcBlockId: string,
-        opIndex: number,
-        charId: string,
-        x: number,
-    ) {
+    function moveKeyOpToNewBlock(srcBlockId: string, opIndex: number, charId: string, x: number) {
         const srcBlock = blocks.find((b) => b.id === srcBlockId)
         if (!srcBlock || opIndex >= srcBlock.keyOps.length) return null
         const keyOp = srcBlock.keyOps[opIndex]
@@ -190,9 +170,7 @@ function createPlannerStore() {
     }
 
     function updateCharacter(charId: string, partial: Partial<Character>) {
-        characters = characters.map((c) =>
-            c.id === charId ? { ...c, ...partial } : c,
-        )
+        characters = characters.map((c) => (c.id === charId ? { ...c, ...partial } : c))
     }
 
     function swapCharacterPresets(srcId: string, targetId: string) {
@@ -200,10 +178,8 @@ function createPlannerStore() {
         const target = characters.find((c) => c.id === targetId)
         if (!src || !target) return
         characters = characters.map((c) => {
-            if (c.id === srcId)
-                return { ...c, presetId: target.presetId, name: target.name }
-            if (c.id === targetId)
-                return { ...c, presetId: src.presetId, name: src.name }
+            if (c.id === srcId) return { ...c, presetId: target.presetId, name: target.name }
+            if (c.id === targetId) return { ...c, presetId: src.presetId, name: src.name }
             return c
         })
     }
@@ -223,7 +199,12 @@ function createPlannerStore() {
         description = data.metadata.description
         if ('theme' in data && data.theme) {
             const baseTheme = themeStore.getTheme(data.theme.baseTheme) ?? getDefaultTheme()
-            const merged = { ...baseTheme, ...data.theme.overrides, id: data.theme.id, name: data.theme.name }
+            const merged = {
+                ...baseTheme,
+                ...data.theme.overrides,
+                id: data.theme.id,
+                name: data.theme.name,
+            }
             themeStore.addCustomTheme(merged as Theme)
             themeStore.setActiveTheme(data.theme.id)
         }
@@ -248,9 +229,18 @@ function createPlannerStore() {
         if (theme.isBuiltin) return base
         const overrides: Record<string, unknown> = {}
         const skipKeys = new Set([
-            'id', 'name', 'key', 'isBuiltin', 'baseTheme', 'fontFamily',
-            'nodeColors', 'modeColors', 'keyIconPath', 'keyIcons',
-            'strongBadgeIcon', 'avatarOverrides',
+            'id',
+            'name',
+            'key',
+            'isBuiltin',
+            'baseTheme',
+            'fontFamily',
+            'nodeColors',
+            'modeColors',
+            'keyIconPath',
+            'keyIcons',
+            'strongBadgeIcon',
+            'avatarOverrides',
         ])
         for (const [k, v] of Object.entries(theme)) {
             if (k === 'id' || k === 'name' || k === 'isBuiltin') continue

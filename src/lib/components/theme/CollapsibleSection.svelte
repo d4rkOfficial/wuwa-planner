@@ -27,7 +27,9 @@
     <div
         bind:this={headerEl}
         class="flex items-center gap-1 cursor-pointer select-none rounded px-1.5 transition-colors"
-        style="color: {t.textSecondary}; line-height: 1; padding-top: 5px; padding-bottom: 5px; background: {hovered ? t.contextHover : 'transparent'};"
+        style="color: {t.textSecondary}; line-height: 1; padding-top: 5px; padding-bottom: 5px; background: {hovered
+            ? t.contextHover
+            : 'transparent'};"
         onclick={() => (open = !open)}
         role="button"
         tabindex="0"
@@ -38,8 +40,8 @@
     >
         <span
             class="text-[9px] transition-transform shrink-0 leading-none"
-            style="transform: rotate({open ? 90 : 0}deg);"
-        >▶</span>
+            style="transform: rotate({open ? 90 : 0}deg);">▶</span
+        >
         <span class="text-xs font-semibold leading-tight" style="color: {t.text};">{label}</span>
     </div>
     {#if open}

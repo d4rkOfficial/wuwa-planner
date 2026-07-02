@@ -23,9 +23,7 @@
     }
 
     let isHold = $derived(mode === 'hold')
-    let isPreinput = $derived(
-        mode === 'preinput_swap' || mode === 'preinput_action',
-    )
+    let isPreinput = $derived(mode === 'preinput_swap' || mode === 'preinput_action')
 
     let imgName = $derived.by(() => {
         if (key === 'LMB' && (isHold || isPreinput)) return 'lmb_hold'

@@ -32,12 +32,8 @@
     const SNAP_THRESHOLD = 12
     const MIN_BLOCK_X = 4
 
-    let blocks = $derived(
-        planner.getCharacterBlocks(character.id).toSorted((a, b) => a.x - b.x),
-    )
-    let color = $derived(
-        planner.getTrackColor(character.id, trackIndex).gradient,
-    )
+    let blocks = $derived(planner.getCharacterBlocks(character.id).toSorted((a, b) => a.x - b.x))
+    let color = $derived(planner.getTrackColor(character.id, trackIndex).gradient)
 
     let trackEl = $state<HTMLDivElement | null>(null)
     let isDragOver = $state(false)
@@ -62,10 +58,7 @@
         isDragOver = false
     }
 
-    function findSnapTarget(
-        excludeBlockId: string,
-        newX: number,
-    ): string | null {
+    function findSnapTarget(excludeBlockId: string, newX: number): string | null {
         const otherBlocks = blocks.filter((b) => b.id !== excludeBlockId)
         for (const other of otherBlocks) {
             if (Math.abs(other.x - newX) <= SNAP_THRESHOLD) return other.id
@@ -78,9 +71,7 @@
         isDragOver = false
         const offset = getTrackOffset()
 
-        const contextData = e.dataTransfer?.getData(
-            'application/wuwa-keyop-context',
-        )
+        const contextData = e.dataTransfer?.getData('application/wuwa-keyop-context')
         if (contextData) {
             const { fromBlockId, keyOpIndex, keyOp } = JSON.parse(contextData)
             const srcBlock = planner.blocks.find((b) => b.id === fromBlockId)
@@ -90,10 +81,7 @@
             const isLeft = dropX < srcBlock.x
             const srcX = srcBlock.x
 
-            const newBlock = planner.addBlock(
-                character.id,
-                isLeft ? srcX : dropX,
-            )
+            const newBlock = planner.addBlock(character.id, isLeft ? srcX : dropX)
 
             let adjustedIdx = keyOpIndex
             if (srcBlock.isIntro) {
@@ -101,9 +89,7 @@
                     isIntro: true,
                     keyOps: [{ key: 'intro', mode: 'click' }, keyOp],
                 })
-                const introIdx = srcBlock.keyOps.findIndex(
-                    (o) => o.key === 'intro',
-                )
+                const introIdx = srcBlock.keyOps.findIndex((o) => o.key === 'intro')
                 if (introIdx >= 0) {
                     planner.removeKeyOp(srcBlock.id, introIdx)
                     if (introIdx < keyOpIndex) adjustedIdx--
@@ -116,20 +102,9 @@
 
             if (isLeft && planner.blocks.some((b) => b.id === srcBlock.id)) {
                 planner.updateBlock(srcBlock.id, { x: srcX + SHIFT })
-                planner.addStayFieldMarker(
-                    character.id,
-                    newBlock.id,
-                    srcBlock.id,
-                )
-            } else if (
-                !isLeft &&
-                planner.blocks.some((b) => b.id === srcBlock.id)
-            ) {
-                planner.addStayFieldMarker(
-                    character.id,
-                    srcBlock.id,
-                    newBlock.id,
-                )
+                planner.addStayFieldMarker(character.id, newBlock.id, srcBlock.id)
+            } else if (!isLeft && planner.blocks.some((b) => b.id === srcBlock.id)) {
+                planner.addStayFieldMarker(character.id, srcBlock.id, newBlock.id)
             }
 
             oncloseContext?.()
@@ -150,15 +125,9 @@
                 planner.addKeyOp(newBlock.id, keyOp)
                 planner.removeKeyOp(fromBlockId, keyOpIndex)
                 if (
-                    character.id ===
-                    planner.blocks.find((b) => b.id === fromBlockId)
-                        ?.characterId
+                    character.id === planner.blocks.find((b) => b.id === fromBlockId)?.characterId
                 ) {
-                    planner.addStayFieldMarker(
-                        character.id,
-                        fromBlockId,
-                        newBlock.id,
-                    )
+                    planner.addStayFieldMarker(character.id, fromBlockId, newBlock.id)
                 }
             }
             return
@@ -209,10 +178,7 @@
     function handleTrackPointerMove(e: PointerEvent) {
         if (!dragState || !trackEl) return
         const trackRect = trackEl.getBoundingClientRect()
-        const x = Math.max(
-            MIN_BLOCK_X,
-            e.clientX - trackRect.left - dragState.offsetX,
-        )
+        const x = Math.max(MIN_BLOCK_X, e.clientX - trackRect.left - dragState.offsetX)
 
         const snapId = findSnapTarget(dragState.blockId, x)
         if (snapId) {
@@ -265,10 +231,8 @@
 <div
     bind:this={trackEl}
     data-track={character.id}
-    class={'relative rounded-lg p-2 pl-1 transition-colors ' +
-        (isDragOver ? 'bg-white/5' : '')}
-    style="background: {planner.theme
-        .trackBg}; border-left: 3px solid {color}; min-height: 48px;"
+    class={'relative rounded-lg p-2 pl-1 transition-colors ' + (isDragOver ? 'bg-white/5' : '')}
+    style="background: {planner.theme.trackBg}; border-left: 3px solid {color}; min-height: 48px;"
     ondragover={handleDragOver}
     ondragleave={handleDragLeave}
     ondrop={handleDrop}

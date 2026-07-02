@@ -20,10 +20,7 @@ export interface TimelineItem {
     hasStayField: boolean
 }
 
-function resolveCharAliases(
-    characters: Character[],
-    presets: CharacterPreset[],
-): string[] {
+function resolveCharAliases(characters: Character[], presets: CharacterPreset[]): string[] {
     const aliasLists: string[][] = []
     const names: string[] = []
     for (let i = 0; i < characters.length; i++) {
@@ -60,7 +57,7 @@ function resolveCharAliases(
     }
 
     for (let i = 0; i < aliasLists.length; i++) {
-        const filtered = aliasLists[i].filter(a => aliasCount.get(a) === 1)
+        const filtered = aliasLists[i].filter((a) => aliasCount.get(a) === 1)
         aliasLists[i] = filtered.length > 0 ? filtered : [names[i]]
     }
 
@@ -122,9 +119,7 @@ function hasStayField(
     const idx = charBlocks.findIndex((b) => b.id === block.id)
     if (idx <= 0) return false
     const prevBlock = charBlocks[idx - 1]
-    return markers.some(
-        (m) => m.fromBlockId === prevBlock.id && m.toBlockId === block.id,
-    )
+    return markers.some((m) => m.fromBlockId === prevBlock.id && m.toBlockId === block.id)
 }
 
 export function getMergedTimeline(
@@ -137,9 +132,7 @@ export function getMergedTimeline(
 
     const all = blocks
         .map((block) => {
-            const charIdx = characters.findIndex(
-                (c) => c.id === block.characterId,
-            )
+            const charIdx = characters.findIndex((c) => c.id === block.characterId)
             return {
                 block,
                 alias: resolvedAliases[charIdx] ?? `角色${charIdx + 1}`,
@@ -152,8 +145,7 @@ export function getMergedTimeline(
     for (let i = 0; i < all.length; i++) {
         const { block, alias, charIndex } = all[i]
         const prevBlock = i > 0 ? all[i - 1].block : null
-        const isSwitch =
-            prevBlock !== null && prevBlock.characterId !== block.characterId
+        const isSwitch = prevBlock !== null && prevBlock.characterId !== block.characterId
         const stay = hasStayField(block, blocks, markers)
         result.push({
             block,
@@ -198,11 +190,7 @@ function hasStrongIntro(ops: KeyOperation[]): boolean {
 }
 
 function opsText(ops: KeyOperation[], strongIntro = false): string {
-    const s = visibleOps(ops)
-        .map(keyOpText)
-        .join('-')
-        .replace(/\)-/g, ') ')
-        .replace(/-\(/g, ' (')
+    const s = visibleOps(ops).map(keyOpText).join('-').replace(/\)-/g, ') ').replace(/-\(/g, ' (')
     const prefix = strongIntro ? '强变' : ''
     if (!s && !prefix) return ''
     return ' ' + prefix + s

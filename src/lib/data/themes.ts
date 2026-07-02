@@ -1,7 +1,6 @@
 import type { Theme } from '../types'
 
-const BASE_FONT =
-    "'SimHei', 'Hei', 'Noto Sans SC', 'Microsoft YaHei', sans-serif"
+const BASE_FONT = "'SimHei', 'Hei', 'Noto Sans SC', 'Microsoft YaHei', sans-serif"
 
 const KEY_ICONS_DARK: Record<string, string> = {
     lmb: '/images/keys/lmb.svg',
@@ -85,7 +84,6 @@ export const PRESET_THEMES: Theme[] = [
         dangerHover: '#3f3f46',
         accentText: '#22d3ee',
         accentHover: '#3f3f46',
-        strongBadgeColor: '#ef4444',
         tagBg: 'rgba(255,255,255,0.1)',
         tagText: '#ffffff',
         stayField: '#22d3ee',
@@ -182,7 +180,6 @@ export const PRESET_THEMES: Theme[] = [
         dangerHover: '#f3f4f6',
         accentText: '#0e7490',
         accentHover: '#f3f4f6',
-        strongBadgeColor: '#000000',
         tagBg: 'rgba(0,0,0,0.08)',
         tagText: '#000000',
         stayField: '#0e7490',

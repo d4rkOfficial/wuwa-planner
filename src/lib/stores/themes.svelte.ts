@@ -54,7 +54,9 @@ function createThemesStore() {
         saveActiveThemeId()
     }
 
-    function addCustomTheme(theme: Omit<Theme, 'id' | 'isBuiltin'> & Partial<Pick<Theme, 'id' | 'isBuiltin'>>): Theme {
+    function addCustomTheme(
+        theme: Omit<Theme, 'id' | 'isBuiltin'> & Partial<Pick<Theme, 'id' | 'isBuiltin'>>,
+    ): Theme {
         const newTheme: Theme = {
             ...theme,
             id: theme.id || generateId(),
@@ -66,9 +68,7 @@ function createThemesStore() {
     }
 
     function updateCustomTheme(id: string, partial: Partial<Theme>) {
-        customThemes = customThemes.map((t) =>
-            t.id === id ? { ...t, ...partial } : t,
-        )
+        customThemes = customThemes.map((t) => (t.id === id ? { ...t, ...partial } : t))
         saveCustomThemes()
     }
 

@@ -1,22 +1,6 @@
-export type KeyType =
-    | 'LMB'
-    | 'RMB'
-    | 'Q'
-    | 'E'
-    | 'R'
-    | 'T'
-    | 'F'
-    | 'X'
-    | 'V'
-    | 'intro'
-    | 'jump'
+export type KeyType = 'LMB' | 'RMB' | 'Q' | 'E' | 'R' | 'T' | 'F' | 'X' | 'V' | 'intro' | 'jump'
 
-export type KeyMode =
-    | 'click'
-    | 'hold'
-    | 'preinput_swap'
-    | 'preinput_action'
-    | 'rapid_click'
+export type KeyMode = 'click' | 'hold' | 'preinput_swap' | 'preinput_action' | 'rapid_click'
 
 export interface KeyOperation {
     key: KeyType

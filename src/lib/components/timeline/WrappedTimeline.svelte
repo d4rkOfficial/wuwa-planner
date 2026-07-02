@@ -43,17 +43,9 @@
         for (const b of all) {
             // rough width estimate for overflow detection
             const comboOps = b.keyOps.filter(
-                (o) =>
-                    o.comboStart &&
-                    o.comboEnd &&
-                    o.comboStart > 0 &&
-                    o.comboEnd > 0,
+                (o) => o.comboStart && o.comboEnd && o.comboStart > 0 && o.comboEnd > 0,
             ).length
-            const estW =
-                b.keyOps.length * 49 +
-                b.customIcons.length * 80 +
-                comboOps * 36 +
-                24
+            const estW = b.keyOps.length * 49 + b.customIcons.length * 80 + comboOps * 36 + 24
             if (b.x - curX + estW > segW && cur.length > 0) {
                 segs.push({ startX: curX, blocks: cur })
                 curX = b.x
@@ -82,9 +74,7 @@
         void planner.theme
         void containerWidth
         requestAnimationFrame(() =>
-            requestAnimationFrame(() =>
-                requestAnimationFrame(() => drawArrows()),
-            ),
+            requestAnimationFrame(() => requestAnimationFrame(() => drawArrows())),
         )
     })
 
@@ -152,15 +142,9 @@
                             const srR = sRow.getBoundingClientRect()
                             const drR = dRow.getBoundingClientRect()
 
-                            const ax = toCanvasX(
-                                dEl.getBoundingClientRect().left,
-                            )
-                            const ay1 = toCanvasY(
-                                srcIdx > dstIdx ? srR.top : srR.bottom,
-                            )
-                            const ay2 = toCanvasY(
-                                srcIdx > dstIdx ? drR.bottom : drR.top,
-                            )
+                            const ax = toCanvasX(dEl.getBoundingClientRect().left)
+                            const ay1 = toCanvasY(srcIdx > dstIdx ? srR.top : srR.bottom)
+                            const ay2 = toCanvasY(srcIdx > dstIdx ? drR.bottom : drR.top)
                             if (ax <= 0 || ay1 <= 0 || ay2 <= 0) continue
 
                             drawArrow(
@@ -169,8 +153,7 @@
                                 ay1,
                                 ax,
                                 ay2,
-                                planner.getTrackColor(chars[srcIdx].id, srcIdx)
-                                    .border,
+                                planner.getTrackColor(chars[srcIdx].id, srcIdx).border,
                             )
                             used.add(sb.id)
                             break
@@ -181,12 +164,8 @@
 
             // ── Same-segment stay-fields ──
             for (const m of planner.stayFieldMarkers) {
-                const fEl = segEl.querySelector(
-                    `[data-block-id="${m.fromBlockId}"]`,
-                ) as HTMLElement
-                const tEl = segEl.querySelector(
-                    `[data-block-id="${m.toBlockId}"]`,
-                ) as HTMLElement
+                const fEl = segEl.querySelector(`[data-block-id="${m.fromBlockId}"]`) as HTMLElement
+                const tEl = segEl.querySelector(`[data-block-id="${m.toBlockId}"]`) as HTMLElement
                 if (!fEl || !tEl) continue
                 const fR = fEl.getBoundingClientRect(),
                     tR = tEl.getBoundingClientRect()
@@ -206,21 +185,15 @@
             let fromSi = -1,
                 toSi = -1
             for (let si = 0; si < segments.length; si++) {
-                if (segments[si].blocks.some((b) => b.id === m.fromBlockId))
-                    fromSi = si
-                if (segments[si].blocks.some((b) => b.id === m.toBlockId))
-                    toSi = si
+                if (segments[si].blocks.some((b) => b.id === m.fromBlockId)) fromSi = si
+                if (segments[si].blocks.some((b) => b.id === m.toBlockId)) toSi = si
             }
             if (fromSi < 0 || toSi < 0 || fromSi === toSi) continue
 
             const fSegEl = segEls[fromSi] as HTMLElement
             const tSegEl = segEls[toSi] as HTMLElement
-            const fEl = fSegEl.querySelector(
-                `[data-block-id="${m.fromBlockId}"]`,
-            ) as HTMLElement
-            const tEl = tSegEl.querySelector(
-                `[data-block-id="${m.toBlockId}"]`,
-            ) as HTMLElement
+            const fEl = fSegEl.querySelector(`[data-block-id="${m.fromBlockId}"]`) as HTMLElement
+            const tEl = tSegEl.querySelector(`[data-block-id="${m.toBlockId}"]`) as HTMLElement
             if (!fEl || !tEl) continue
 
             const fR = fEl.getBoundingClientRect()
@@ -258,9 +231,7 @@
             if (!seg) continue
 
             for (const b of seg.blocks) {
-                const bEl = segEl.querySelector(
-                    `[data-block-id="${b.id}"]`,
-                ) as HTMLElement
+                const bEl = segEl.querySelector(`[data-block-id="${b.id}"]`) as HTMLElement
                 if (!bEl) continue
                 const bR = bEl.getBoundingClientRect()
                 if (bR.right <= areaR.right + 2) continue // no overflow
@@ -291,12 +262,8 @@
 
                 const sEl = segEls[s] as HTMLElement
                 const nEl = segEls[s + 1] as HTMLElement
-                const lE = sEl.querySelector(
-                    `[data-block-id="${lb.id}"]`,
-                ) as HTMLElement
-                const aE = nEl.querySelector(
-                    `[data-avatar-idx="${tci}"]`,
-                ) as HTMLElement
+                const lE = sEl.querySelector(`[data-block-id="${lb.id}"]`) as HTMLElement
+                const aE = nEl.querySelector(`[data-avatar-idx="${tci}"]`) as HTMLElement
                 if (!lE || !aE) continue
 
                 const lR = lE.getBoundingClientRect(),
@@ -322,13 +289,7 @@
                 cx.lineTo(xR + CORNER, yGap)
                 cx.arcTo(xR + CORNER, yGap + CORNER, xR, yGap + CORNER, CORNER)
                 cx.lineTo(xT, yGap + CORNER)
-                cx.arcTo(
-                    xT - CORNER,
-                    yGap + CORNER,
-                    xT - CORNER,
-                    yGap + CORNER * 2,
-                    CORNER,
-                )
+                cx.arcTo(xT - CORNER, yGap + CORNER, xT - CORNER, yGap + CORNER * 2, CORNER)
                 cx.lineTo(xT - CORNER, y2 - CORNER)
                 cx.arcTo(xT, y2, x2, y2, CORNER)
                 cx.strokeStyle = ac
@@ -343,14 +304,8 @@
                 cx.globalAlpha = 0.5
                 cx.beginPath()
                 cx.moveTo(x2, y2)
-                cx.lineTo(
-                    x2 - 7 * Math.cos(Math.PI / 6),
-                    y2 - 7 * Math.sin(Math.PI / 6),
-                )
-                cx.lineTo(
-                    x2 - 7 * Math.cos(-Math.PI / 6),
-                    y2 - 7 * Math.sin(-Math.PI / 6),
-                )
+                cx.lineTo(x2 - 7 * Math.cos(Math.PI / 6), y2 - 7 * Math.sin(Math.PI / 6))
+                cx.lineTo(x2 - 7 * Math.cos(-Math.PI / 6), y2 - 7 * Math.sin(-Math.PI / 6))
                 cx.closePath()
                 cx.fill()
                 cx.globalAlpha = 1
@@ -419,14 +374,8 @@
         cx.globalAlpha = 0.7
         cx.beginPath()
         cx.moveTo(x2, y2)
-        cx.lineTo(
-            x2 - 7 * Math.cos(a - Math.PI / 6),
-            y2 - 7 * Math.sin(a - Math.PI / 6),
-        )
-        cx.lineTo(
-            x2 - 7 * Math.cos(a + Math.PI / 6),
-            y2 - 7 * Math.sin(a + Math.PI / 6),
-        )
+        cx.lineTo(x2 - 7 * Math.cos(a - Math.PI / 6), y2 - 7 * Math.sin(a - Math.PI / 6))
+        cx.lineTo(x2 - 7 * Math.cos(a + Math.PI / 6), y2 - 7 * Math.sin(a + Math.PI / 6))
         cx.closePath()
         cx.fill()
         cx.globalAlpha = 1
@@ -445,9 +394,15 @@
         contextMenu = null
         if (!container) return
         try {
+            await document.fonts.ready
+            const w = container.offsetWidth
+            const h = container.offsetHeight
             const dataUrl = await toPng(container, {
                 backgroundColor: planner.theme.exportBg,
                 pixelRatio: 2,
+                cacheBust: true,
+                width: w,
+                height: h,
             })
             const a = document.createElement('a')
             a.download = `${planner.title || 'rotation'}.png`
@@ -457,7 +412,7 @@
             /* ignore */
         }
     }
-    
+
     onMount(() => {
         document.addEventListener('click', handleDocClick)
         return () => document.removeEventListener('click', handleDocClick)
@@ -465,15 +420,8 @@
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<div
-    bind:this={container}
-    class="relative w-full px-5"
-    oncontextmenu={handleContextMenu}
->
-    <div
-        bind:this={timelineRef}
-        style="position: relative; background: {planner.theme.exportBg};"
-    >
+<div bind:this={container} class="relative w-full px-5" oncontextmenu={handleContextMenu}>
+    <div bind:this={timelineRef} style="position: relative; background: {planner.theme.exportBg};">
         {#if segments.length === 0}
             <div
                 class="flex h-20 items-center justify-center text-sm"
@@ -488,8 +436,7 @@
                         <!-- 隐藏 段n 行 -->
                         <div
                             class="h-px flex-1"
-                            style="background: {planner.theme
-                                .divider}; opacity: 0.5;"
+                            style="background: {planner.theme.divider}; opacity: 0.5;"
                             hidden
                         ></div>
                         <span
@@ -499,8 +446,7 @@
                         >
                         <div
                             class="h-px flex-1"
-                            style="background: {planner.theme
-                                .divider}; opacity: 0.5;"
+                            style="background: {planner.theme.divider}; opacity: 0.5;"
                             hidden
                         ></div>
                     </div>
@@ -516,7 +462,7 @@
                                     class="relative mx-auto h-8 w-8 shrink-0 overflow-hidden rounded-full"
                                     style="border: 1.5px solid {tc.border}; margin-top: {(ROW_H -
                                         32) /
-                                        2}px;"
+                                        2}px; margin-bottom: {(ROW_H - 32) / 2}px;"
                                     title={char.name}
                                 >
                                     <Avatar presetId={char.presetId} name={char.name} size="md" />
@@ -541,8 +487,8 @@
                                     {#if cbl.length === 0}
                                         <div
                                             class="flex items-center text-[10px]"
-                                            style="height: {ROW_H}px; color: {planner
-                                                .theme.mutedText};"
+                                            style="height: {ROW_H}px; color: {planner.theme
+                                                .mutedText};"
                                         >
                                             &nbsp;
                                         </div>
@@ -582,15 +528,14 @@
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
         class="fixed z-50 w-36 rounded-lg py-1 shadow-xl"
-        style="left: {contextMenu.x}px; top: {contextMenu.y}px; border: 1px solid {planner
-            .theme.contextBorder}; background: {planner.theme.contextBg};"
+        style="left: {contextMenu.x}px; top: {contextMenu.y}px; border: 1px solid {planner.theme
+            .contextBorder}; background: {planner.theme.contextBg};"
     >
         <button
             class="flex w-full items-center px-4 py-2 text-left text-xs transition-colors"
             style="color: {planner.theme.text};"
             onmouseenter={(e) => {
-                ;(e.currentTarget as HTMLElement).style.background =
-                    planner.theme.contextHover
+                ;(e.currentTarget as HTMLElement).style.background = planner.theme.contextHover
             }}
             onmouseleave={(e) => {
                 ;(e.currentTarget as HTMLElement).style.background = ''

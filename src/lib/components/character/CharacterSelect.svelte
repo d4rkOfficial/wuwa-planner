@@ -1,10 +1,7 @@
 <script lang="ts">
     import { onMount } from 'svelte'
     import type { Character, ElementType, CharacterPreset } from '$lib/types'
-    import {
-        loadCharacterPresets,
-        getCharacterPresets,
-    } from '$lib/data/characters'
+    import { loadCharacterPresets, getCharacterPresets } from '$lib/data/characters'
     import { ELEMENT_TYPE_MAP } from '$lib/data/labels'
     import { planner } from '$lib/stores/planner.svelte'
     import StarRating from './StarRating.svelte'
@@ -39,14 +36,7 @@
 
     let listEl = $state<HTMLDivElement | null>(null)
 
-    const elementOrder: ElementType[] = [
-        'glacio',
-        'fusion',
-        'electro',
-        'aero',
-        'spectro',
-        'havoc',
-    ]
+    const elementOrder: ElementType[] = ['glacio', 'fusion', 'electro', 'aero', 'spectro', 'havoc']
 
     onMount(() => {
         loadCharacterPresets().then((p) => (presets = p))
@@ -72,27 +62,22 @@
         return groups
     })
 
-    let charIdx = $derived(
-        planner.characters.findIndex((c) => c.id === character.id),
-    )
+    let charIdx = $derived(planner.characters.findIndex((c) => c.id === character.id))
     let trackColor = $derived(planner.getTrackColor(character.id, charIdx))
 
     let currentPreset = $derived(
-        character.presetId ?
-            presets.find((p) => p.id === character.presetId)
-        :   undefined,
+        character.presetId ? presets.find((p) => p.id === character.presetId) : undefined,
     )
     let avatarPath = $derived(
-        currentPreset ?
-            (planner.theme.avatarOverrides?.[currentPreset.id] ?? `/images/avatars/${currentPreset.id}.png`)
-        :   null,
+        currentPreset
+            ? (planner.theme.avatarOverrides?.[currentPreset.id] ??
+                  `/images/avatars/${currentPreset.id}.png`)
+            : null,
     )
     let avatarFailed = $state(false)
 
     function findCharWithPreset(presetId: string): Character | undefined {
-        return planner.characters.find(
-            (c) => c.id !== character.id && c.presetId === presetId,
-        )
+        return planner.characters.find((c) => c.id !== character.id && c.presetId === presetId)
     }
 
     function selectPreset(presetId: string) {
@@ -135,11 +120,8 @@
 
     function scrollToElement(el: ElementType) {
         if (!listEl) return
-        const header = listEl.querySelector(
-            `[data-element="${el}"]`,
-        ) as HTMLElement | null
-        if (header)
-            header.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        const header = listEl.querySelector(`[data-element="${el}"]`) as HTMLElement | null
+        if (header) header.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
 </script>
 
@@ -158,9 +140,7 @@
         />
     {/if}
     {#if !avatarPath || avatarFailed}
-        <div
-            class="flex h-full w-full items-center justify-center text-xl font-bold text-white"
-        >
+        <div class="flex h-full w-full items-center justify-center text-xl font-bold text-white">
             {character.name.charAt(0)}
         </div>
     {/if}
@@ -171,23 +151,19 @@
     <div
         class="fixed inset-0 z-50 flex items-center justify-center"
         style="background: {planner.theme.overlayBackdrop};"
-        onkeydown={(e) =>
-            e.key === 'Escape' && (isOpen = false) && (swapPending = null)}
+        onkeydown={(e) => e.key === 'Escape' && (isOpen = false) && (swapPending = null)}
     >
         <div
             class="relative flex w-96 rounded-xl shadow-2xl"
-            style="border: 1px solid {planner.theme
-                .modalBorder}; background: {planner.theme.modalBg};"
+            style="border: 1px solid {planner.theme.modalBorder}; background: {planner.theme
+                .modalBg};"
         >
             <div class="flex min-w-0 flex-1 flex-col">
                 <div
                     class="flex items-center justify-between p-4"
                     style="border-bottom: 1px solid {planner.theme.border};"
                 >
-                    <h3
-                        class="text-base font-bold"
-                        style="color: {planner.theme.text};"
-                    >
+                    <h3 class="text-base font-bold" style="color: {planner.theme.text};">
                         选择角色
                     </h3>
                     <button
@@ -196,12 +172,10 @@
                         onmouseenter={(e) => {
                             ;(e.currentTarget as HTMLElement).style.background =
                                 planner.theme.buttonHover
-                            ;(e.currentTarget as HTMLElement).style.color =
-                                planner.theme.text
+                            ;(e.currentTarget as HTMLElement).style.color = planner.theme.text
                         }}
                         onmouseleave={(e) => {
-                            ;(e.currentTarget as HTMLElement).style.background =
-                                ''
+                            ;(e.currentTarget as HTMLElement).style.background = ''
                             ;(e.currentTarget as HTMLElement).style.color =
                                 planner.theme.textSecondary
                         }}
@@ -233,9 +207,8 @@
                         placeholder="搜索角色（拼音/汉字/英文名）..."
                         bind:value={search}
                         class="w-full rounded-lg py-2 pl-8 pr-3 text-sm"
-                        style="border: 1px solid {planner.theme
-                            .inputBorder}; background: {planner.theme
-                            .inputBg}; color: {planner.theme.text};"
+                        style="border: 1px solid {planner.theme.inputBorder}; background: {planner
+                            .theme.inputBg}; color: {planner.theme.text};"
                     />
                 </div>
 
@@ -255,21 +228,18 @@
                                 {@const sel = character.presetId === preset.id}
                                 <button
                                     class="flex w-full items-center gap-3 rounded-lg px-3 py-2 transition-colors"
-                                    style="background: {sel ?
-                                        planner.theme.contextHover
-                                    :   'transparent'};"
+                                    style="background: {sel
+                                        ? planner.theme.contextHover
+                                        : 'transparent'};"
                                     onmouseenter={(e) => {
                                         if (!sel)
-                                            (
-                                                e.currentTarget as HTMLElement
-                                            ).style.background =
+                                            (e.currentTarget as HTMLElement).style.background =
                                                 planner.theme.contextHover
                                     }}
                                     onmouseleave={(e) => {
                                         if (!sel)
-                                            (
-                                                e.currentTarget as HTMLElement
-                                            ).style.background = 'transparent'
+                                            (e.currentTarget as HTMLElement).style.background =
+                                                'transparent'
                                     }}
                                     onclick={() => selectPreset(preset.id)}
                                 >
@@ -277,18 +247,16 @@
                                         class="relative h-10 w-10 shrink-0 overflow-hidden rounded-full"
                                     >
                                         <img
-                                            src={planner.theme.avatarOverrides?.[preset.id] ?? `/images/avatars/${preset.id}.png`}
+                                            src={planner.theme.avatarOverrides?.[preset.id] ??
+                                                `/images/avatars/${preset.id}.png`}
                                             alt={preset.name}
                                             class="absolute inset-0 z-10 h-full w-full object-cover"
                                             onerror={(e) =>
-                                                ((
-                                                    e.target as HTMLElement
-                                                ).style.display = 'none')}
+                                                ((e.target as HTMLElement).style.display = 'none')}
                                         />
                                         <div
                                             class="flex h-full w-full items-center justify-center text-sm font-bold"
-                                            style="color: {planner.theme
-                                                .avatarText};"
+                                            style="color: {planner.theme.avatarText};"
                                         >
                                             {preset.name.charAt(0)}
                                         </div>
@@ -297,15 +265,14 @@
                                         <div class="flex items-center gap-2">
                                             <span
                                                 class="text-sm font-bold"
-                                                style="color: {planner.theme
-                                                    .text};">{preset.name}</span
+                                                style="color: {planner.theme.text};"
+                                                >{preset.name}</span
                                             >
                                             <StarRating {preset} size={11} />
                                         </div>
                                         <span
                                             class="text-xs font-medium flex"
-                                            style="color: {planner.theme
-                                                .textSecondary};"
+                                            style="color: {planner.theme.textSecondary};"
                                             >{preset.nameEn}</span
                                         >
                                     </div>
@@ -352,13 +319,10 @@
             >
                 <div
                     class="mx-4 w-72 rounded-lg p-5 shadow-xl"
-                    style="border: 1px solid {planner.theme
-                        .contextBorder}; background: {planner.theme.contextBg};"
+                    style="border: 1px solid {planner.theme.contextBorder}; background: {planner
+                        .theme.contextBg};"
                 >
-                    <p
-                        class="mb-4 text-center text-sm"
-                        style="color: {planner.theme.text};"
-                    >
+                    <p class="mb-4 text-center text-sm" style="color: {planner.theme.text};">
                         {swapPending.targetName} 已选择该角色，是否交换？
                     </p>
                     <div class="flex justify-center gap-3">
@@ -369,8 +333,8 @@
                         >
                         <button
                             class="rounded-lg px-5 py-2 text-sm font-semibold transition-colors"
-                            style="background: {planner.theme
-                                .buttonBg}; color: {planner.theme.buttonText};"
+                            style="background: {planner.theme.buttonBg}; color: {planner.theme
+                                .buttonText};"
                             onclick={cancelSwap}>取消</button
                         >
                     </div>

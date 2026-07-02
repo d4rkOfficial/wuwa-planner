@@ -1,16 +1,5 @@
-export type ElementType =
-    | 'glacio'
-    | 'fusion'
-    | 'electro'
-    | 'aero'
-    | 'spectro'
-    | 'havoc'
-export type WeaponType =
-    | 'sword'
-    | 'broadblade'
-    | 'pistols'
-    | 'gauntlets'
-    | 'rectifier'
+export type ElementType = 'glacio' | 'fusion' | 'electro' | 'aero' | 'spectro' | 'havoc'
+export type WeaponType = 'sword' | 'broadblade' | 'pistols' | 'gauntlets' | 'rectifier'
 
 export interface CharacterPreset {
     id: string

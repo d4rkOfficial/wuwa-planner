@@ -1,10 +1,5 @@
 <script lang="ts">
-    import type {
-        ActionBlock,
-        KeyOperation,
-        KeyType,
-        KeyMode,
-    } from '$lib/types'
+    import type { ActionBlock, KeyOperation, KeyType, KeyMode } from '$lib/types'
     import { MODE_LABELS } from '$lib/data/labels'
     import { planner } from '$lib/stores/planner.svelte'
     import CharacterTrack from './CharacterTrack.svelte'
@@ -30,9 +25,7 @@
         comment?: string
     } = $props()
 
-    let viewportWidth = $state(
-        typeof window !== 'undefined' ? window.innerWidth : 1024,
-    )
+    let viewportWidth = $state(typeof window !== 'undefined' ? window.innerWidth : 1024)
 
     $effect(() => {
         const handler = () => {
@@ -50,9 +43,7 @@
             requestAnimationFrame(() => {
                 let maxR = 0
                 for (const b of blocks) {
-                    const el = document.querySelector(
-                        `[data-block-id="${b.id}"]`,
-                    ) as HTMLElement
+                    const el = document.querySelector(`[data-block-id="${b.id}"]`) as HTMLElement
                     if (el) {
                         const w = el.getBoundingClientRect().width
                         maxR = Math.max(maxR, b.x + w)
@@ -66,12 +57,9 @@
     let timelineMinWidth = $derived.by(() => {
         const blocks = planner.blocks
         if (blocks.length === 0) return viewportWidth
-        const rightEdge =
-            blockRightEdge || Math.max(...blocks.map((b) => b.x)) + 120
+        const rightEdge = blockRightEdge || Math.max(...blocks.map((b) => b.x)) + 120
         return Math.max(viewportWidth, rightEdge + viewportWidth / 2)
     })
-
-    let strongBadgeColor = $derived(planner.theme.strongBadgeColor)
 
     let contextBlock = $state<ActionBlock | null>(null)
     let contextPos = $state({ x: 0, y: 0 })
@@ -115,10 +103,7 @@
         const maxScroll = scrollWidth - clientWidth
         if (maxScroll <= 0) return
         const ratio = dx / (trackWidth - thumbWidth)
-        const newScroll = Math.max(
-            0,
-            Math.min(maxScroll, dragStartScroll + ratio * maxScroll),
-        )
+        const newScroll = Math.max(0, Math.min(maxScroll, dragStartScroll + ratio * maxScroll))
         scrollContainer.scrollLeft = newScroll
     }
 
@@ -196,13 +181,10 @@
             if (char.id === block.characterId) continue
             const prevBlocks = planner.getCharacterBlocks(char.id)
             for (const pb of prevBlocks) {
-                const el = document.querySelector(
-                    `[data-block-id="${pb.id}"]`,
-                ) as HTMLElement
+                const el = document.querySelector(`[data-block-id="${pb.id}"]`) as HTMLElement
                 if (!el) continue
                 const w = el.getBoundingClientRect().width
-                if (block.x >= pb.x - TOL && block.x <= pb.x + w + TOL)
-                    return true
+                if (block.x >= pb.x - TOL && block.x <= pb.x + w + TOL) return true
             }
         }
         return false
@@ -238,8 +220,7 @@
             const prev = getPrevBlock(block)
             if (prev) {
                 const existing = planner.stayFieldMarkers.find(
-                    (m) =>
-                        m.fromBlockId === prev.id && m.toBlockId === block.id,
+                    (m) => m.fromBlockId === prev.id && m.toBlockId === block.id,
                 )
                 if (existing) planner.removeStayFieldMarker(existing.id)
             }
@@ -282,10 +263,7 @@
 
 <div id="timeline-area" class="relative flex gap-3 min-h-0 flex-col">
     <div class="flex gap-3 min-h-0 flex-1">
-        <div
-            class="sticky left-0 z-10 flex flex-col gap-3 min-h-0"
-            style="padding-top: 4px;"
-        >
+        <div class="sticky left-0 z-10 flex flex-col gap-3 min-h-0" style="padding-top: 4px;">
             {#each planner.characters as char, i (char.id)}
                 <!-- svelte-ignore a11y_no_static_element_interactions -->
                 <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -306,9 +284,7 @@
             class="min-w-0 flex-1 overflow-x-auto min-h-0 scrollbar-none"
             onwheel={handleWheel}
         >
-            <div
-                style="position: relative; min-height: 0; min-width: {timelineMinWidth}px;"
-            >
+            <div style="position: relative; min-height: 0; min-width: {timelineMinWidth}px;">
                 <div class="flex flex-col gap-3 min-h-0">
                     {#each planner.characters as char, i (char.id)}
                         <CharacterTrack
@@ -337,14 +313,10 @@
             <div
                 class="fixed z-50 min-w-52 rounded-lg py-1.5 shadow-xl"
                 style="left: {contextPos.x}px; top: {contextPos.y}px; border: 1px solid {planner
-                    .theme.contextBorder}; background: {planner.theme
-                    .contextBg};"
+                    .theme.contextBorder}; background: {planner.theme.contextBg};"
             >
                 {#if contextBlock.keyOps.length > 0}
-                    <div
-                        style="border-bottom: 1px solid {planner.theme
-                            .divider};"
-                    >
+                    <div style="border-bottom: 1px solid {planner.theme.divider};">
                         <div class="px-2 pt-1.5 pb-1">
                             <div
                                 class="mb-1 px-1 text-xs font-semibold"
@@ -353,26 +325,20 @@
                                 操作列表
                             </div>
                         </div>
-                        <div
-                            class="max-h-56 overflow-y-auto scrollbar-dark-thick px-2 pb-1.5"
-                        >
+                        <div class="max-h-56 overflow-y-auto scrollbar-dark-thick px-2 pb-1.5">
                             {#each contextBlock.keyOps as op, i}
                                 {#if op.key !== 'intro'}
                                     <!-- svelte-ignore a11y_no_static_element_interactions -->
                                     <div
                                         draggable="true"
                                         class="flex w-full cursor-default items-center gap-1.5 rounded px-1.5 py-1"
-                                        style="color: {planner.theme
-                                            .textSecondary};"
+                                        style="color: {planner.theme.textSecondary};"
                                         onmouseenter={(e) =>
-                                            ((
-                                                e.currentTarget as HTMLElement
-                                            ).style.background =
+                                            ((e.currentTarget as HTMLElement).style.background =
                                                 planner.theme.contextHover)}
                                         onmouseleave={(e) =>
-                                            ((
-                                                e.currentTarget as HTMLElement
-                                            ).style.background = '')}
+                                            ((e.currentTarget as HTMLElement).style.background =
+                                                '')}
                                         ondragstart={(e) => {
                                             const data = JSON.stringify({
                                                 fromBlockId: contextBlock!.id,
@@ -383,16 +349,11 @@
                                                 'application/wuwa-keyop-context',
                                                 data,
                                             )
-                                            e.dataTransfer!.effectAllowed =
-                                                'move'
-                                            ;(
-                                                e.currentTarget as HTMLElement
-                                            ).style.opacity = '0.4'
+                                            e.dataTransfer!.effectAllowed = 'move'
+                                            ;(e.currentTarget as HTMLElement).style.opacity = '0.4'
                                         }}
                                         ondragend={(e) => {
-                                            ;(
-                                                e.currentTarget as HTMLElement
-                                            ).style.opacity = '1'
+                                            ;(e.currentTarget as HTMLElement).style.opacity = '1'
                                         }}
                                         ondragover={(e) => {
                                             e.preventDefault()
@@ -407,90 +368,77 @@
                                             )
                                             if (!raw) return
                                             const parsed = JSON.parse(raw)
-                                            const fromBlockId =
-                                                parsed.fromBlockId
+                                            const fromBlockId = parsed.fromBlockId
                                             const keyOpIndex = parsed.keyOpIndex
                                             if (
-                                                fromBlockId !==
-                                                    contextBlock!.id ||
+                                                fromBlockId !== contextBlock!.id ||
                                                 keyOpIndex === i
                                             )
                                                 return
-                                            const ops = [
-                                                ...contextBlock!.keyOps,
-                                            ]
-                                            const [moved] = ops.splice(
-                                                keyOpIndex,
-                                                1,
-                                            )
+                                            const ops = [...contextBlock!.keyOps]
+                                            const [moved] = ops.splice(keyOpIndex, 1)
                                             ops.splice(i, 0, moved)
-                                            planner.updateBlock(
-                                                contextBlock!.id,
-                                                {
-                                                    keyOps: ops,
-                                                },
-                                            )
+                                            planner.updateBlock(contextBlock!.id, {
+                                                keyOps: ops,
+                                            })
                                             const updated = planner.blocks.find(
-                                                (b) =>
-                                                    b.id === contextBlock!.id,
+                                                (b) => b.id === contextBlock!.id,
                                             )
                                             if (updated) contextBlock = updated
                                         }}
                                     >
                                         <span
                                             class="cursor-grab active:cursor-grabbing"
-                                            style="color: {planner.theme
-                                                .mutedText};">⠿</span
+                                            style="color: {planner.theme.mutedText};">⠿</span
                                         >
                                         <span class="inline-flex items-center relative">
                                             {#if op.strong}
                                                 <div class="absolute -left-1.5 -top-3 z-10">
-                                                    <StrongBadge size={10} color={strongBadgeColor} />
+                                                    <StrongBadge size={10} />
                                                 </div>
                                             {/if}
                                             <KeyIcon
                                                 key={op.key}
                                                 size="sm"
-                                                color={planner.theme.nodeColors[
-                                                    op.key
-                                                ]}
+                                                color={planner.theme.nodeColors[op.key]}
                                                 mode={op.mode}
                                             />
                                         </span>
                                         {#if op.comboStart && op.comboEnd && op.comboStart > 0 && op.comboEnd > 0}
-                                            <ComboNumbers start={op.comboStart} end={op.comboEnd} theme={planner.theme} />
+                                            <ComboNumbers
+                                                start={op.comboStart}
+                                                end={op.comboEnd}
+                                                theme={planner.theme}
+                                            />
                                         {/if}
                                         {#if op.comment}
-                                            <span class="text-[10px] ml-0.5 rounded px-1" style="background: {planner.theme.tagBg}; color: {planner.theme.tagText};">{op.comment}</span>
+                                            <span
+                                                class="text-[10px] ml-0.5 rounded px-1"
+                                                style="background: {planner.theme
+                                                    .tagBg}; color: {planner.theme.tagText};"
+                                                >{op.comment}</span
+                                            >
                                         {/if}
                                         <span
                                             class="flex-1 text-xs"
-                                            style="color: {planner.theme
-                                                .textSecondary};"
+                                            style="color: {planner.theme.textSecondary};"
                                         >
                                             {MODE_LABELS[op.mode] || '单击'}
                                         </span>
                                         <button
                                             class="flex h-5 w-5 items-center justify-center rounded text-[10px]"
-                                            style="border: 1px solid {planner
-                                                .theme
-                                                .deleteBtnBorder}; color: {planner
-                                                .theme.textSecondary};"
+                                            style="border: 1px solid {planner.theme
+                                                .deleteBtnBorder}; color: {planner.theme
+                                                .textSecondary};"
                                             onmouseenter={(e) =>
-                                                ((
-                                                    e.currentTarget as HTMLElement
-                                                ).style.background =
+                                                ((e.currentTarget as HTMLElement).style.background =
                                                     planner.theme.deleteBtnHover)}
                                             onmouseleave={(e) =>
-                                                ((
-                                                    e.currentTarget as HTMLElement
-                                                ).style.background = '')}
+                                                ((e.currentTarget as HTMLElement).style.background =
+                                                    '')}
                                             onclick={(e) => {
                                                 e.stopPropagation()
-                                                planner.removeKeyOp(
-                                                    contextBlock!.id,
-                                                    i,
-                                                )
+                                                planner.removeKeyOp(contextBlock!.id, i)
                                                 contextBlock = null
                                             }}>✕</button
                                         >
@@ -512,9 +460,8 @@
                                     </div>
                                     <button
                                         class="rounded border px-1.5 py-0.5 text-[10px] font-medium transition-colors"
-                                        style="border-color: {planner.theme
-                                            .border}; color: {planner.theme
-                                            .textSecondary};"
+                                        style="border-color: {planner.theme.border}; color: {planner
+                                            .theme.textSecondary};"
                                         onmouseenter={(e) => {
                                             ;(e.currentTarget as HTMLElement).style.background =
                                                 planner.theme.buttonHover
@@ -524,36 +471,25 @@
                                         }}
                                         onclick={(e) => {
                                             e.stopPropagation()
-                                            const introIdx =
-                                                contextBlock!.keyOps.findIndex(
-                                                    (o) => o.key === 'intro',
-                                                )
+                                            const introIdx = contextBlock!.keyOps.findIndex(
+                                                (o) => o.key === 'intro',
+                                            )
                                             if (introIdx < 0) return
-                                            const ops = [
-                                                ...contextBlock!.keyOps,
-                                            ]
+                                            const ops = [...contextBlock!.keyOps]
                                             ops[introIdx] = {
                                                 ...ops[introIdx],
                                                 strong: !ops[introIdx].strong,
                                             }
-                                            planner.updateBlock(
-                                                contextBlock!.id,
-                                                {
-                                                    keyOps: ops,
-                                                },
+                                            planner.updateBlock(contextBlock!.id, {
+                                                keyOps: ops,
+                                            })
+                                            const updated = planner.blocks.find(
+                                                (b) => b.id === contextBlock!.id,
                                             )
-                                            const updated =
-                                                planner.blocks.find(
-                                                    (b) =>
-                                                        b.id ===
-                                                        contextBlock!.id,
-                                                )
-                                            if (updated)
-                                                contextBlock = updated
+                                            if (updated) contextBlock = updated
                                         }}
                                     >
-                                        {contextBlock.keyOps.find((o) => o.key === 'intro')
-                                            ?.strong
+                                        {contextBlock.keyOps.find((o) => o.key === 'intro')?.strong
                                             ? '设为普通变奏'
                                             : '设为强化变奏'}
                                     </button>
@@ -565,13 +501,11 @@
 
                 <button
                     class="flex w-full items-center px-4 py-2 text-left text-xs"
-                    style="color: {!getPrevBlock(contextBlock) ?
-                        planner.theme.mutedText
-                    :   planner.theme.accentText}; cursor: {(
-                        !getPrevBlock(contextBlock)
-                    ) ?
-                        'not-allowed'
-                    :   'pointer'};"
+                    style="color: {!getPrevBlock(contextBlock)
+                        ? planner.theme.mutedText
+                        : planner.theme.accentText}; cursor: {!getPrevBlock(contextBlock)
+                        ? 'not-allowed'
+                        : 'pointer'};"
                     disabled={!getPrevBlock(contextBlock)}
                     onmouseenter={(e) => {
                         if (getPrevBlock(contextBlock!))
@@ -586,21 +520,20 @@
                         contextBlock = null
                     }}
                 >
-                    {stayFieldWithPrev(contextBlock) ?
-                        '清除与上一个块之间的留场'
-                    :   '与上一个块建立留场'}
+                    {stayFieldWithPrev(contextBlock)
+                        ? '清除与上一个块之间的留场'
+                        : '与上一个块建立留场'}
                 </button>
 
                 <button
                     class="flex w-full items-center px-4 py-2 text-left text-xs"
-                    style="color: {!hasArrowTo(contextBlock) ?
-                        planner.theme.mutedText
-                    : contextBlock.isIntro ? '#f59e0b'
-                    : planner.theme.accentText}; cursor: {(
-                        !hasArrowTo(contextBlock)
-                    ) ?
-                        'not-allowed'
-                    :   'pointer'};"
+                    style="color: {!hasArrowTo(contextBlock)
+                        ? planner.theme.mutedText
+                        : contextBlock.isIntro
+                          ? '#f59e0b'
+                          : planner.theme.accentText}; cursor: {!hasArrowTo(contextBlock)
+                        ? 'not-allowed'
+                        : 'pointer'};"
                     disabled={!hasArrowTo(contextBlock)}
                     onmouseenter={(e) => {
                         if (hasArrowTo(contextBlock!))
@@ -618,9 +551,7 @@
                     {contextBlock.isIntro ? '取消变奏入场' : '设为变奏入场'}
                 </button>
 
-                <div
-                    style="border-top: 1px solid {planner.theme.divider};"
-                ></div>
+                <div style="border-top: 1px solid {planner.theme.divider};"></div>
 
                 <button
                     class="flex w-full items-center px-4 py-2 text-left text-xs"
@@ -628,9 +559,7 @@
                     onmouseenter={(e) =>
                         ((e.currentTarget as HTMLElement).style.background =
                             planner.theme.dangerHover)}
-                    onmouseleave={(e) =>
-                        ((e.currentTarget as HTMLElement).style.background =
-                            '')}
+                    onmouseleave={(e) => ((e.currentTarget as HTMLElement).style.background = '')}
                     onclick={() => {
                         planner.removeBlock(contextBlock!.id)
                         contextBlock = null
@@ -654,8 +583,8 @@
             <div
                 bind:this={scrollbarThumb}
                 class="absolute top-0 h-full rounded-full cursor-grab active:cursor-grabbing"
-                style="left: {thumbLeft}px; width: {thumbWidthPx}px; background: {planner
-                    .theme.scrollbarThumb};"
+                style="left: {thumbLeft}px; width: {thumbWidthPx}px; background: {planner.theme
+                    .scrollbarThumb};"
                 onmouseenter={(e) =>
                     ((e.currentTarget as HTMLElement).style.background =
                         planner.theme.scrollbarThumbHover)}

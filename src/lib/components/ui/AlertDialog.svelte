@@ -30,21 +30,16 @@
                         class="rounded px-3 py-1.5 text-xs transition-colors"
                         style="background: {t.buttonBg}; color: {t.buttonText};"
                         onmouseenter={(e) =>
-                            ((e.target as HTMLElement).style.background =
-                                t.buttonHover)}
+                            ((e.target as HTMLElement).style.background = t.buttonHover)}
                         onmouseleave={(e) =>
-                            ((e.target as HTMLElement).style.background =
-                                t.buttonBg)}
+                            ((e.target as HTMLElement).style.background = t.buttonBg)}
                         onclick={() => s.resolve(false)}>取消</button
                     >
                 {/if}
                 <button
                     class="rounded px-3 py-1.5 text-xs font-medium text-white transition-colors"
-                    style="background: {s.type === 'alert' ?
-                        t.alertBtnBg
-                    :   t.confirmBtnBg};"
-                    onclick={() => s.resolve(true)}
-                    >{s.type === 'alert' ? '确定' : '确认'}</button
+                    style="background: {s.type === 'alert' ? t.alertBtnBg : t.confirmBtnBg};"
+                    onclick={() => s.resolve(true)}>{s.type === 'alert' ? '确定' : '确认'}</button
                 >
             </div>
         </div>

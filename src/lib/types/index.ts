@@ -1,17 +1,6 @@
-export type {
-    ElementType,
-    WeaponType,
-    CharacterPreset,
-    Character,
-} from './character'
+export type { ElementType, WeaponType, CharacterPreset, Character } from './character'
 
-export type {
-    KeyType,
-    KeyMode,
-    KeyOperation,
-    IconTextPair,
-    ActionBlock,
-} from './node'
+export type { KeyType, KeyMode, KeyOperation, IconTextPair, ActionBlock } from './node'
 
 export type { SwapType, SwapLink, StayFieldMarker } from './connection'
 

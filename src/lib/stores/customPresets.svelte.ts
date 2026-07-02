@@ -50,9 +50,7 @@ function createCustomPresetsStore() {
     }
 
     function updatePreset(id: string, partial: Partial<CharacterPreset>) {
-        presets = presets.map((p) =>
-            p.id === id ? { ...p, ...partial } : p,
-        )
+        presets = presets.map((p) => (p.id === id ? { ...p, ...partial } : p))
         saveToStorage()
     }
 

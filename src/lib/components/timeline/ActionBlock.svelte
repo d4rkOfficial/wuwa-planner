@@ -57,11 +57,9 @@
 <div
     data-block-id={block.id}
     data-char-id={block.characterId}
-    class="group relative inline-flex cursor-pointer flex-col items-center rounded-md border {(
-        compact
-    ) ?
-        'px-0.5 py-0 gap-0'
-    :   'px-1.5 py-1 gap-1'}"
+    class="group relative inline-flex cursor-pointer flex-col items-center rounded-md border {compact
+        ? 'px-0.5 py-0 gap-0'
+        : 'px-1.5 py-1 gap-1'}"
     style="
 		border-color: {compact ? theme.blockCompactBorder : theme.blockBorder};
 		background: {compact ? theme.blockCompactBg : theme.trackBg};
@@ -75,9 +73,9 @@
 >
     {#if block.keyOps.length > 0}
         <div
-            class="flex flex-wrap items-center {compact ? 'gap-0' : (
-                'gap-0.5'
-            )} transition-all duration-150"
+            class="flex flex-wrap items-center {compact
+                ? 'gap-0'
+                : 'gap-0.5'} transition-all duration-150"
         >
             {#each block.keyOps as op, i (op.key + op.mode + i)}
                 <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -94,7 +92,7 @@
                     <span
                         class="text-[10px] font-medium whitespace-nowrap rounded px-1"
                         style="background: {theme.tagBg}; color: {theme.tagText};"
-                    >{op.comment}</span
+                        >{op.comment}</span
                     >
                 {/if}
                 {#if op.comboStart && op.comboEnd && op.comboStart > 0 && op.comboEnd > 0}

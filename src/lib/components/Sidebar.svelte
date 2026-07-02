@@ -5,17 +5,11 @@
     import { dialog } from '$lib/stores/dialog.svelte'
     import { getCharacterPresets } from '$lib/data/characters'
     import { ELEMENT_BORDER_COLORS } from '$lib/data/themes'
-    import {
-        exportRotation,
-        downloadJSON,
-        importRotation,
-    } from '$lib/utils/export'
+    import { exportRotation, importRotation } from '$lib/utils/export'
+    import { downloadJSON } from '$lib/utils/download'
     import type { ProjectData } from '$lib/types/project'
 
-    let {
-        collapsed = false,
-        ontoggle,
-    }: { collapsed?: boolean; ontoggle?: () => void } = $props()
+    let { collapsed = false, ontoggle }: { collapsed?: boolean; ontoggle?: () => void } = $props()
 
     let isTouch = $state(false)
     let renamingId = $state<string | null>(null)
@@ -30,13 +24,12 @@
     let presets = $derived(getCharacterPresets())
     let t = $derived(planner.theme)
 
-    function getAvatarSrc(
-        project: ProjectData,
-        slotIndex: number,
-    ): string | null {
+    function getAvatarSrc(project: ProjectData, slotIndex: number): string | null {
         const char = project.characters[slotIndex]
         if (!char?.presetId) return null
-        return planner.theme.avatarOverrides?.[char.presetId] ?? `/images/avatars/${char.presetId}.png`
+        return (
+            planner.theme.avatarOverrides?.[char.presetId] ?? `/images/avatars/${char.presetId}.png`
+        )
     }
 
     function getCharName(project: ProjectData, slotIndex: number): string {
@@ -106,9 +99,7 @@
                     await dialog.alert('导入失败：无法解析文件格式')
                     return
                 }
-                const id = projects.addProject(
-                    data.metadata.title || '导入的工程',
-                )
+                const id = projects.addProject(data.metadata.title || '导入的工程')
                 planner.importRotation(data)
                 projects.setActiveId(id)
                 projects.syncPlannerToActive()
@@ -160,11 +151,9 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
     class="flex h-screen flex-col overflow-hidden transition-all duration-200"
-    style="width: {collapsed ? '0px' : '220px'}; flex-shrink: 0; background: {(
-        collapsed
-    ) ?
-        t.sidebarBg
-    :   t.sidebarBg}; border-right: 1px solid {t.sidebarBorder};"
+    style="width: {collapsed ? '0px' : '220px'}; flex-shrink: 0; background: {collapsed
+        ? t.sidebarBg
+        : t.sidebarBg}; border-right: 1px solid {t.sidebarBorder};"
     oncontextmenu={(e) => e.preventDefault()}
 >
     <div
@@ -172,16 +161,10 @@
         class:hidden={collapsed}
         style="border-bottom: 1px solid {t.sidebarBorder};"
     >
-        <h1 class="text-sm font-bold" style="color: {t.sidebarTextActive};">
-            鸣潮椰果排轴工具
-        </h1>
+        <h1 class="text-sm font-bold" style="color: {t.sidebarTextActive};">鸣潮椰果排轴工具</h1>
     </div>
 
-    <div
-        class="flex-1 overflow-y-auto"
-        class:hidden={collapsed}
-        style="scrollbar-width: thin;"
-    >
+    <div class="flex-1 overflow-y-auto" class:hidden={collapsed} style="scrollbar-width: thin;">
         {#each projects.projects as proj (proj.id)}
             <!-- svelte-ignore a11y_no_static_element_interactions -->
             <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -189,26 +172,19 @@
             <!-- svelte-ignore a11y_click_events_have_key_events -->
             <div
                 class="cursor-pointer px-3 py-2 transition-colors"
-                style="border-bottom: 1px solid {t.divider}; background: {(
-                    isActive
-                ) ?
-                    t.sidebarHover
-                :   'transparent'};"
+                style="border-bottom: 1px solid {t.divider}; background: {isActive
+                    ? t.sidebarHover
+                    : 'transparent'};"
                 onmouseenter={(e) => {
                     if (!isActive)
-                        (e.currentTarget as HTMLElement).style.background =
-                            t.sidebarHover
+                        (e.currentTarget as HTMLElement).style.background = t.sidebarHover
                 }}
                 onmouseleave={(e) => {
-                    if (!isActive)
-                        (e.currentTarget as HTMLElement).style.background =
-                            'transparent'
+                    if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent'
                 }}
                 onclick={() => handleSelect(proj.id)}
                 oncontextmenu={(e) => handleContextMenu(e, proj.id)}
-                ondblclick={isTouch ?
-                    (e) => handleContextMenu(e, proj.id)
-                :   undefined}
+                ondblclick={isTouch ? (e) => handleContextMenu(e, proj.id) : undefined}
             >
                 {#if renamingId === proj.id}
                     <!-- svelte-ignore a11y_autofocus -->
@@ -224,12 +200,10 @@
                 {:else}
                     <div
                         class="mb-1 truncate text-xs font-bold"
-                        style="color: {isActive ?
-                            t.sidebarTextActive
-                        :   t.sidebarText};"
-                        ondblclick={isTouch ? undefined : (
-                            () => handleRenameStart(proj.id, proj.title)
-                        )}
+                        style="color: {isActive ? t.sidebarTextActive : t.sidebarText};"
+                        ondblclick={isTouch
+                            ? undefined
+                            : () => handleRenameStart(proj.id, proj.title)}
                     >
                         {proj.title}
                     </div>
@@ -239,10 +213,7 @@
                     {#each [0, 1, 2] as slot}
                         <div
                             class="relative flex h-6 w-6 items-center justify-center overflow-hidden rounded-full text-[10px] font-bold"
-                            style="border: 1.5px solid {getElementColor(
-                                proj,
-                                slot,
-                            )};"
+                            style="border: 1.5px solid {getElementColor(proj, slot)};"
                         >
                             {#if getAvatarSrc(proj, slot)}
                                 <img
@@ -250,14 +221,10 @@
                                     alt=""
                                     class="absolute inset-0 h-full w-full object-cover"
                                     onerror={(e) =>
-                                        ((
-                                            e.target as HTMLElement
-                                        ).style.display = 'none')}
+                                        ((e.target as HTMLElement).style.display = 'none')}
                                 />
                             {/if}
-                            <span style="color: {t.avatarText};"
-                                >{getCharName(proj, slot)}</span
-                            >
+                            <span style="color: {t.avatarText};">{getCharName(proj, slot)}</span>
                         </div>
                     {/each}
                 </div>
@@ -271,26 +238,24 @@
         style="border-top: 1px solid {t.sidebarBorder};"
     >
         <button
-            class="w-full rounded py-1.5 text-xs transition-colors"
+            class="font-black w-full rounded py-1.5 text-xs transition-colors"
             style="background: {t.buttonBg}; color: {t.buttonText}; border: 1px solid {t.buttonHover};"
             onmouseenter={(e) =>
-                ((e.currentTarget as HTMLElement).style.background =
-                    t.buttonHover)}
+                ((e.currentTarget as HTMLElement).style.background = t.buttonHover)}
             onmouseleave={(e) => {
                 ;(e.currentTarget as HTMLElement).style.background = t.buttonBg
             }}
-            onclick={handleNewProject}>从空白创建</button
+            onclick={handleNewProject}>创建空白工程</button
         >
         <button
-            class="w-full rounded py-1.5 text-xs transition-colors"
+            class="font-black w-full rounded py-1.5 text-xs transition-colors"
             style="background: {t.buttonBg}; color: {t.buttonText}; border: 1px solid {t.buttonHover};"
             onmouseenter={(e) =>
-                ((e.currentTarget as HTMLElement).style.background =
-                    t.buttonHover)}
+                ((e.currentTarget as HTMLElement).style.background = t.buttonHover)}
             onmouseleave={(e) => {
                 ;(e.currentTarget as HTMLElement).style.background = t.buttonBg
             }}
-            onclick={handleImportProjectJSON}>从Json导入工程</button
+            onclick={handleImportProjectJSON}>从 JSON 导入工程</button
         >
     </div>
 </div>
@@ -315,10 +280,8 @@
             class="flex w-full items-center px-3 py-2 text-left text-xs transition-colors"
             style="color: {t.text};"
             onmouseenter={(e) =>
-                ((e.currentTarget as HTMLElement).style.background =
-                    t.contextHover)}
-            onmouseleave={(e) =>
-                ((e.currentTarget as HTMLElement).style.background = '')}
+                ((e.currentTarget as HTMLElement).style.background = t.contextHover)}
+            onmouseleave={(e) => ((e.currentTarget as HTMLElement).style.background = '')}
             onclick={() => handleExportJSON(menuTarget!.id)}>导出 JSON</button
         >
         <div style="border-top: 1px solid {t.divider};"></div>
@@ -326,22 +289,17 @@
             class="flex w-full items-center px-3 py-2 text-left text-xs transition-colors"
             style="color: {t.text};"
             onmouseenter={(e) =>
-                ((e.currentTarget as HTMLElement).style.background =
-                    t.contextHover)}
-            onmouseleave={(e) =>
-                ((e.currentTarget as HTMLElement).style.background = '')}
-            onclick={() => handleDuplicateProject(menuTarget!.id)}
-            >复制工程</button
+                ((e.currentTarget as HTMLElement).style.background = t.contextHover)}
+            onmouseleave={(e) => ((e.currentTarget as HTMLElement).style.background = '')}
+            onclick={() => handleDuplicateProject(menuTarget!.id)}>复制工程</button
         >
         <button
             class="flex w-full items-center px-3 py-2 text-left text-xs transition-colors"
             style="color: {t.dangerText};"
             class:hidden={projects.projects.length <= 1}
             onmouseenter={(e) =>
-                ((e.currentTarget as HTMLElement).style.background =
-                    t.dangerHover)}
-            onmouseleave={(e) =>
-                ((e.currentTarget as HTMLElement).style.background = '')}
+                ((e.currentTarget as HTMLElement).style.background = t.dangerHover)}
+            onmouseleave={(e) => ((e.currentTarget as HTMLElement).style.background = '')}
             onclick={() => handleDeleteProject(menuTarget!.id)}>删除工程</button
         >
     </div>
