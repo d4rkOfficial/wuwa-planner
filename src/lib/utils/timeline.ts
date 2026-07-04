@@ -1,4 +1,4 @@
-import type { ActionBlock, Character, StayFieldMarker } from '$lib/types'
+import type { ActionBlock, StayFieldMarker } from '$lib/types'
 
 export interface Segment {
     startX: number

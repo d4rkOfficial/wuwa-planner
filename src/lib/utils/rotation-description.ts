@@ -1,8 +1,6 @@
 import type {
     ActionBlock,
     KeyOperation,
-    KeyType,
-    KeyMode,
     StayFieldMarker,
     Character,
     CharacterPreset,
@@ -142,10 +140,12 @@ export function getMergedTimeline(
         .sort((a, b) => a.block.x - b.block.x)
 
     const result: TimelineItem[] = []
+    let effectiveCharId: string | null = null
     for (let i = 0; i < all.length; i++) {
         const { block, alias, charIndex } = all[i]
         const prevBlock = i > 0 ? all[i - 1].block : null
-        const isSwitch = prevBlock !== null && prevBlock.characterId !== block.characterId
+        const isSwitch = effectiveCharId !== null && effectiveCharId !== block.characterId
+        if (!block.isOffHand) effectiveCharId = block.characterId
         const stay = hasStayField(block, blocks, markers)
         result.push({
             block,
@@ -192,7 +192,7 @@ function buildTextParts(items: TimelineItem[]): string[] {
                 lastCharIdx.set(item.block.characterId, parts.length)
                 parts.push(`${item.alias}${ops}`)
             }
-        } else if (item.block.characterId === items[i - 1].block.characterId) {
+        } else if (item.isSwitch === false) {
             parts.push(ops)
         } else if (item.isSwitchIntro) {
             parts.push(`，延奏${item.alias}${ops}`)
@@ -242,7 +242,12 @@ function opsText(ops: KeyOperation[], strongIntro = false): string {
         parts.push(j - i > 1 ? cur.repeat(j - i) : cur)
         i = j
     }
-    const s = parts.join(' ')
+    const s = parts.reduce<string>((acc, p, i) => {
+        if (i === 0) return p
+        const prevIsLetter = /^[a-zA-Z]/.test(parts[i - 1])
+        const curIsLetter = /^[a-zA-Z]/.test(p)
+        return acc + (prevIsLetter !== curIsLetter ? ' ' : '') + p
+    }, '')
     const prefix = strongIntro ? '强变' : ''
     if (!s && !prefix) return ''
     return ' ' + prefix + s
@@ -275,7 +280,7 @@ export function buildIntroLines(items: TimelineItem[]): string {
         } else if (current.length === 0) {
             current.push(`${item.alias}${opStr}`)
             currentCharId = item.block.characterId
-        } else if (prev && item.block.characterId === prev.block.characterId) {
+        } else if (item.isSwitch === false) {
             current.push(opStr)
         } else if (prev && item.isSwitchStay) {
             current.push(`，切回${item.alias}${opStr}`)
