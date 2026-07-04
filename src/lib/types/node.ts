@@ -24,6 +24,7 @@ export interface ActionBlock {
     x: number
     isIntro: boolean
     introOverride: boolean | null
+    isOffHand: boolean
     keyOps: KeyOperation[]
     /** @todo 疑似deadcode */
     customIcons: IconTextPair[]

@@ -67,6 +67,61 @@ export function drawStayRect(
     cx.setLineDash([])
 }
 
+export function drawStayArrow(cx: CanvasRenderingContext2D, x: number, y: number, color: string) {
+    cx.save()
+    cx.beginPath()
+    cx.moveTo(x - 12, y - 4)
+    cx.lineTo(x - 4, y - 4)
+    cx.lineTo(x - 4, y - 8)
+    cx.lineTo(x + 2, y)
+    cx.lineTo(x - 4, y + 8)
+    cx.lineTo(x - 4, y + 4)
+    cx.lineTo(x - 12, y + 4)
+    cx.closePath()
+    cx.fillStyle = color
+    cx.globalAlpha = 0.35
+    cx.fill()
+    cx.strokeStyle = color
+    cx.lineWidth = 1.5
+    cx.lineJoin = 'round'
+    cx.lineCap = 'round'
+    cx.globalAlpha = 0.35
+    cx.stroke()
+    cx.restore()
+}
+
+export function drawStayRectOpen(
+    cx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    right: number,
+    h: number,
+    color: string,
+    closeLeft: boolean,
+    closeRight: boolean,
+) {
+    const w = right - x
+    if (w <= 0 || h <= 0) return
+    cx.strokeStyle = color
+    cx.lineWidth = 1.5
+    cx.setLineDash([4, 3])
+    cx.beginPath()
+    cx.moveTo(x, y)
+    cx.lineTo(right, y)
+    cx.moveTo(x, y + h)
+    cx.lineTo(right, y + h)
+    if (closeLeft) {
+        cx.moveTo(x, y)
+        cx.lineTo(x, y + h)
+    }
+    if (closeRight) {
+        cx.moveTo(right, y)
+        cx.lineTo(right, y + h)
+    }
+    cx.stroke()
+    cx.setLineDash([])
+}
+
 export function drawFollowCurve(
     cx: CanvasRenderingContext2D,
     x1: number,

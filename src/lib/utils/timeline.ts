@@ -24,22 +24,6 @@ export function stayFieldWithPrev(
     return markers.some((m) => m.fromBlockId === prev.id && m.toBlockId === block.id)
 }
 
-export function hasArrowTo(
-    block: ActionBlock,
-    characters: Character[],
-    blocks: ActionBlock[],
-): boolean {
-    const TOL = 2
-    for (const char of characters) {
-        if (char.id === block.characterId) continue
-        const prevBlocks = blocks.filter((b) => b.characterId === char.id)
-        for (const pb of prevBlocks) {
-            if (block.x >= pb.x - TOL && block.x <= pb.x + TOL) return true
-        }
-    }
-    return false
-}
-
 export function findSnapTarget(
     blocks: ActionBlock[],
     excludeBlockId: string,

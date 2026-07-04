@@ -23,15 +23,15 @@
 
 ## 技术栈
 
-| 层 | 技术 |
-|---|---|
-| 框架 | [Svelte 5](https://svelte.dev/) (Runes 响应式) |
-| 元框架 | [SvelteKit 2](https://kit.svelte.dev/) |
-| 语言 | TypeScript (strict) |
-| 构建 | [Vite](https://vitejs.dev/) |
-| 样式 | [Tailwind CSS 4](https://tailwindcss.com/) |
-| 部署 | Vercel (`@sveltejs/adapter-vercel`) |
-| 运行时 | `html-to-image` · `nanoid` |
+| 层     | 技术                                           |
+| ------ | ---------------------------------------------- |
+| 框架   | [Svelte 5](https://svelte.dev/) (Runes 响应式) |
+| 元框架 | [SvelteKit 2](https://kit.svelte.dev/)         |
+| 语言   | TypeScript (strict)                            |
+| 构建   | [Vite](https://vitejs.dev/)                    |
+| 样式   | [Tailwind CSS 4](https://tailwindcss.com/)     |
+| 部署   | Vercel (`@sveltejs/adapter-vercel`)            |
+| 运行时 | `html-to-image` · `nanoid`                     |
 
 ## 快速开始
 
@@ -87,12 +87,12 @@ static/
 
 全部数据存储在浏览器 `localStorage` 中，无后端服务：
 
-| 键 | 内容 |
-|---|---|
-| `wuwa-projects` | 排轴项目数组 |
-| `wuwa-custom-themes` | 自定义主题 |
-| `wuwa-active-theme-id` | 当前主题 ID |
-| `wuwa-custom-presets` | 自定义角色预设 |
+| 键                     | 内容           |
+| ---------------------- | -------------- |
+| `wuwa-projects`        | 排轴项目数组   |
+| `wuwa-custom-themes`   | 自定义主题     |
+| `wuwa-active-theme-id` | 当前主题 ID    |
+| `wuwa-custom-presets`  | 自定义角色预设 |
 
 ## License
 
@@ -105,4 +105,3 @@ static/
 我个人积极推动**鸣潮社区强度讨论的标准化**，希望所有使用、修改或分发本项目的人，也能认同这种精神——让强度讨论回归数据和事实，以客观方法论代替主观情绪，共同建设更健康的社区环境。
 
 详见 [LICENSE](./LICENSE) 文件。
-

@@ -51,6 +51,7 @@ function createPlannerStore() {
             x,
             isIntro: false,
             introOverride: null,
+            isOffHand: false,
             keyOps: [],
             customIcons: [],
         }

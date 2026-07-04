@@ -81,7 +81,7 @@ function keyOpText(op: KeyOperation): string {
         else if (k === 'jump') base = '狂按跳'
         else base = '狂按' + kLabel
     } else if (m === 'hold') {
-        if (k === 'LMB') base = '长按Z'
+        if (k === 'LMB') base = 'Z'
         else if (k === 'RMB') base = '长按闪'
         else if (k === 'jump') base = '长按跳'
         else base = '长按' + kLabel
@@ -163,19 +163,33 @@ export function getMergedTimeline(
 
 export function buildTextDescription(items: TimelineItem[]): string {
     const parts: string[] = []
+    const lastCharIdx = new Map<string, number>()
     for (let i = 0; i < items.length; i++) {
         const item = items[i]
         const ops = opsText(item.block.keyOps, hasStrongIntro(item.block.keyOps))
+        if (!ops) continue
         if (i === 0) {
             parts.push(`${item.alias}${ops}`)
+            lastCharIdx.set(item.block.characterId, parts.length - 1)
+        } else if (item.block.isOffHand) {
+            const idx = lastCharIdx.get(item.block.characterId)
+            if (idx !== undefined) {
+                parts[idx] += ops
+            } else {
+                lastCharIdx.set(item.block.characterId, parts.length)
+                parts.push(`${item.alias}${ops}`)
+            }
         } else if (item.block.characterId === items[i - 1].block.characterId) {
             parts.push(ops)
         } else if (item.isSwitchIntro) {
             parts.push(`，延奏${item.alias}${ops}`)
+            lastCharIdx.set(item.block.characterId, parts.length - 1)
         } else if (item.isSwitchStay) {
             parts.push(`，切回${item.alias}${ops}`)
+            lastCharIdx.set(item.block.characterId, parts.length - 1)
         } else {
             parts.push(`，${item.alias}${ops}`)
+            lastCharIdx.set(item.block.characterId, parts.length - 1)
         }
     }
     return parts.join('')
@@ -190,7 +204,17 @@ function hasStrongIntro(ops: KeyOperation[]): boolean {
 }
 
 function opsText(ops: KeyOperation[], strongIntro = false): string {
-    const s = visibleOps(ops).map(keyOpText).join('-').replace(/\)-/g, ') ').replace(/-\(/g, ' (')
+    const texts = visibleOps(ops).map(keyOpText)
+    const parts: string[] = []
+    let i = 0
+    while (i < texts.length) {
+        const cur = texts[i]
+        let j = i + 1
+        while (j < texts.length && texts[j] === cur) j++
+        parts.push(j - i > 1 ? cur.repeat(j - i) : cur)
+        i = j
+    }
+    const s = parts.join(' ')
     const prefix = strongIntro ? '强变' : ''
     if (!s && !prefix) return ''
     return ' ' + prefix + s
@@ -224,25 +248,39 @@ export function buildCharLines(
 }
 
 export function buildIntroLines(items: TimelineItem[]): string {
-    const segments: string[] = []
+    const segments: { text: string; charId: string }[] = []
     let current: string[] = []
+    let currentCharId = ''
     for (let i = 0; i < items.length; i++) {
         const item = items[i]
         const opStr = opsText(item.block.keyOps, hasStrongIntro(item.block.keyOps))
         const prev = i > 0 ? items[i - 1] : null
+        if (item.block.isOffHand) {
+            for (let s = segments.length - 1; s >= 0; s--) {
+                if (segments[s].charId === item.block.characterId) {
+                    segments[s].text += opStr
+                    break
+                }
+            }
+            continue
+        }
         if (item.isSwitchIntro) {
-            if (current.length > 0) segments.push(current.join(''))
+            if (current.length > 0) segments.push({ text: current.join(''), charId: currentCharId })
             current = [`延奏${item.alias}${opStr}`]
+            currentCharId = item.block.characterId
         } else if (current.length === 0) {
             current.push(`${item.alias}${opStr}`)
+            currentCharId = item.block.characterId
         } else if (prev && item.block.characterId === prev.block.characterId) {
             current.push(opStr)
         } else if (prev && item.isSwitchStay) {
             current.push(`，切回${item.alias}${opStr}`)
+            currentCharId = item.block.characterId
         } else {
             current.push(`，${item.alias}${opStr}`)
+            currentCharId = item.block.characterId
         }
     }
-    if (current.length > 0) segments.push(current.join(''))
-    return segments.join('\n')
+    if (current.length > 0) segments.push({ text: current.join(''), charId: currentCharId })
+    return segments.map((s) => s.text).join('\n')
 }

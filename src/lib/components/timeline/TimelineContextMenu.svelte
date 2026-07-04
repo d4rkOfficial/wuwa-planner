@@ -11,9 +11,10 @@
         contextPos,
         hasPrev,
         stayFieldActive,
-        hasArrow,
+        canToggleIntro,
         onToggleStayField,
         onToggleIntro,
+        onToggleOffHand,
         onDeleteBlock,
         onReorderKeyOps,
         onToggleIntroStrong,
@@ -23,9 +24,10 @@
         contextPos: { x: number; y: number }
         hasPrev: boolean
         stayFieldActive: boolean
-        hasArrow: boolean
+        canToggleIntro: boolean
         onToggleStayField: (block: ActionBlock) => void
         onToggleIntro: (block: ActionBlock) => void
+        onToggleOffHand: (block: ActionBlock) => void
         onDeleteBlock: (blockId: string) => void
         onReorderKeyOps: (
             blockId: string,
@@ -239,14 +241,16 @@
 
         <button
             class="flex w-full items-center px-4 py-2 text-left text-xs"
-            style="color: {!hasArrow
+            style="color: {!canToggleIntro
                 ? planner.theme.mutedText
                 : contextBlock.isIntro
                   ? '#f59e0b'
-                  : planner.theme.accentText}; cursor: {!hasArrow ? 'not-allowed' : 'pointer'};"
-            disabled={!hasArrow}
+                  : planner.theme.accentText}; cursor: {!canToggleIntro
+                ? 'not-allowed'
+                : 'pointer'};"
+            disabled={!canToggleIntro}
             onmouseenter={(e) => {
-                if (hasArrow)
+                if (canToggleIntro)
                     (e.currentTarget as HTMLElement).style.background = planner.theme.accentHover
             }}
             onmouseleave={(e) => {
@@ -258,6 +262,31 @@
             }}
         >
             {contextBlock.isIntro ? '取消变奏入场' : '设为变奏入场'}
+        </button>
+
+        <button
+            class="flex w-full items-center px-4 py-2 text-left text-xs"
+            style="color: {!stayFieldActive
+                ? planner.theme.mutedText
+                : contextBlock.isOffHand
+                  ? '#f59e0b'
+                  : planner.theme.accentText}; cursor: {!stayFieldActive
+                ? 'not-allowed'
+                : 'pointer'};"
+            disabled={!stayFieldActive}
+            onmouseenter={(e) => {
+                if (stayFieldActive)
+                    (e.currentTarget as HTMLElement).style.background = planner.theme.accentHover
+            }}
+            onmouseleave={(e) => {
+                ;(e.currentTarget as HTMLElement).style.background = ''
+            }}
+            onclick={() => {
+                onToggleOffHand(contextBlock!)
+                onClose()
+            }}
+        >
+            {contextBlock.isOffHand ? '取消脱手' : '设为脱手'}
         </button>
 
         <div style="border-top: 1px solid {planner.theme.divider};"></div>

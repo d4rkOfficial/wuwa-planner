@@ -5,7 +5,7 @@
     import ArrowOverlay from './ArrowOverlay.svelte'
     import TimelineContextMenu from './TimelineContextMenu.svelte'
     import Avatar from '../character/Avatar.svelte'
-    import { getPrevBlock, hasArrowTo } from '$lib/utils/timeline'
+    import { getPrevBlock } from '$lib/utils/timeline'
 
     let {
         selectedKey,
@@ -170,8 +170,10 @@
         )
     }
 
-    function hasArrowToLocal(block: ActionBlock): boolean {
-        return hasArrowTo(block, planner.characters, planner.blocks)
+    function canBeIntro(block: ActionBlock): boolean {
+        const earlier = planner.blocks.filter((b) => b.x < block.x).toSorted((a, b) => b.x - a.x)
+        if (earlier.length === 0) return true
+        return earlier[0].characterId !== block.characterId
     }
 
     let hasPrevContext = $derived(
@@ -185,9 +187,7 @@
             (m) => m.fromBlockId === prev.id && m.toBlockId === contextBlock!.id,
         )
     })
-    let hasArrowContext = $derived(
-        contextBlock ? hasArrowTo(contextBlock, planner.characters, planner.blocks) : false,
-    )
+    let canToggleIntro = $derived(contextBlock ? canBeIntro(contextBlock) : false)
 
     function handleReorderKeyOps(
         blockId: string,
@@ -222,6 +222,9 @@
         )
         if (existing) {
             planner.removeStayFieldMarker(existing.id)
+            if (block.isOffHand) {
+                planner.updateBlock(block.id, { isOffHand: false })
+            }
         } else {
             planner.addStayFieldMarker(block.characterId, prev.id, block.id)
             if (block.isIntro) {
@@ -234,7 +237,7 @@
     }
 
     function toggleIntro(block: ActionBlock) {
-        if (!hasArrowToLocal(block)) return
+        if (!canBeIntro(block)) return
         if (block.isIntro) {
             planner.updateBlock(block.id, {
                 isIntro: false,
@@ -253,6 +256,12 @@
                 keyOps: [{ key: 'intro', mode: 'click' }, ...block.keyOps],
             })
         }
+    }
+
+    function handleToggleOffHand(block: ActionBlock) {
+        planner.updateBlock(block.id, { isOffHand: !block.isOffHand })
+        const updated = planner.blocks.find((b) => b.id === block.id)
+        if (updated) contextBlock = updated
     }
 
     function handleAvatarClick(charId: string) {
@@ -344,9 +353,10 @@
             {contextPos}
             hasPrev={hasPrevContext}
             {stayFieldActive}
-            hasArrow={hasArrowContext}
+            {canToggleIntro}
             onToggleStayField={toggleStayField}
             onToggleIntro={toggleIntro}
+            onToggleOffHand={handleToggleOffHand}
             onDeleteBlock={(id) => {
                 planner.removeBlock(id)
                 contextBlock = null

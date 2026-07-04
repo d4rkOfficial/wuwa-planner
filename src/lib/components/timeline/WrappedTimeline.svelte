@@ -6,7 +6,13 @@
     import { toPng } from 'html-to-image'
     import Avatar from '../character/Avatar.svelte'
     import { computeSegments } from '$lib/utils/timeline'
-    import { drawArrow, drawStayRect, drawFollowCurve } from '$lib/utils/timeline-canvas'
+    import {
+        drawArrow,
+        drawStayRect,
+        drawStayArrow,
+        drawStayRectOpen,
+        drawFollowCurve,
+    } from '$lib/utils/timeline-canvas'
 
     let container = $state<HTMLDivElement | null>(null)
     let canvas = $state<HTMLCanvasElement | null>(null)
@@ -85,6 +91,12 @@
         const toCanvasX = (sx: number) => sx - tlRect.left
         const toCanvasY = (sy: number) => sy - tlRect.top
 
+        const allBlocks = planner.blocks.toSorted((a, b) => a.x - b.x)
+        const nextBlockMap = new Map<string, string>()
+        for (let i = 0; i < allBlocks.length - 1; i++) {
+            nextBlockMap.set(allBlocks[i].id, allBlocks[i + 1].id)
+        }
+
         // ── Within-segment swap arrows ──
         segEls.forEach((segEl, si) => {
             const seg = segments[si]
@@ -103,7 +115,9 @@
 
                     const used = new Set<string>()
                     for (const db of dbl) {
+                        if (db.isOffHand) continue
                         for (const sb of sbl) {
+                            if (sb.isOffHand) continue
                             if (used.has(sb.id)) continue
                             const sEl = segEl.querySelector(
                                 `[data-block-id="${sb.id}"]`,
@@ -154,14 +168,24 @@
                 if (!fEl || !tEl) continue
                 const fR = fEl.getBoundingClientRect(),
                     tR = tEl.getBoundingClientRect()
-                drawStayRect(
-                    cx,
-                    toCanvasX(fR.left),
-                    toCanvasY(fR.top),
-                    toCanvasX(tR.right),
-                    fR.height,
-                    planner.theme.stayField,
-                )
+                const toBlock = planner.blocks.find((b) => b.id === m.toBlockId)
+                if (nextBlockMap.get(m.fromBlockId) === m.toBlockId || toBlock?.isOffHand) {
+                    drawStayArrow(
+                        cx,
+                        toCanvasX(tR.left),
+                        toCanvasY(tR.top + tR.height / 2),
+                        planner.theme.stayField,
+                    )
+                } else {
+                    drawStayRect(
+                        cx,
+                        toCanvasX(fR.left),
+                        toCanvasY(fR.top),
+                        toCanvasX(tR.right),
+                        fR.height,
+                        planner.theme.stayField,
+                    )
+                }
             }
         })
 
@@ -187,22 +211,36 @@
             const tArea = tSegEl.querySelector('[data-track-area]')
             if (!fArea || !tArea) continue
 
-            drawStayRect(
-                cx,
-                toCanvasX(fR.left),
-                toCanvasY(fR.top),
-                toCanvasX(fArea.getBoundingClientRect().right),
-                fR.height,
-                planner.theme.stayField,
-            )
-            drawStayRect(
-                cx,
-                toCanvasX(tArea.getBoundingClientRect().left),
-                toCanvasY(tR.top),
-                toCanvasX(tR.right),
-                tR.height,
-                planner.theme.stayField,
-            )
+            const toBlock = planner.blocks.find((b) => b.id === m.toBlockId)
+            if (toBlock?.isOffHand) {
+                drawStayArrow(
+                    cx,
+                    toCanvasX(tR.left),
+                    toCanvasY(tR.top + tR.height / 2),
+                    planner.theme.stayField,
+                )
+            } else {
+                drawStayRectOpen(
+                    cx,
+                    toCanvasX(fR.left),
+                    toCanvasY(fR.top),
+                    toCanvasX(fArea.getBoundingClientRect().right),
+                    fR.height,
+                    planner.theme.stayField,
+                    true,
+                    false,
+                )
+                drawStayRectOpen(
+                    cx,
+                    toCanvasX(tArea.getBoundingClientRect().left),
+                    toCanvasY(tR.top),
+                    toCanvasX(tR.right),
+                    tR.height,
+                    planner.theme.stayField,
+                    false,
+                    true,
+                )
+            }
         }
 
         // ── Long-block wrap indicators ──

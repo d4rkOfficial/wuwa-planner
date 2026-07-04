@@ -32,9 +32,11 @@
                 const usedIds = new Set<string>()
 
                 for (const dstBlock of dstBlocks) {
+                    if (dstBlock.isOffHand) continue
                     const dx = dstBlock.x
 
                     for (const srcBlock of srcBlocks) {
+                        if (srcBlock.isOffHand) continue
                         if (usedIds.has(srcBlock.id)) continue
 
                         const srcEl = document.querySelector(
@@ -84,17 +86,29 @@
         return result
     }
 
-    function computeMarkers() {
+    function computeStayFieldIndicators() {
         const svg = document.querySelector('#arrow-svg') as SVGSVGElement
-        if (!svg) return []
+        if (!svg) return { rects: [], arrows: [] }
 
         const svgRect = svg.getBoundingClientRect()
-        const result: Array<{
+
+        const allBlocks = planner.blocks.toSorted((a, b) => a.x - b.x)
+        const nextBlockMap = new Map<string, string>()
+        for (let i = 0; i < allBlocks.length - 1; i++) {
+            nextBlockMap.set(allBlocks[i].id, allBlocks[i + 1].id)
+        }
+
+        const rects: Array<{
             id: string
             x: number
             y: number
             w: number
             h: number
+        }> = []
+        const arrows: Array<{
+            id: string
+            x: number
+            y: number
         }> = []
 
         for (const marker of planner.stayFieldMarkers) {
@@ -109,24 +123,42 @@
             const fromRect = fromEl.getBoundingClientRect()
             const toRect = toEl.getBoundingClientRect()
 
-            result.push({
-                id: marker.id,
-                x: fromRect.left - svgRect.left - 3,
-                y: fromRect.top - svgRect.top - 3,
-                w: toRect.right - fromRect.left + 6,
-                h: fromRect.height + 6,
-            })
+            const isConsecutive = nextBlockMap.get(marker.fromBlockId) === marker.toBlockId
+            const toBlock = planner.blocks.find((b) => b.id === marker.toBlockId)
+            const forceArrow = isConsecutive || toBlock?.isOffHand
+
+            if (forceArrow) {
+                arrows.push({
+                    id: marker.id,
+                    x: toRect.left - svgRect.left,
+                    y: toRect.top - svgRect.top + toRect.height / 2,
+                })
+            } else {
+                rects.push({
+                    id: marker.id,
+                    x: fromRect.left - svgRect.left - 3,
+                    y: fromRect.top - svgRect.top - 3,
+                    w: toRect.right - fromRect.left + 6,
+                    h: fromRect.height + 6,
+                })
+            }
         }
-        return result
+
+        return { rects, arrows }
     }
 
     let arrows = $state<ReturnType<typeof computeArrows>>([])
-    let markers = $state<ReturnType<typeof computeMarkers>>([])
+    let stayFieldRects = $state<Array<{ id: string; x: number; y: number; w: number; h: number }>>(
+        [],
+    )
+    let stayFieldArrows = $state<Array<{ id: string; x: number; y: number }>>([])
 
     $effect(() => {
         function update() {
             arrows = computeArrows()
-            markers = computeMarkers()
+            const indicators = computeStayFieldIndicators()
+            stayFieldRects = indicators.rects
+            stayFieldArrows = indicators.arrows
         }
         update()
         const observer = new MutationObserver(update)
@@ -177,18 +209,31 @@
         </g>
     {/each}
 
-    {#each markers as marker}
+    {#each stayFieldRects as rect}
         <rect
-            x={marker.x}
-            y={marker.y}
-            width={marker.w}
-            height={marker.h}
+            x={rect.x}
+            y={rect.y}
+            width={rect.w}
+            height={rect.h}
             fill="none"
             stroke={planner.theme.stayField}
             stroke-width="1.5"
             stroke-dasharray="4,3"
             stroke-opacity="0.5"
             rx="4"
+        />
+    {/each}
+
+    {#each stayFieldArrows as arrow}
+        <path
+            d={`M ${arrow.x - 12} ${arrow.y - 4} L ${arrow.x - 4} ${arrow.y - 4} L ${arrow.x - 4} ${arrow.y - 8} L ${arrow.x + 2} ${arrow.y} L ${arrow.x - 4} ${arrow.y + 8} L ${arrow.x - 4} ${arrow.y + 4} L ${arrow.x - 12} ${arrow.y + 4} Z`}
+            fill={planner.theme.stayField}
+            fill-opacity="0.35"
+            stroke={planner.theme.stayField}
+            stroke-opacity="0.35"
+            stroke-width="1.5"
+            stroke-linejoin="round"
+            stroke-linecap="round"
         />
     {/each}
 </svg>
