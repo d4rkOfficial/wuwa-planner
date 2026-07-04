@@ -1,0 +1,58 @@
+椰果排轴工具 公用许可 · Wuwa Planner Public License
+版本 1.0，2026 年 7 月
+
+## 许可条款
+
+### 1. 原作者身份
+本项目原作者为椰果（Yego），保留作为原始作者的身份认定权。
+
+### 2. 授予的权利
+在不违反本许可其他条款的前提下，允许任何个人或实体：
+
+- **使用** — 以任何方式使用本软件的全部或部分功能
+- **复制** — 复制本软件的任何副本
+- **修改（二创）** — 对本软件进行修改、改编、重构，创作衍生版本
+- **分发** — 以任何形式（包括但不限于源代码、编译产物、容器镜像等）分发原始版本或修改后的版本
+- **部署** — 将本软件部署到任何公共或私有服务器、云平台
+- **商业使用** — 将本软件或其衍生版本用于商业目的（包括但不限于付费服务、广告收入、嵌入商业产品）
+- **再许可** — 以您选择的任何许可条款分发您的修改版本
+
+### 3. 放弃署名
+作者放弃要求使用者必须署名的权利。使用、修改或分发本软件时，**无需**在显要位置标注原作者姓名或本项目链接。但若您在衍生作品中保留原作者信息，作者将表示感谢。
+
+### 4. 弃坑接手条款
+若作者连续 **12 个月** 未对本仓库（或明确指定的主仓库）进行任何有效提交或公告声明，则视为"弃坑"。此后**任何个人或组织**均可：
+
+- 接手本仓库的维护
+- 接手任何衍生版本的维护
+- 以原项目或衍生版本名称继续发布更新
+- 将项目迁移至其他平台或命名空间
+
+弃坑状态以仓库中最近一次有效提交的日期为准。
+
+### 5. 社区精神
+本项目的初衷之一是**推动鸣潮社区强度讨论的标准化**。作者希望（但不强制要求）所有使用者、贡献者和衍生版本维护者认同并践行以下精神：
+
+- 在强度讨论中以数据、计算和客观事实为依据
+- 鼓励公开、透明的方法论，便于他人复现和验证
+- 抵制拉踩、引战等不利于社区健康发展的行为
+- 推动形成社区公认的标准化评价体系
+
+### 6. 免责声明
+本软件按"原样"提供，**不提供任何明示或暗示的担保**，包括但不限于适销性、特定用途适用性和非侵权性。在任何情况下，作者或版权持有人均不对因使用本软件而产生的任何索赔、损害或其他责任负责。
+
+---
+
+本项目采用 **Wuwa Planner Public License**，一份基于 MIT 精神但包含社区特定条款的宽松许可。
+
+---
+
+## MIT License
+
+Copyright (c) 2026 椰果 (Yego)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

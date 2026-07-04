@@ -327,7 +327,7 @@
                     onwheel={handleWheel}
                 ></canvas>
             </div>
-                {#snippet previewPanel()}
+            {#snippet previewPanel()}
                 {#if image}
                     <div class="flex flex-col items-center gap-2 shrink-0 w-full sm:w-auto">
                         <canvas

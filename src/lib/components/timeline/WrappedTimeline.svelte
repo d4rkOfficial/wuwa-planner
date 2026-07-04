@@ -362,8 +362,17 @@
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<div bind:this={container} class="relative w-full px-5 {isMobile ? 'overflow-x-auto scrollbar-none' : ''}" oncontextmenu={handleContextMenu}>
-    <div bind:this={timelineRef} style="position: relative; background: {planner.theme.exportBg};{isMobile ? 'min-width: 1440px;' : ''}">
+<div
+    bind:this={container}
+    class="relative w-full px-5 {isMobile ? 'overflow-x-auto scrollbar-none' : ''}"
+    oncontextmenu={handleContextMenu}
+>
+    <div
+        bind:this={timelineRef}
+        style="position: relative; background: {planner.theme.exportBg};{isMobile
+            ? 'min-width: 1440px;'
+            : ''}"
+    >
         {#if segments.length === 0}
             <div
                 class="flex h-20 items-center justify-center text-sm"
@@ -373,7 +382,12 @@
             </div>
         {:else}
             {#each segments as seg, si}
-                <div data-wseg={si} style="position: relative;{si < segments.length - 1 ? ' margin-bottom: 24px;' : ''}">
+                <div
+                    data-wseg={si}
+                    style="position: relative;{si < segments.length - 1
+                        ? ' margin-bottom: 24px;'
+                        : ''}"
+                >
                     <div class="flex gap-0.5 pr-8">
                         <div
                             class="flex flex-col shrink-0"

@@ -51,7 +51,7 @@
     let keySingleRow = $derived(!isMobile && panelHeight < 320)
 
     function startResize(e: PointerEvent) {
-        (e.target as HTMLElement).setPointerCapture(e.pointerId)
+        ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
         const startY = e.clientY
         const startH = panelHeight
         const parent = (e.currentTarget as HTMLElement).parentElement!
@@ -263,8 +263,7 @@
                     } else {
                         sidebarCollapsed = !sidebarCollapsed
                     }
-                }}
-                >{isMobile ? '☰' : sidebarCollapsed ? '☰' : '✕'}</button
+                }}>{isMobile ? '☰' : sidebarCollapsed ? '☰' : '✕'}</button
             >
             <input
                 type="text"
@@ -295,7 +294,8 @@
                         ;(e.currentTarget as HTMLElement).style.color = planner.theme.textSecondary
                     }}
                     onclick={() => (themeOpen = !themeOpen)}
-                    ><span class="hidden sm:inline">{themeStore.getTheme(themeStore.activeThemeId)?.name ?? '主题'}</span
+                    ><span class="hidden sm:inline"
+                        >{themeStore.getTheme(themeStore.activeThemeId)?.name ?? '主题'}</span
                     ><span class="sm:hidden">主题</span></button
                 >
                 {#if themeOpen}
@@ -372,22 +372,29 @@
             </div>
 
             {#if !isMobile}
-            <div
-                class="shrink-0 h-2 cursor-row-resize relative z-10 flex items-center justify-center transition-colors hover:bg-white/5"
-                style="background: {planner.theme.border};"
-                onpointerdown={startResize}
-                role="separator"
-            >
                 <div
-                    class="w-6 h-0.5 rounded-full"
-                    style="background: {planner.theme.textSecondary}40;"
-                ></div>
-            </div>
+                    class="shrink-0 h-2 cursor-row-resize relative z-10 flex items-center justify-center transition-colors hover:bg-white/5"
+                    style="background: {planner.theme.border};"
+                    onpointerdown={startResize}
+                    role="separator"
+                >
+                    <div
+                        class="w-6 h-0.5 rounded-full"
+                        style="background: {planner.theme.textSecondary}40;"
+                    ></div>
+                </div>
             {/if}
 
             <div
                 class="flex gap-3 px-3 sm:px-4 py-3 sm:py-4 min-w-0 flex-col md:flex-row"
-                style="border-top: 1px solid {planner.theme.border}; {isMobile ? 'min-height: 180px' : 'height: ' + panelHeight + 'px' + (compactPalette && !isMobile && !superCompactPalette ? '; min-height: 280px' : '')};"
+                style="border-top: 1px solid {planner.theme.border}; {isMobile
+                    ? 'min-height: 180px'
+                    : 'height: ' +
+                      panelHeight +
+                      'px' +
+                      (compactPalette && !isMobile && !superCompactPalette
+                          ? '; min-height: 280px'
+                          : '')};"
             >
                 <div class="min-w-0 flex-1">
                     <ActionPalette
@@ -400,7 +407,7 @@
                         bind:comment
                         compact={compactPalette}
                         superCompact={superCompactPalette}
-                        keySingleRow={keySingleRow}
+                        {keySingleRow}
                     />
                 </div>
                 <div

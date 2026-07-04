@@ -175,7 +175,9 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
     class="flex h-dvh flex-col overflow-hidden transition-all duration-200"
-    style="width: {collapsed && !overlay ? '0px' : '220px'}; flex-shrink: 0; background: {t.sidebarBg}; border-right: 1px solid {t.sidebarBorder}; {overlay
+    style="width: {collapsed && !overlay
+        ? '0px'
+        : '220px'}; flex-shrink: 0; background: {t.sidebarBg}; border-right: 1px solid {t.sidebarBorder}; {overlay
         ? 'position: fixed; left: 0; top: 0; z-index: 50; box-shadow: 4px 0 20px rgba(0,0,0,0.3);'
         : collapsed
           ? 'overflow: hidden;'
@@ -263,26 +265,26 @@
         class:hidden={collapsed}
         style="border-top: 1px solid {t.sidebarBorder};"
     >
-            <button
-                class="font-black w-full rounded py-2 sm:py-1.5 text-xs transition-colors min-h-[36px]"
-                style="background: {t.buttonBg}; color: {t.buttonText}; border: 1px solid {t.buttonHover};"
-                onmouseenter={(e) =>
-                    ((e.currentTarget as HTMLElement).style.background = t.buttonHover)}
-                onmouseleave={(e) => {
-                    ;(e.currentTarget as HTMLElement).style.background = t.buttonBg
-                }}
-                onclick={handleNewProject}>创建空白工程</button
-            >
-            <button
-                class="font-black w-full rounded py-2 sm:py-1.5 text-xs transition-colors min-h-[36px]"
-                style="background: {t.buttonBg}; color: {t.buttonText}; border: 1px solid {t.buttonHover};"
-                onmouseenter={(e) =>
-                    ((e.currentTarget as HTMLElement).style.background = t.buttonHover)}
-                onmouseleave={(e) => {
-                    ;(e.currentTarget as HTMLElement).style.background = t.buttonBg
-                }}
-                onclick={handleImportProjectJSON}>从 JSON 导入工程</button
-            >
+        <button
+            class="font-black w-full rounded py-2 sm:py-1.5 text-xs transition-colors min-h-[36px]"
+            style="background: {t.buttonBg}; color: {t.buttonText}; border: 1px solid {t.buttonHover};"
+            onmouseenter={(e) =>
+                ((e.currentTarget as HTMLElement).style.background = t.buttonHover)}
+            onmouseleave={(e) => {
+                ;(e.currentTarget as HTMLElement).style.background = t.buttonBg
+            }}
+            onclick={handleNewProject}>创建空白工程</button
+        >
+        <button
+            class="font-black w-full rounded py-2 sm:py-1.5 text-xs transition-colors min-h-[36px]"
+            style="background: {t.buttonBg}; color: {t.buttonText}; border: 1px solid {t.buttonHover};"
+            onmouseenter={(e) =>
+                ((e.currentTarget as HTMLElement).style.background = t.buttonHover)}
+            onmouseleave={(e) => {
+                ;(e.currentTarget as HTMLElement).style.background = t.buttonBg
+            }}
+            onclick={handleImportProjectJSON}>从 JSON 导入工程</button
+        >
     </div>
 </div>
 

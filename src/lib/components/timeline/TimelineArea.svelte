@@ -290,7 +290,9 @@
     <div class="flex min-h-0 flex-1">
         <div
             bind:this={scrollContainer}
-            class="min-w-0 flex-1 min-h-0 scrollbar-none {isMobile ? 'overflow-x-hidden touch-pan-y' : 'overflow-x-auto'}"
+            class="min-w-0 flex-1 min-h-0 scrollbar-none {isMobile
+                ? 'overflow-x-hidden touch-pan-y'
+                : 'overflow-x-auto'}"
             onwheel={handleWheel}
         >
             <div style="position: relative; min-height: 0; min-width: {timelineMinWidth}px;">
@@ -308,7 +310,8 @@
                         >
                             <div
                                 class="relative h-8 w-8 shrink-0 overflow-hidden rounded-full"
-                                style="border: 2px solid {planner.getTrackColor(char.id, i).border};"
+                                style="border: 2px solid {planner.getTrackColor(char.id, i)
+                                    .border};"
                                 title={char.name}
                             >
                                 <Avatar presetId={char.presetId} name={char.name} size="md" />
@@ -390,7 +393,8 @@
         <div class="flex items-center justify-center gap-2 shrink-0 pb-2 px-2">
             <button
                 class="flex flex-1 h-9 items-center justify-center rounded text-lg font-bold transition-colors"
-                style="border: 1px solid {planner.theme.border}; color: {planner.theme.textSecondary}; background: {planner.theme.panelBg};"
+                style="border: 1px solid {planner.theme.border}; color: {planner.theme
+                    .textSecondary}; background: {planner.theme.panelBg};"
                 onmouseenter={(e) => {
                     ;(e.currentTarget as HTMLElement).style.background = planner.theme.buttonHover
                     ;(e.currentTarget as HTMLElement).style.color = planner.theme.text
@@ -400,11 +404,16 @@
                     ;(e.currentTarget as HTMLElement).style.color = planner.theme.textSecondary
                 }}
                 onpointerdown={(e) => e.preventDefault()}
-                onclick={() => scrollContainer?.scrollBy({ left: -Math.round(clientWidth * 0.2), behavior: 'smooth' })}
-            >‹</button>
+                onclick={() =>
+                    scrollContainer?.scrollBy({
+                        left: -Math.round(clientWidth * 0.2),
+                        behavior: 'smooth',
+                    })}>‹</button
+            >
             <button
                 class="flex flex-1 h-9 items-center justify-center rounded text-lg font-bold transition-colors"
-                style="border: 1px solid {planner.theme.border}; color: {planner.theme.textSecondary}; background: {planner.theme.panelBg};"
+                style="border: 1px solid {planner.theme.border}; color: {planner.theme
+                    .textSecondary}; background: {planner.theme.panelBg};"
                 onmouseenter={(e) => {
                     ;(e.currentTarget as HTMLElement).style.background = planner.theme.buttonHover
                     ;(e.currentTarget as HTMLElement).style.color = planner.theme.text
@@ -414,8 +423,12 @@
                     ;(e.currentTarget as HTMLElement).style.color = planner.theme.textSecondary
                 }}
                 onpointerdown={(e) => e.preventDefault()}
-                onclick={() => scrollContainer?.scrollBy({ left: Math.round(clientWidth * 0.2), behavior: 'smooth' })}
-            >›</button>
+                onclick={() =>
+                    scrollContainer?.scrollBy({
+                        left: Math.round(clientWidth * 0.2),
+                        behavior: 'smooth',
+                    })}>›</button
+            >
         </div>
     {/if}
 </div>
