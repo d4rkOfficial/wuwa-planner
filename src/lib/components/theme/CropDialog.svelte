@@ -2,6 +2,12 @@
     import { planner } from '$lib/stores/planner.svelte'
     import { dialog } from '$lib/stores/dialog.svelte'
     import { onMount } from 'svelte'
+    import {
+        getHandleAt,
+        cursorStyle as cursorStyleUtil,
+        clampCropResize,
+        rotateImageDataUrl,
+    } from '$lib/utils/crop'
 
     let {
         imageUrl,
@@ -148,18 +154,8 @@
         }
     }
 
-    function getHandleAt(mx: number, my: number): string | null {
-        const hs = 14
-        const checks: [string, number, number][] = [
-            ['resize-tl', cropDispX, cropDispY],
-            ['resize-tr', cropDispX + cropDispSize, cropDispY],
-            ['resize-bl', cropDispX, cropDispY + cropDispSize],
-            ['resize-br', cropDispX + cropDispSize, cropDispY + cropDispSize],
-        ]
-        for (const [mode, hx, hy] of checks) {
-            if (Math.abs(mx - hx) <= hs && Math.abs(my - hy) <= hs) return mode
-        }
-        return null
+    function getHandleAtLocal(mx: number, my: number): string | null {
+        return getHandleAt(mx, my, cropDispX, cropDispY, cropDispSize)
     }
 
     function handleMousedown(e: MouseEvent) {
@@ -168,7 +164,7 @@
         const mx = e.clientX - rect.left
         const my = e.clientY - rect.top
 
-        const handle = getHandleAt(mx, my)
+        const handle = getHandleAtLocal(mx, my)
         if (handle) {
             dragMode = handle as any
             dragStart = { mx, my, cx: cropX, cy: cropY, cs: cropSize }
@@ -206,33 +202,10 @@
             return
         }
 
-        const cx = dragStart.cx,
-            cy = dragStart.cy,
-            cs = dragStart.cs
-
-        if (dragMode === 'resize-br') {
-            let ns = Math.max(20, cs + Math.max(dx, dy))
-            ns = Math.min(ns, nw - cx, nh - cy)
-            cropSize = ns
-        } else if (dragMode === 'resize-tr') {
-            let ns = Math.max(20, cs + Math.max(-dx, dy))
-            ns = Math.min(ns, cx + cs, nh - cy)
-            cropX = cx + cs - ns
-            cropY = cy
-            cropSize = ns
-        } else if (dragMode === 'resize-bl') {
-            let ns = Math.max(20, cs + Math.max(dx, -dy))
-            ns = Math.min(ns, nw - cx, cy + cs)
-            cropX = cx
-            cropY = cy + cs - ns
-            cropSize = ns
-        } else if (dragMode === 'resize-tl') {
-            let ns = Math.max(20, cs + Math.max(-dx, -dy))
-            ns = Math.min(ns, cx + cs, cy + cs)
-            cropX = cx + cs - ns
-            cropY = cy + cs - ns
-            cropSize = ns
-        }
+        const r = clampCropResize(dragMode, dragStart, dx, dy, nw, nh)
+        cropX = r.cropX
+        cropY = r.cropY
+        cropSize = r.cropSize
     }
 
     function handleMouseup() {
@@ -246,20 +219,9 @@
         hasAdjusted = true
     }
 
-    function rotate(degrees: number) {
+    async function rotate(degrees: number) {
         if (!image) return
-        const canvas = document.createElement('canvas')
-        const rad = (degrees * Math.PI) / 180
-        const cos = Math.abs(Math.cos(rad))
-        const sin = Math.abs(Math.sin(rad))
-        canvas.width = Math.round(nh * sin + nw * cos)
-        canvas.height = Math.round(nh * cos + nw * sin)
-        const ctx = canvas.getContext('2d')
-        if (!ctx) return
-        ctx.translate(canvas.width / 2, canvas.height / 2)
-        ctx.rotate(rad)
-        ctx.drawImage(image, -nw / 2, -nh / 2)
-        const dataUrl = canvas.toDataURL()
+        const dataUrl = await rotateImageDataUrl(image?.src ?? '', degrees, nw, nh)
         loadImage(dataUrl)
     }
 
@@ -307,10 +269,8 @@
         }
     }
 
-    function cursorStyle() {
-        if (dragMode) return 'grabbing'
-        if (!canvasEl) return 'default'
-        return 'default'
+    function cursorStyleLocal() {
+        return cursorStyleUtil(dragMode)
     }
 </script>
 
@@ -351,7 +311,7 @@
                 onclick={tryClose}>✕</button
             >
         </div>
-        <div class="p-4 flex gap-4 overflow-y-auto min-h-0 scrollable-area">
+        <div class="p-4 flex flex-col sm:flex-row gap-4 overflow-y-auto min-h-0 scrollable-area">
             <div
                 bind:this={containerEl}
                 class="relative select-none overflow-hidden rounded shrink-0"
@@ -362,58 +322,61 @@
                     width={cw}
                     height={ch}
                     class="absolute inset-0"
-                    style="cursor: {cursorStyle()};"
+                    style="cursor: {cursorStyleLocal()};"
                     onmousedown={handleMousedown}
                     onwheel={handleWheel}
                 ></canvas>
             </div>
-            {#if image}
-                <div class="flex flex-col items-center gap-2 shrink-0">
-                    <canvas
-                        bind:this={previewCanvasEl}
-                        width={outputSize}
-                        height={outputSize}
-                        class="rounded border shrink-0"
-                        style="border-color: {t.border}; width: {outputSize *
-                            2}px; height: {outputSize * 2}px; image-rendering: auto;"
-                    ></canvas>
-                    <div class="text-[10px]" style="color: {t.mutedText};">
-                        {outputSize}×{outputSize} 预览
+                {#snippet previewPanel()}
+                {#if image}
+                    <div class="flex flex-col items-center gap-2 shrink-0 w-full sm:w-auto">
+                        <canvas
+                            bind:this={previewCanvasEl}
+                            width={outputSize}
+                            height={outputSize}
+                            class="rounded border shrink-0"
+                            style="border-color: {t.border}; width: {outputSize *
+                                2}px; height: {outputSize * 2}px; image-rendering: auto;"
+                        ></canvas>
+                        <div class="text-[10px]" style="color: {t.mutedText};">
+                            {outputSize}×{outputSize} 预览
+                        </div>
+                        <div class="text-xs" style="color: {t.textSecondary};">
+                            {((cropSize / nw) * 100).toFixed(0)}%
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button
+                                class="rounded px-2 py-1 text-[10px] transition-colors"
+                                style="color: {t.textSecondary}; border: 1px solid {t.border};"
+                                onclick={() => rotate(-90)}
+                                title="向左旋转 90°">↺ 90°</button
+                            >
+                            <button
+                                class="rounded px-2 py-1 text-[10px] transition-colors"
+                                style="color: {t.textSecondary}; border: 1px solid {t.border};"
+                                onclick={() => rotate(90)}
+                                title="向右旋转 90°">↻ 90°</button
+                            >
+                        </div>
+                        <div class="text-[10px]" style="color: {t.mutedText};">
+                            拖拽移动 · 四角缩放 · 滚轮缩放
+                        </div>
+                        <div class="flex gap-2 mt-auto">
+                            <button
+                                class="rounded px-3 py-1.5 text-xs transition-colors"
+                                style="background: {t.buttonBg}; color: {t.buttonText}; border: 1px solid {t.border};"
+                                onclick={tryClose}>取消</button
+                            >
+                            <button
+                                class="rounded px-3 py-1.5 text-xs transition-colors"
+                                style="background: {t.confirmBtnBg}; color: #ffffff;"
+                                onclick={doCrop}>确认裁剪</button
+                            >
+                        </div>
                     </div>
-                    <div class="text-xs" style="color: {t.textSecondary};">
-                        {((cropSize / nw) * 100).toFixed(0)}%
-                    </div>
-                    <div class="flex items-center gap-1">
-                        <button
-                            class="rounded px-2 py-1 text-[10px] transition-colors"
-                            style="color: {t.textSecondary}; border: 1px solid {t.border};"
-                            onclick={() => rotate(-90)}
-                            title="向左旋转 90°">↺ 90°</button
-                        >
-                        <button
-                            class="rounded px-2 py-1 text-[10px] transition-colors"
-                            style="color: {t.textSecondary}; border: 1px solid {t.border};"
-                            onclick={() => rotate(90)}
-                            title="向右旋转 90°">↻ 90°</button
-                        >
-                    </div>
-                    <div class="text-[10px]" style="color: {t.mutedText};">
-                        拖拽移动 · 四角缩放 · 滚轮缩放
-                    </div>
-                    <div class="flex gap-2 mt-auto">
-                        <button
-                            class="rounded px-3 py-1.5 text-xs transition-colors"
-                            style="background: {t.buttonBg}; color: {t.buttonText}; border: 1px solid {t.border};"
-                            onclick={tryClose}>取消</button
-                        >
-                        <button
-                            class="rounded px-3 py-1.5 text-xs transition-colors"
-                            style="background: {t.confirmBtnBg}; color: #ffffff;"
-                            onclick={doCrop}>确认裁剪</button
-                        >
-                    </div>
-                </div>
-            {/if}
+                {/if}
+            {/snippet}
+            {@render previewPanel()}
         </div>
     </div>
 </div>

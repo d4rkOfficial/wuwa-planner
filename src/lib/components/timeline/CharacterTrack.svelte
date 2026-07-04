@@ -2,6 +2,7 @@
     import type { Character, KeyOperation, KeyType, KeyMode } from '$lib/types'
     import { planner } from '$lib/stores/planner.svelte'
     import ActionBlockComp from './ActionBlock.svelte'
+    import { findSnapTarget as findSnapTargetUtil } from '$lib/utils/timeline'
 
     let {
         character,
@@ -58,12 +59,8 @@
         isDragOver = false
     }
 
-    function findSnapTarget(excludeBlockId: string, newX: number): string | null {
-        const otherBlocks = blocks.filter((b) => b.id !== excludeBlockId)
-        for (const other of otherBlocks) {
-            if (Math.abs(other.x - newX) <= SNAP_THRESHOLD) return other.id
-        }
-        return null
+    function findSnapTargetLocal(excludeBlockId: string, newX: number): string | null {
+        return findSnapTargetUtil(blocks, excludeBlockId, newX, SNAP_THRESHOLD)
     }
 
     function handleDrop(e: DragEvent) {
@@ -116,7 +113,7 @@
             const { fromBlockId, keyOp, keyOpIndex } = JSON.parse(moveData)
             const dropX = Math.max(MIN_BLOCK_X, e.clientX - offset - 24)
 
-            const snapTarget = findSnapTarget('', dropX)
+            const snapTarget = findSnapTargetLocal('', dropX)
             if (snapTarget) {
                 planner.removeKeyOp(fromBlockId, keyOpIndex)
                 planner.addKeyOp(snapTarget, keyOp)
@@ -148,7 +145,7 @@
         if (parsed.comment) keyOp.comment = parsed.comment
         const x = Math.max(MIN_BLOCK_X, e.clientX - offset - 24)
 
-        const snapTarget = findSnapTarget('', x)
+        const snapTarget = findSnapTargetLocal('', x)
         if (snapTarget) {
             planner.addKeyOp(snapTarget, keyOp)
         } else {
@@ -180,7 +177,7 @@
         const trackRect = trackEl.getBoundingClientRect()
         const x = Math.max(MIN_BLOCK_X, e.clientX - trackRect.left - dragState.offsetX)
 
-        const snapId = findSnapTarget(dragState.blockId, x)
+        const snapId = findSnapTargetLocal(dragState.blockId, x)
         if (snapId) {
             const target = planner.blocks.find((b) => b.id === snapId)
             if (target) {

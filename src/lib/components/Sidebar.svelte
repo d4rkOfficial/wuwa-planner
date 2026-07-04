@@ -4,17 +4,34 @@
     import { planner } from '$lib/stores/planner.svelte'
     import { dialog } from '$lib/stores/dialog.svelte'
     import { getCharacterPresets } from '$lib/data/characters'
-    import { ELEMENT_BORDER_COLORS } from '$lib/data/themes'
     import { exportRotation, importRotation } from '$lib/utils/export'
     import { downloadJSON } from '$lib/utils/download'
+    import {
+        getAvatarSrc as getAvatarSrcUtil,
+        getCharName as getCharNameUtil,
+        getElementColor as getElementColorUtil,
+    } from '$lib/utils/sidebar'
     import type { ProjectData } from '$lib/types/project'
 
-    let { collapsed = false, ontoggle }: { collapsed?: boolean; ontoggle?: () => void } = $props()
+    let {
+        collapsed = false,
+        ontoggle,
+        overlay = false,
+        onclose,
+    }: {
+        collapsed?: boolean
+        ontoggle?: () => void
+        overlay?: boolean
+        onclose?: () => void
+    } = $props()
 
     let isTouch = $state(false)
     let renamingId = $state<string | null>(null)
     let renameValue = $state('')
     let menuTarget = $state<{ id: string; x: number; y: number } | null>(null)
+    let menuAdjX = $state(0)
+    let menuAdjY = $state(0)
+    let menuRef = $state<HTMLDivElement>()
     let fileInput: HTMLInputElement
 
     onMount(() => {
@@ -25,17 +42,11 @@
     let t = $derived(planner.theme)
 
     function getAvatarSrc(project: ProjectData, slotIndex: number): string | null {
-        const char = project.characters[slotIndex]
-        if (!char?.presetId) return null
-        return (
-            planner.theme.avatarOverrides?.[char.presetId] ?? `/images/avatars/${char.presetId}.png`
-        )
+        return getAvatarSrcUtil(project, slotIndex, planner.theme.avatarOverrides)
     }
 
     function getCharName(project: ProjectData, slotIndex: number): string {
-        const char = project.characters[slotIndex]
-        if (!char) return '?'
-        return char.name.charAt(0)
+        return getCharNameUtil(project, slotIndex)
     }
 
     function handleSelect(id: string) {
@@ -134,12 +145,25 @@
     }
 
     function getElementColor(project: ProjectData, slotIndex: number): string {
-        const char = project.characters[slotIndex]
-        if (!char?.presetId) return t.fallbackTrack
-        const preset = presets.find((p) => p.id === char.presetId)
-        if (!preset) return t.fallbackTrack
-        return (ELEMENT_BORDER_COLORS[preset.element] ?? [t.fallbackTrack])[0]
+        return getElementColorUtil(project, slotIndex, presets, t.fallbackTrack)
     }
+
+    $effect(() => {
+        if (!menuTarget) {
+            menuAdjX = 0
+            menuAdjY = 0
+            return
+        }
+        const m = menuTarget
+        menuAdjX = m.x
+        menuAdjY = m.y
+        requestAnimationFrame(() => {
+            if (!menuRef) return
+            const r = menuRef.getBoundingClientRect()
+            menuAdjX = Math.max(4, Math.min(m.x, innerWidth - r.width - 4))
+            menuAdjY = Math.max(4, Math.min(m.y, innerHeight - r.height - 4))
+        })
+    })
 
     function handleDocClick() {
         menuTarget = null
@@ -150,10 +174,12 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-    class="flex h-screen flex-col overflow-hidden transition-all duration-200"
-    style="width: {collapsed ? '0px' : '220px'}; flex-shrink: 0; background: {collapsed
-        ? t.sidebarBg
-        : t.sidebarBg}; border-right: 1px solid {t.sidebarBorder};"
+    class="flex h-dvh flex-col overflow-hidden transition-all duration-200"
+    style="width: {collapsed && !overlay ? '0px' : '220px'}; flex-shrink: 0; background: {t.sidebarBg}; border-right: 1px solid {t.sidebarBorder}; {overlay
+        ? 'position: fixed; left: 0; top: 0; z-index: 50; box-shadow: 4px 0 20px rgba(0,0,0,0.3);'
+        : collapsed
+          ? 'overflow: hidden;'
+          : ''};"
     oncontextmenu={(e) => e.preventDefault()}
 >
     <div
@@ -233,30 +259,30 @@
     </div>
 
     <div
-        class="p-3 flex flex-col gap-1.5"
+        class="p-3 flex flex-col gap-1.5 shrink-0"
         class:hidden={collapsed}
         style="border-top: 1px solid {t.sidebarBorder};"
     >
-        <button
-            class="font-black w-full rounded py-1.5 text-xs transition-colors"
-            style="background: {t.buttonBg}; color: {t.buttonText}; border: 1px solid {t.buttonHover};"
-            onmouseenter={(e) =>
-                ((e.currentTarget as HTMLElement).style.background = t.buttonHover)}
-            onmouseleave={(e) => {
-                ;(e.currentTarget as HTMLElement).style.background = t.buttonBg
-            }}
-            onclick={handleNewProject}>创建空白工程</button
-        >
-        <button
-            class="font-black w-full rounded py-1.5 text-xs transition-colors"
-            style="background: {t.buttonBg}; color: {t.buttonText}; border: 1px solid {t.buttonHover};"
-            onmouseenter={(e) =>
-                ((e.currentTarget as HTMLElement).style.background = t.buttonHover)}
-            onmouseleave={(e) => {
-                ;(e.currentTarget as HTMLElement).style.background = t.buttonBg
-            }}
-            onclick={handleImportProjectJSON}>从 JSON 导入工程</button
-        >
+            <button
+                class="font-black w-full rounded py-2 sm:py-1.5 text-xs transition-colors min-h-[36px]"
+                style="background: {t.buttonBg}; color: {t.buttonText}; border: 1px solid {t.buttonHover};"
+                onmouseenter={(e) =>
+                    ((e.currentTarget as HTMLElement).style.background = t.buttonHover)}
+                onmouseleave={(e) => {
+                    ;(e.currentTarget as HTMLElement).style.background = t.buttonBg
+                }}
+                onclick={handleNewProject}>创建空白工程</button
+            >
+            <button
+                class="font-black w-full rounded py-2 sm:py-1.5 text-xs transition-colors min-h-[36px]"
+                style="background: {t.buttonBg}; color: {t.buttonText}; border: 1px solid {t.buttonHover};"
+                onmouseenter={(e) =>
+                    ((e.currentTarget as HTMLElement).style.background = t.buttonHover)}
+                onmouseleave={(e) => {
+                    ;(e.currentTarget as HTMLElement).style.background = t.buttonBg
+                }}
+                onclick={handleImportProjectJSON}>从 JSON 导入工程</button
+            >
     </div>
 </div>
 
@@ -268,39 +294,53 @@
     onchange={handleFileSelected}
 />
 
-{#if menuTarget}
-    <!-- svelte-ignore a11y_click_events_have_key_events -->
+{#if overlay}
     <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
     <div
-        class="fixed z-50 w-40 rounded-lg py-1 shadow-xl"
-        style="left: {menuTarget.x}px; top: {menuTarget.y}px; border: 1px solid {t.contextBorder}; background: {t.contextBg};"
-        onclick={() => {}}
-    >
-        <button
-            class="flex w-full items-center px-3 py-2 text-left text-xs transition-colors"
-            style="color: {t.text};"
-            onmouseenter={(e) =>
-                ((e.currentTarget as HTMLElement).style.background = t.contextHover)}
-            onmouseleave={(e) => ((e.currentTarget as HTMLElement).style.background = '')}
-            onclick={() => handleExportJSON(menuTarget!.id)}>导出 JSON</button
-        >
-        <div style="border-top: 1px solid {t.divider};"></div>
-        <button
-            class="flex w-full items-center px-3 py-2 text-left text-xs transition-colors"
-            style="color: {t.text};"
-            onmouseenter={(e) =>
-                ((e.currentTarget as HTMLElement).style.background = t.contextHover)}
-            onmouseleave={(e) => ((e.currentTarget as HTMLElement).style.background = '')}
-            onclick={() => handleDuplicateProject(menuTarget!.id)}>复制工程</button
-        >
-        <button
-            class="flex w-full items-center px-3 py-2 text-left text-xs transition-colors"
-            style="color: {t.dangerText};"
-            class:hidden={projects.projects.length <= 1}
-            onmouseenter={(e) =>
-                ((e.currentTarget as HTMLElement).style.background = t.dangerHover)}
-            onmouseleave={(e) => ((e.currentTarget as HTMLElement).style.background = '')}
-            onclick={() => handleDeleteProject(menuTarget!.id)}>删除工程</button
-        >
-    </div>
+        class="fixed inset-0 z-40"
+        style="background: {t.overlayBackdrop};"
+        onclick={() => onclose?.()}
+    ></div>
 {/if}
+
+{#snippet projectContextMenu()}
+    {#if menuTarget}
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
+        <div
+            bind:this={menuRef}
+            class="fixed z-50 w-40 rounded-lg py-1 shadow-xl"
+            style="left: {menuAdjX}px; top: {menuAdjY}px; border: 1px solid {t.contextBorder}; background: {t.contextBg};"
+            onclick={() => {}}
+        >
+            <button
+                class="flex w-full items-center px-3 py-2 text-left text-xs transition-colors"
+                style="color: {t.text};"
+                onmouseenter={(e) =>
+                    ((e.currentTarget as HTMLElement).style.background = t.contextHover)}
+                onmouseleave={(e) => ((e.currentTarget as HTMLElement).style.background = '')}
+                onclick={() => handleExportJSON(menuTarget!.id)}>导出 JSON</button
+            >
+            <div style="border-top: 1px solid {t.divider};"></div>
+            <button
+                class="flex w-full items-center px-3 py-2 text-left text-xs transition-colors"
+                style="color: {t.text};"
+                onmouseenter={(e) =>
+                    ((e.currentTarget as HTMLElement).style.background = t.contextHover)}
+                onmouseleave={(e) => ((e.currentTarget as HTMLElement).style.background = '')}
+                onclick={() => handleDuplicateProject(menuTarget!.id)}>复制工程</button
+            >
+            <button
+                class="flex w-full items-center px-3 py-2 text-left text-xs transition-colors"
+                style="color: {t.dangerText};"
+                class:hidden={projects.projects.length <= 1}
+                onmouseenter={(e) =>
+                    ((e.currentTarget as HTMLElement).style.background = t.dangerHover)}
+                onmouseleave={(e) => ((e.currentTarget as HTMLElement).style.background = '')}
+                onclick={() => handleDeleteProject(menuTarget!.id)}>删除工程</button
+            >
+        </div>
+    {/if}
+{/snippet}
+{@render projectContextMenu()}

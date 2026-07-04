@@ -8,6 +8,26 @@
 
     let { x = 0, y = 0, items = [] as ContextMenuItem[], onclose = () => {} } = $props()
 
+    let ref = $state<HTMLDivElement>()
+    let adjX = $state(0)
+    let adjY = $state(0)
+
+    $effect(() => {
+        if (x <= 0 || y <= 0) {
+            adjX = 0
+            adjY = 0
+            return
+        }
+        adjX = x
+        adjY = y
+        requestAnimationFrame(() => {
+            if (!ref) return
+            const r = ref.getBoundingClientRect()
+            adjX = Math.max(4, Math.min(x, innerWidth - r.width - 4))
+            adjY = Math.max(4, Math.min(y, innerHeight - r.height - 4))
+        })
+    })
+
     function handleAction(item: ContextMenuItem) {
         if (!item.disabled) {
             item.action()
@@ -27,8 +47,9 @@
 
 {#if x > 0 && y > 0}
     <div
+        bind:this={ref}
         class="fixed z-50 min-w-36 rounded-lg border border-zinc-700 bg-zinc-800 py-1 shadow-xl"
-        style="left: {x}px; top: {y}px;"
+        style="left: {adjX}px; top: {adjY}px;"
     >
         {#each items as item}
             <button

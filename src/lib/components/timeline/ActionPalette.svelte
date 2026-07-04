@@ -1,5 +1,11 @@
 <script lang="ts">
     import type { KeyType, KeyMode, Theme } from '$lib/types'
+    import {
+        KEY_TYPES,
+        MODE_OPTIONS,
+        setComboA as calcComboA,
+        setComboB as calcComboB,
+    } from '$lib/data/action-palette'
     import KeyIcon from './KeyIcon.svelte'
     import StrongBadge from './StrongBadge.svelte'
 
@@ -11,6 +17,9 @@
         comboB = $bindable(0),
         strong = $bindable(false),
         comment = $bindable(''),
+        compact = false,
+        superCompact = false,
+        keySingleRow = false,
     }: {
         theme: Theme
         selectedKey?: KeyType
@@ -19,32 +28,21 @@
         comboB?: number
         strong?: boolean
         comment?: string
+        compact?: boolean
+        superCompact?: boolean
+        keySingleRow?: boolean
     } = $props()
 
     function setComboA(v: number) {
-        if (v <= 0) {
-            comboA = 0
-            comboB = 0
-        } else {
-            comboA = v
-            if (comboB < v) comboB = v
-        }
-        if (comboA > 9) {
-            resetCombo()
-        }
+        const r = calcComboA(v, { comboA, comboB })
+        comboA = r.comboA
+        comboB = r.comboB
     }
 
     function setComboB(v: number) {
-        if (v <= 0) {
-            comboA = 0
-            comboB = 0
-        } else {
-            comboB = v
-            if (comboA > v) comboA = v
-        }
-        if (comboB > 9) {
-            resetCombo()
-        }
+        const r = calcComboB(v, { comboA, comboB })
+        comboB = r.comboB
+        comboA = r.comboA
     }
 
     function resetCombo() {
@@ -60,27 +58,6 @@
         strong = false
     })
 
-    const keyTypes: { key: KeyType; title: string; desc: string }[] = [
-        { key: 'LMB', title: '左键', desc: '普攻 / 重击' },
-        { key: 'RMB', title: '右键', desc: '闪避' },
-        { key: 'Q', title: 'Q', desc: '声骸技能' },
-        { key: 'E', title: 'E', desc: '共鸣技能' },
-        { key: 'R', title: 'R', desc: '共鸣解放' },
-        { key: 'T', title: 'T', desc: '探索工具' },
-        { key: 'F', title: '处决', desc: '谐度破环' },
-        { key: 'X', title: '下落', desc: '下落攻击' },
-        { key: 'jump', title: '跳', desc: '跳跃' },
-        { key: 'V', title: '', desc: '空操作' },
-    ]
-
-    const modes: { key: KeyMode; title: string; desc: string }[] = [
-        { key: 'click', title: '点按', desc: '按下即放' },
-        { key: 'hold', title: '长按', desc: '按住持续' },
-        { key: 'preinput_swap', title: '预↔', desc: '切人前预输入' },
-        { key: 'preinput_action', title: '预→', desc: '动作间预输入' },
-        { key: 'rapid_click', title: '连击', desc: '狂按' },
-    ]
-
     function startDrag(e: DragEvent) {
         const data = JSON.stringify({
             key: selectedKey,
@@ -95,6 +72,96 @@
     }
 </script>
 
+{#if superCompact}
+<div
+    class="flex h-full flex-col rounded-lg p-2"
+    style="border: 1px solid {theme.border}; background: {theme.panelBg};"
+>
+    <div class="flex-1 grid min-h-0" style="grid-template-columns: 1fr 1fr; grid-template-rows: auto 1fr; gap: 4px;">
+        <!-- 左: 按键 5列×2行 -->
+        <div class="flex flex-col min-h-0 overflow-hidden p-1" style="grid-row: span 2;">
+            <span class="mb-1.5 text-[10px] font-semibold leading-none hidden" style="color: {theme.textSecondary};">按键</span>
+            <div class="grid grid-cols-5 gap-1.5 flex-1">
+                {#each KEY_TYPES as kt}
+                    <button
+                        class="flex items-center justify-center rounded transition-colors py-1"
+                        style="border: 1px solid {theme.nodeColors[kt.key] ?? theme.fallbackTrack}{selectedKey === kt.key ? '80' : '40'}; background: {selectedKey === kt.key ? (theme.nodeColors[kt.key] ?? theme.fallbackTrack) + '25' : 'transparent'}; color: {theme.text}; {selectedKey === kt.key ? `box-shadow: 0 0 0 1.5px ${theme.nodeColors[kt.key] ?? theme.fallbackTrack};` : ''}"
+                        onclick={() => (selectedKey = kt.key)}
+                    >
+                        <KeyIcon key={kt.key} size="sm" color={theme.nodeColors[kt.key]} mode={selectedKey === 'LMB' ? selectedMode : undefined} />
+                    </button>
+                {/each}
+            </div>
+        </div>
+        <!-- 右上: 连段(上) + 特殊(下) -->
+        <div class="flex flex-col gap-1.5 min-h-0 overflow-hidden p-1">
+            <div class="flex flex-col min-w-0 overflow-hidden p-1">
+                <span class="mb-1.5 text-[10px] font-semibold leading-none hidden" style="color: {theme.textSecondary};">连段</span>
+                <div class="flex items-center gap-1.5 flex-nowrap whitespace-nowrap" style="color: {theme.textSecondary}; font-size: 11px;">
+                    <button
+                        class="flex h-4 w-4 items-center justify-center rounded border font-bold shrink-0"
+                        style="border-color: {theme.border}; color: {theme.textSecondary}; font-size: 11px;"
+                        onclick={() => setComboA(Math.max(0, comboA - 1))}>−</button>
+                    <span class="inline-flex min-w-[16px] items-center justify-center rounded border font-bold leading-none shrink-0"
+                        style="border-color: {theme.accentText}; color: {theme.accentText}; background: {theme.selectedModeBg}; font-size: 11px; padding: 1px 3px;">{comboA}</span>
+                    <button
+                        class="flex h-4 w-4 items-center justify-center rounded border font-bold shrink-0"
+                        style="border-color: {theme.border}; color: {theme.textSecondary}; font-size: 11px;"
+                        onclick={() => setComboA(comboA + 1)}>+</button>
+                    <span>至</span>
+                    <button
+                        class="flex h-4 w-4 items-center justify-center rounded border font-bold shrink-0"
+                        style="border-color: {theme.border}; color: {theme.textSecondary}; font-size: 11px;"
+                        onclick={() => setComboB(Math.max(0, comboB - 1))}>−</button>
+                    <span class="inline-flex min-w-[16px] items-center justify-center rounded border font-bold leading-none shrink-0"
+                        style="border-color: {theme.accentText}; color: {theme.accentText}; background: {theme.selectedModeBg}; font-size: 11px; padding: 1px 3px;">{comboB}</span>
+                    <button
+                        class="flex h-4 w-4 items-center justify-center rounded border font-bold shrink-0"
+                        style="border-color: {theme.border}; color: {theme.textSecondary}; font-size: 11px;"
+                        onclick={() => setComboB(comboB + 1)}>+</button>
+                    <span>段</span>
+                </div>
+            </div>
+            <div class="flex flex-col min-w-0 overflow-hidden p-1">
+                <span class="mb-1.5 text-[10px] font-semibold leading-none hidden" style="color: {theme.textSecondary};">特殊</span>
+                <div class="flex items-center gap-1.5 overflow-hidden">
+                    <button
+                        class="flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors"
+                        style="border-color: {strong ? theme.accentText : theme.border}; background: {strong ? theme.selectedModeBg : 'transparent'}; color: {strong ? theme.accentText : theme.textSecondary};"
+                        onclick={() => (strong = !strong)}
+                        title="强化"
+                    ><StrongBadge size={11} /></button>
+                    <input
+                        type="text"
+                        class="min-w-0 flex-1 rounded border bg-transparent px-2 py-1 outline-none"
+                        style="border-color: {theme.border}; color: {theme.text}; font-size: 11px;"
+                        placeholder="备注"
+                        value={comment}
+                        oninput={(e) => {
+                            const v = (e.target as HTMLInputElement).value.replace(/\s/g, '')
+                            comment = v
+                            ;(e.target as HTMLInputElement).value = v
+                        }}
+                    />
+                </div>
+            </div>
+        </div>
+        <!-- 右下: 模式 一行5列 -->
+        <div class="flex flex-col min-h-0 overflow-hidden p-1">
+            <span class="mb-1.5 text-[10px] font-semibold leading-none hidden" style="color: {theme.textSecondary};">模式</span>
+            <div class="grid grid-cols-5 gap-1.5 flex-1">
+                {#each MODE_OPTIONS as m}
+                    <button
+                        class="flex items-center justify-center rounded transition-colors"
+                        style="border: 1px solid {selectedMode === m.key ? theme.accentText : theme.border}; color: {theme.text}; background: {selectedMode === m.key ? theme.selectedModeBg : 'transparent'}; {selectedMode === m.key ? `box-shadow: 0 0 0 1.5px ${theme.selectedModeRing};` : ''} font-size: 10px; padding: 4px 6px;"
+                        onclick={() => (selectedMode = m.key)}
+                    ><span class="font-bold leading-tight">{m.title}</span></button>
+                {/each}
+            </div>
+        </div>
+    </div>
+</div>
+{:else}
 <div
     class="flex h-full flex-col rounded-lg p-2 sm:p-3"
     style="border: 1px solid {theme.border}; background: {theme.panelBg};"
@@ -108,7 +175,7 @@
         </h3>
         <!-- svelte-ignore a11y_no_static_element_interactions -->
         <div
-            class="flex cursor-grab items-center gap-0.5 rounded border border-dashed px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium transition-colors active:cursor-grabbing"
+            class="hidden md:flex cursor-grab items-center gap-0.5 rounded border border-dashed px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium transition-colors active:cursor-grabbing"
             style="border-color: {theme.border}; color: {theme.textSecondary};"
             onmouseenter={(e) => {
                 ;(e.currentTarget as HTMLElement).style.borderColor = theme.text
@@ -126,25 +193,26 @@
         </div>
     </div>
 
-    <div class="flex flex-1 flex-col gap-1 sm:gap-2 min-h-0">
-        <div class="flex-1 min-h-0">
-            <span
-                class="mb-1.5 block text-[11px] sm:text-xs font-semibold"
-                style="color: {theme.textSecondary};">按键</span
-            >
-            <div class="grid grid-cols-5 gap-1.5 sm:gap-2">
-                {#each keyTypes as kt}
+    <div class="flex-1 min-h-0 overflow-y-auto scrollbar-dark">
+        <div class="flex flex-col gap-1 sm:gap-2">
+        <div>
+                <span
+                    class="mb-1 block sm:mb-1.5 text-[11px] sm:text-xs font-semibold"
+                    style="color: {theme.textSecondary};">按键</span
+                >
+            <div class="px-1 sm:px-1.5 grid {keySingleRow ? 'grid-cols-10' : 'grid-cols-3 sm:grid-cols-5'} gap-1 sm:gap-1.5">
+                {#each KEY_TYPES as kt}
                     <button
-                        class={'flex items-stretch gap-1.5 rounded px-1.5 py-1.5 sm:py-2 transition-colors ' +
-                            (selectedKey === kt.key ? 'ring-2 ring-offset-1' : '')}
+                        class='flex items-stretch gap-1 rounded px-1 py-1.5 sm:gap-1.5 sm:px-1.5 sm:py-2 transition-colors'
                         style="
-							border: 1px solid {theme.nodeColors[kt.key] ?? theme.fallbackTrack}40;
+							border: 1px solid {theme.nodeColors[kt.key] ?? theme.fallbackTrack}{selectedKey === kt.key ? '80' : '40'};
 							background: {selectedKey === kt.key
-                            ? (theme.nodeColors[kt.key] ?? theme.fallbackTrack) + '20'
+                            ? (theme.nodeColors[kt.key] ?? theme.fallbackTrack) + '25'
                             : 'transparent'};
 							color: {theme.text};
-							ring-color: {theme.nodeColors[kt.key] ?? theme.fallbackTrack}80;
-							--tw-ring-offset-color: {theme.ringOffset};
+							{selectedKey === kt.key
+                            ? `box-shadow: 0 0 0 2px ${theme.nodeColors[kt.key] ?? theme.fallbackTrack};`
+                            : ''}
 						"
                         onclick={() => (selectedKey = kt.key)}
                     >
@@ -157,7 +225,7 @@
                             />
                         </div>
                         <span
-                            class="flex items-center font-bold text-[10px] sm:text-xs leading-tight"
+                            class="flex items-center font-bold leading-tight {keySingleRow ? 'hidden' : ''} {compact ? 'text-[8px]' : 'text-[10px] sm:text-xs'}"
                             style="color: {theme.textSecondary};">{kt.desc}</span
                         >
                     </button>
@@ -165,77 +233,81 @@
             </div>
         </div>
 
-        <div class="shrink-0 flex gap-2 sm:gap-3">
+            <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
             <div class="flex-3 min-w-0">
                 <span
-                    class="mb-1.5 block text-xs font-semibold"
+                    class="mb-1 block sm:mb-1.5 text-[11px] sm:text-xs font-semibold"
                     style="color: {theme.textSecondary};">连段</span
                 >
-                <div class="flex items-center gap-1.5 flex-wrap">
-                    <span
-                        class="text-[11px] font-medium shrink-0"
-                        style="color: {theme.textSecondary};">从第</span
-                    >
-                    <button
-                        class="flex h-6 w-6 items-center justify-center rounded border text-xs font-bold shrink-0"
-                        style="border-color: {theme.border}; color: {theme.textSecondary};"
-                        onclick={() => setComboA(Math.max(0, comboA - 1))}>−</button
-                    >
-                    <div
-                        class="flex h-6 items-center justify-center rounded border text-xs font-bold shrink-0"
-                        style="border-color: {theme.accentText}; color: {theme.accentText}; background: {theme.selectedModeBg}; min-width: 24px; padding: 0 5px;"
-                    >
-                        {comboA}
+                {#snippet comboControls()}
+                    <div class="flex items-center gap-1 flex-wrap px-1 sm:px-1.5">
+                        <span
+                            class="text-[11px] font-medium shrink-0"
+                            style="color: {theme.textSecondary};">从第</span
+                        >
+                        <button
+                            class="flex h-6 w-6 items-center justify-center rounded border text-xs font-bold shrink-0"
+                            style="border-color: {theme.border}; color: {theme.textSecondary};"
+                            onclick={() => setComboA(Math.max(0, comboA - 1))}>−</button
+                        >
+                        <div
+                            class="flex h-6 items-center justify-center rounded border text-xs font-bold shrink-0"
+                            style="border-color: {theme.accentText}; color: {theme.accentText}; background: {theme.selectedModeBg}; min-width: 24px; padding: 0 5px;"
+                        >
+                            {comboA}
+                        </div>
+                        <button
+                            class="flex h-6 w-6 items-center justify-center rounded border text-xs font-bold shrink-0"
+                            style="border-color: {theme.border}; color: {theme.textSecondary};"
+                            onclick={() => setComboA(comboA + 1)}>+</button
+                        >
+                        <span
+                            class="text-[11px] font-medium shrink-0"
+                            style="color: {theme.textSecondary};">段至第</span
+                        >
+                        <button
+                            class="flex h-6 w-6 items-center justify-center rounded border text-xs font-bold shrink-0"
+                            style="border-color: {theme.border}; color: {theme.textSecondary};"
+                            onclick={() => setComboB(comboB - 1)}>−</button
+                        >
+                        <div
+                            class="flex h-6 items-center justify-center rounded border text-xs font-bold shrink-0"
+                            style="border-color: {theme.accentText}; color: {theme.accentText}; background: {theme.selectedModeBg}; min-width: 24px; padding: 0 5px;"
+                        >
+                            {comboB}
+                        </div>
+                        <button
+                            class="flex h-6 w-6 items-center justify-center rounded border text-xs font-bold shrink-0"
+                            style="border-color: {theme.border}; color: {theme.textSecondary};"
+                            onclick={() => setComboB(comboB + 1)}>+</button
+                        >
+                        <span
+                            class="text-[11px] font-medium shrink-0"
+                            style="color: {theme.textSecondary};">段</span
+                        >
+                        <button
+                            class="rounded border px-2.5 py-1 text-[11px] font-medium shrink-0 transition-colors {compact ? 'hidden' : ''}"
+                            style="border-color: {theme.border}; color: {theme.mutedText};"
+                            onmouseenter={(e) => {
+                                ;(e.currentTarget as HTMLElement).style.background =
+                                    theme.buttonHover
+                            }}
+                            onmouseleave={(e) => {
+                                ;(e.currentTarget as HTMLElement).style.background = ''
+                            }}
+                            onclick={resetCombo}>重置连段</button
+                        >
                     </div>
-                    <button
-                        class="flex h-6 w-6 items-center justify-center rounded border text-xs font-bold shrink-0"
-                        style="border-color: {theme.border}; color: {theme.textSecondary};"
-                        onclick={() => setComboA(comboA + 1)}>+</button
-                    >
-                    <span
-                        class="text-[11px] font-medium shrink-0"
-                        style="color: {theme.textSecondary};">段至第</span
-                    >
-                    <button
-                        class="flex h-6 w-6 items-center justify-center rounded border text-xs font-bold shrink-0"
-                        style="border-color: {theme.border}; color: {theme.textSecondary};"
-                        onclick={() => setComboB(comboB - 1)}>−</button
-                    >
-                    <div
-                        class="flex h-6 items-center justify-center rounded border text-xs font-bold shrink-0"
-                        style="border-color: {theme.accentText}; color: {theme.accentText}; background: {theme.selectedModeBg}; min-width: 24px; padding: 0 5px;"
-                    >
-                        {comboB}
-                    </div>
-                    <button
-                        class="flex h-6 w-6 items-center justify-center rounded border text-xs font-bold shrink-0"
-                        style="border-color: {theme.border}; color: {theme.textSecondary};"
-                        onclick={() => setComboB(comboB + 1)}>+</button
-                    >
-                    <span
-                        class="text-[11px] font-medium shrink-0"
-                        style="color: {theme.textSecondary};">段</span
-                    >
-                    <button
-                        class="rounded border px-2.5 py-1 text-[11px] font-medium shrink-0 transition-colors"
-                        style="border-color: {theme.border}; color: {theme.mutedText};"
-                        onmouseenter={(e) => {
-                            ;(e.currentTarget as HTMLElement).style.background = theme.buttonHover
-                        }}
-                        onmouseleave={(e) => {
-                            ;(e.currentTarget as HTMLElement).style.background = ''
-                        }}
-                        onclick={resetCombo}>重置连段</button
-                    >
-                </div>
+                {/snippet}
+                {@render comboControls()}
             </div>
 
             <div class="flex-2 min-w-0">
                 <span
-                    class="mb-1.5 block text-xs font-semibold"
+                    class="mb-1 block sm:mb-1.5 text-[11px] sm:text-xs font-semibold"
                     style="color: {theme.textSecondary};">特殊</span
                 >
-                <div class="flex items-center gap-2 flex-wrap">
+                <div class="flex items-center gap-2 flex-wrap px-1 sm:px-1.5">
                     <button
                         class="flex h-7 w-7 items-center justify-center rounded border text-xs font-bold transition-colors"
                         style="border-color: {strong
@@ -264,7 +336,7 @@
                             }}
                         />
                         <button
-                            class="rounded border px-1.5 py-1 text-[10px] font-medium shrink-0 transition-colors"
+                            class="rounded border px-1.5 py-1 text-[10px] font-medium shrink-0 transition-colors {compact ? 'hidden' : ''}"
                             style="border-color: {theme.border}; color: {theme.mutedText};"
                             onmouseenter={(e) => {
                                 ;(e.currentTarget as HTMLElement).style.background =
@@ -281,15 +353,15 @@
             </div>
         </div>
 
-        <div class="shrink-0">
-            <span
-                class="mb-1.5 block text-[11px] sm:text-xs font-semibold"
-                style="color: {theme.textSecondary};">模式</span
-            >
-            <div class="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
-                {#each modes as m}
+        <div>
+                    <span
+                        class="mb-1 block sm:mb-1.5 text-[11px] sm:text-xs font-semibold"
+                        style="color: {theme.textSecondary};">模式</span
+                    >
+            <div class="px-1 sm:px-1.5 grid grid-cols-2 sm:grid-cols-5 gap-1 sm:gap-1.5">
+                {#each MODE_OPTIONS as m}
                     <button
-                        class={'flex flex-col items-center justify-center gap-0.5 rounded px-2 py-1.5 sm:py-2 text-[11px] sm:text-sm transition-colors ' +
+                        class={'flex flex-col items-center justify-center gap-0.5 rounded px-1.5 py-1 sm:px-2 sm:py-1.5 text-[10px] sm:text-sm transition-colors ' +
                             (selectedMode === m.key ? '' : '')}
                         style="border: 1px solid {selectedMode === m.key
                             ? theme.accentText
@@ -297,18 +369,20 @@
                         m.key
                             ? theme.selectedModeBg
                             : 'transparent'}; {selectedMode === m.key
-                            ? `box-shadow: 0 0 0 1px ${theme.selectedModeRing};`
+                            ? `box-shadow: 0 0 0 2px ${theme.selectedModeRing};`
                             : ''}"
                         onclick={() => (selectedMode = m.key)}
                     >
                         <span class="font-bold leading-tight text-center">{m.title}</span>
                         <span
-                            class="hidden sm:block text-[10px] sm:text-xs font-medium leading-tight text-center"
+                            class="text-[10px] sm:text-xs font-medium leading-tight text-center {compact ? 'hidden' : 'hidden sm:block'}"
                             style="color: {theme.textSecondary};">{m.desc}</span
                         >
                     </button>
                 {/each}
             </div>
         </div>
+        </div>
     </div>
 </div>
+{/if}

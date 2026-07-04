@@ -4,6 +4,7 @@
     import { projects } from '$lib/stores/projects.svelte'
     import { themeStore } from '$lib/stores/themes.svelte'
     import { loadCharacterPresets } from '$lib/data/characters'
+    import { isInputFocused } from '$lib/utils/planner'
     import Sidebar from './Sidebar.svelte'
     import AlertDialog from './ui/AlertDialog.svelte'
     import TimelineArea from './timeline/TimelineArea.svelte'
@@ -26,10 +27,73 @@
         nonce: 0,
     })
     let sidebarCollapsed = $state(false)
+    let mobileSidebarOpen = $state(false)
+    let isMobile = $state(false)
+
+    $effect(() => {
+        const check = () => {
+            isMobile = window.innerWidth < 768
+            if (!isMobile) mobileSidebarOpen = false
+        }
+        check()
+        window.addEventListener('resize', check)
+        return () => window.removeEventListener('resize', check)
+    })
     let lastSaveTime = $state<string>('')
     let showDescription = $state(false)
     let themeOpen = $state(false)
     let themeManagerOpen = $state(false)
+    let panelHeight = $state(260)
+    let snappedAt280 = false
+    let snappedAt160 = false
+    let compactPalette = $derived(isMobile || panelHeight < 320)
+    let superCompactPalette = $derived(!isMobile && panelHeight <= 160)
+    let keySingleRow = $derived(!isMobile && panelHeight < 320)
+
+    function startResize(e: PointerEvent) {
+        (e.target as HTMLElement).setPointerCapture(e.pointerId)
+        const startY = e.clientY
+        const startH = panelHeight
+        const parent = (e.currentTarget as HTMLElement).parentElement!
+        const maxH = parent.getBoundingClientRect().height - 80
+        snappedAt280 = !isMobile && panelHeight >= 280
+        snappedAt160 = !isMobile && panelHeight <= 160
+
+        function onMove(ev: PointerEvent) {
+            const delta = startY - ev.clientY
+            const minH = superCompactPalette ? 8 : 140
+            let h = Math.max(minH, Math.min(maxH, startH + delta))
+
+            if (!isMobile) {
+                const SNAP = 18
+                if (!superCompactPalette) {
+                    if (snappedAt280) {
+                        if (h < 280 - SNAP || h > 280 + SNAP) snappedAt280 = false
+                        else h = 280
+                    } else if (h > 280 - SNAP && h < 280 + SNAP) {
+                        snappedAt280 = true
+                        h = 280
+                    }
+                }
+                const SNAP_160 = 7
+                if (snappedAt160) {
+                    if (h < 160 - SNAP_160 || h > 160 + SNAP_160) snappedAt160 = false
+                    else h = 160
+                } else if (h > 160 - SNAP_160 && h < 160 + SNAP_160) {
+                    snappedAt160 = true
+                    h = 160
+                }
+            }
+
+            panelHeight = h
+        }
+        function onUp() {
+            document.removeEventListener('pointermove', onMove)
+            document.removeEventListener('pointerup', onUp)
+        }
+        document.addEventListener('pointermove', onMove)
+        document.addEventListener('pointerup', onUp)
+    }
 
     onMount(() => {
         loadCharacterPresets().then(() => {
@@ -107,15 +171,6 @@
     let holdTimer: ReturnType<typeof setTimeout> | null = null
     let heldKey: string | null = null
 
-    function isInputFocused(): boolean {
-        const tag = document.activeElement?.tagName.toLowerCase()
-        return (
-            tag === 'input' ||
-            tag === 'textarea' ||
-            (document.activeElement as HTMLElement)?.isContentEditable === true
-        )
-    }
-
     function handleKeyDown(e: KeyboardEvent) {
         if (showDescription) return
         if (isInputFocused()) return
@@ -172,11 +227,16 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
     id="planner-container"
-    class="flex h-screen"
+    class="flex h-dvh overflow-y-auto md:overflow-hidden flex-col md:flex-row"
     style="font-family: {planner.theme.fontFamily};"
     oncontextmenu={(e) => e.preventDefault()}
 >
-    <Sidebar collapsed={sidebarCollapsed} ontoggle={() => (sidebarCollapsed = !sidebarCollapsed)} />
+    <div class="hidden md:block">
+        <Sidebar
+            collapsed={sidebarCollapsed}
+            ontoggle={() => (sidebarCollapsed = !sidebarCollapsed)}
+        />
+    </div>
 
     <div
         class="flex flex-1 flex-col transition-all duration-200"
@@ -197,8 +257,14 @@
                     ;(e.currentTarget as HTMLElement).style.background = ''
                     ;(e.currentTarget as HTMLElement).style.color = planner.theme.textSecondary
                 }}
-                onclick={() => (sidebarCollapsed = !sidebarCollapsed)}
-                >{sidebarCollapsed ? '☰' : '✕'}</button
+                onclick={() => {
+                    if (isMobile) {
+                        mobileSidebarOpen = !mobileSidebarOpen
+                    } else {
+                        sidebarCollapsed = !sidebarCollapsed
+                    }
+                }}
+                >{isMobile ? '☰' : sidebarCollapsed ? '☰' : '✕'}</button
             >
             <input
                 type="text"
@@ -229,7 +295,8 @@
                         ;(e.currentTarget as HTMLElement).style.color = planner.theme.textSecondary
                     }}
                     onclick={() => (themeOpen = !themeOpen)}
-                    >{themeStore.getTheme(themeStore.activeThemeId)?.name ?? '主题'}</button
+                    ><span class="hidden sm:inline">{themeStore.getTheme(themeStore.activeThemeId)?.name ?? '主题'}</span
+                    ><span class="sm:hidden">主题</span></button
                 >
                 {#if themeOpen}
                     <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -304,9 +371,23 @@
                 <TimelineArea {selectedKey} {selectedMode} {comboA} {comboB} {strong} {comment} />
             </div>
 
+            {#if !isMobile}
             <div
-                class="flex gap-3 px-4 py-4 min-w-0 min-h-[50vh]"
-                style="border-top: 1px solid {planner.theme.border};"
+                class="shrink-0 h-2 cursor-row-resize relative z-10 flex items-center justify-center transition-colors hover:bg-white/5"
+                style="background: {planner.theme.border};"
+                onpointerdown={startResize}
+                role="separator"
+            >
+                <div
+                    class="w-6 h-0.5 rounded-full"
+                    style="background: {planner.theme.textSecondary}40;"
+                ></div>
+            </div>
+            {/if}
+
+            <div
+                class="flex gap-3 px-3 sm:px-4 py-3 sm:py-4 min-w-0 flex-col md:flex-row"
+                style="border-top: 1px solid {planner.theme.border}; {isMobile ? 'min-height: 180px' : 'height: ' + panelHeight + 'px' + (compactPalette && !isMobile && !superCompactPalette ? '; min-height: 280px' : '')};"
             >
                 <div class="min-w-0 flex-1">
                     <ActionPalette
@@ -317,20 +398,24 @@
                         bind:comboB
                         bind:strong
                         bind:comment
+                        compact={compactPalette}
+                        superCompact={superCompactPalette}
+                        keySingleRow={keySingleRow}
                     />
                 </div>
                 <div
-                    class="relative flex min-w-0 flex-col rounded-lg px-4 py-3"
+                    class="relative flex min-w-0 flex-col rounded-lg px-3 sm:px-4 py-2 sm:py-3 overflow-y-auto scrollbar-none min-h-[80px] md:min-h-0"
+                    class:hidden={superCompactPalette}
                     style="border: 1px solid {planner.theme.border}; background: {planner.theme
                         .panelBg};"
                 >
-                    <div class="mb-2 flex items-center justify-between">
+                    <div class="mb-1 sm:mb-2 flex items-center justify-between">
                         <span
-                            class="text-[11px] font-bold"
+                            class="text-[10px] sm:text-[11px] font-bold"
                             style="color: {planner.theme.textSecondary};">队伍配置</span
                         >
                     </div>
-                    <div class="flex flex-1 items-center justify-center gap-2">
+                    <div class="flex flex-1 items-center justify-center gap-1 sm:gap-2">
                         {#each planner.characters as char, i (char.id)}
                             <div class="flex flex-col items-center gap-1">
                                 <span
@@ -440,6 +525,15 @@
             </div>
         </div>
     {/if}
+
+    <div class="md:hidden">
+        <Sidebar
+            collapsed={!mobileSidebarOpen}
+            ontoggle={() => (mobileSidebarOpen = !mobileSidebarOpen)}
+            overlay={mobileSidebarOpen}
+            onclose={() => (mobileSidebarOpen = false)}
+        />
+    </div>
 
     <AlertDialog />
 

@@ -1,13 +1,11 @@
 <script lang="ts">
     import type { ActionBlock, KeyOperation, KeyType, KeyMode } from '$lib/types'
-    import { MODE_LABELS } from '$lib/data/labels'
     import { planner } from '$lib/stores/planner.svelte'
     import CharacterTrack from './CharacterTrack.svelte'
     import ArrowOverlay from './ArrowOverlay.svelte'
-    import KeyIcon from './KeyIcon.svelte'
-    import ComboNumbers from './ComboNumbers.svelte'
-    import StrongBadge from './StrongBadge.svelte'
+    import TimelineContextMenu from './TimelineContextMenu.svelte'
     import Avatar from '../character/Avatar.svelte'
+    import { getPrevBlock, hasArrowTo } from '$lib/utils/timeline'
 
     let {
         selectedKey,
@@ -26,6 +24,8 @@
     } = $props()
 
     let viewportWidth = $state(typeof window !== 'undefined' ? window.innerWidth : 1024)
+
+    let isMobile = $derived(viewportWidth < 768)
 
     $effect(() => {
         const handler = () => {
@@ -158,40 +158,64 @@
         planner.selectBlock(block.id)
     }
 
-    function getPrevBlock(block: ActionBlock): ActionBlock | null {
-        const charBlocks = planner
-            .getCharacterBlocks(block.characterId)
-            .toSorted((a, b) => a.x - b.x)
-        const idx = charBlocks.findIndex((b) => b.id === block.id)
-        if (idx <= 0) return null
-        return charBlocks[idx - 1]
+    function getPrevBlockLocal(block: ActionBlock): ActionBlock | null {
+        return getPrevBlock(block, planner.blocks)
     }
 
-    function stayFieldWithPrev(block: ActionBlock): boolean {
-        const prev = getPrevBlock(block)
+    function stayFieldWithPrevLocal(block: ActionBlock): boolean {
+        const prev = getPrevBlockLocal(block)
         if (!prev) return false
         return planner.stayFieldMarkers.some(
             (m) => m.fromBlockId === prev.id && m.toBlockId === block.id,
         )
     }
 
-    function hasArrowTo(block: ActionBlock): boolean {
-        const TOL = 2
-        for (const char of planner.characters) {
-            if (char.id === block.characterId) continue
-            const prevBlocks = planner.getCharacterBlocks(char.id)
-            for (const pb of prevBlocks) {
-                const el = document.querySelector(`[data-block-id="${pb.id}"]`) as HTMLElement
-                if (!el) continue
-                const w = el.getBoundingClientRect().width
-                if (block.x >= pb.x - TOL && block.x <= pb.x + w + TOL) return true
-            }
+    function hasArrowToLocal(block: ActionBlock): boolean {
+        return hasArrowTo(block, planner.characters, planner.blocks)
+    }
+
+    let hasPrevContext = $derived(
+        contextBlock ? !!getPrevBlock(contextBlock, planner.blocks) : false,
+    )
+    let stayFieldActive = $derived.by(() => {
+        if (!contextBlock) return false
+        const prev = getPrevBlock(contextBlock, planner.blocks)
+        if (!prev) return false
+        return planner.stayFieldMarkers.some(
+            (m) => m.fromBlockId === prev.id && m.toBlockId === contextBlock!.id,
+        )
+    })
+    let hasArrowContext = $derived(
+        contextBlock ? hasArrowTo(contextBlock, planner.characters, planner.blocks) : false,
+    )
+
+    function handleReorderKeyOps(
+        blockId: string,
+        keyOps: KeyOperation[],
+        _updatedBlock: ActionBlock | null,
+    ) {
+        planner.updateBlock(blockId, { keyOps })
+        const updated = planner.blocks.find((b) => b.id === blockId)
+        if (updated) contextBlock = updated
+    }
+
+    function handleToggleIntroStrong(blockId: string) {
+        const block = planner.blocks.find((b) => b.id === blockId)
+        if (!block) return
+        const introIdx = block.keyOps.findIndex((o) => o.key === 'intro')
+        if (introIdx < 0) return
+        const ops = [...block.keyOps]
+        ops[introIdx] = {
+            ...ops[introIdx],
+            strong: !ops[introIdx].strong,
         }
-        return false
+        planner.updateBlock(blockId, { keyOps: ops })
+        const updated = planner.blocks.find((b) => b.id === blockId)
+        if (updated) contextBlock = updated
     }
 
     function toggleStayField(block: ActionBlock) {
-        const prev = getPrevBlock(block)
+        const prev = getPrevBlockLocal(block)
         if (!prev) return
         const existing = planner.stayFieldMarkers.find(
             (m) => m.fromBlockId === prev.id && m.toBlockId === block.id,
@@ -210,14 +234,14 @@
     }
 
     function toggleIntro(block: ActionBlock) {
-        if (!hasArrowTo(block)) return
+        if (!hasArrowToLocal(block)) return
         if (block.isIntro) {
             planner.updateBlock(block.id, {
                 isIntro: false,
                 keyOps: block.keyOps.filter((op) => op.key !== 'intro'),
             })
         } else {
-            const prev = getPrevBlock(block)
+            const prev = getPrevBlockLocal(block)
             if (prev) {
                 const existing = planner.stayFieldMarkers.find(
                     (m) => m.fromBlockId === prev.id && m.toBlockId === block.id,
@@ -262,31 +286,34 @@
 </script>
 
 <div id="timeline-area" class="relative flex gap-3 min-h-0 flex-col">
-    <div class="flex gap-3 min-h-0 flex-1">
-        <div class="sticky left-0 z-10 flex flex-col gap-3 min-h-0" style="padding-top: 4px;">
-            {#each planner.characters as char, i (char.id)}
-                <!-- svelte-ignore a11y_no_static_element_interactions -->
-                <!-- svelte-ignore a11y_click_events_have_key_events -->
-                <div
-                    class="relative h-10 w-10 shrink-0 overflow-hidden rounded-full"
-                    style="border: 2px solid {planner.getTrackColor(char.id, i)
-                        .border}; margin-top: 8px; margin-left: 8px;"
-                    title={char.name}
-                    onclick={() => handleAvatarClick(char.id)}
-                >
-                    <Avatar presetId={char.presetId} name={char.name} size="lg" />
-                </div>
-            {/each}
-        </div>
-
+    {@render customScrollbar()}
+    <div class="flex min-h-0 flex-1">
         <div
             bind:this={scrollContainer}
-            class="min-w-0 flex-1 overflow-x-auto min-h-0 scrollbar-none"
+            class="min-w-0 flex-1 min-h-0 scrollbar-none {isMobile ? 'overflow-x-hidden touch-pan-y' : 'overflow-x-auto'}"
             onwheel={handleWheel}
         >
             <div style="position: relative; min-height: 0; min-width: {timelineMinWidth}px;">
-                <div class="flex flex-col gap-3 min-h-0">
+                <div
+                    class="grid min-h-0"
+                    style="grid-template-columns: auto 1fr; column-gap: 12px; row-gap: 12px;"
+                >
                     {#each planner.characters as char, i (char.id)}
+                        <!-- svelte-ignore a11y_no_static_element_interactions -->
+                        <!-- svelte-ignore a11y_click_events_have_key_events -->
+                        <div
+                            class="sticky left-0 z-10 flex items-center justify-center pl-1"
+                            style="min-height: 52px;"
+                            onclick={() => handleAvatarClick(char.id)}
+                        >
+                            <div
+                                class="relative h-8 w-8 shrink-0 overflow-hidden rounded-full"
+                                style="border: 2px solid {planner.getTrackColor(char.id, i).border};"
+                                title={char.name}
+                            >
+                                <Avatar presetId={char.presetId} name={char.name} size="md" />
+                            </div>
+                        </div>
                         <CharacterTrack
                             character={char}
                             index={i}
@@ -309,292 +336,86 @@
             </div>
         </div>
 
-        {#if contextBlock}
+        <TimelineContextMenu
+            {contextBlock}
+            {contextPos}
+            hasPrev={hasPrevContext}
+            {stayFieldActive}
+            hasArrow={hasArrowContext}
+            onToggleStayField={toggleStayField}
+            onToggleIntro={toggleIntro}
+            onDeleteBlock={(id) => {
+                planner.removeBlock(id)
+                contextBlock = null
+            }}
+            onReorderKeyOps={handleReorderKeyOps}
+            onToggleIntroStrong={handleToggleIntroStrong}
+            onClose={() => {
+                contextBlock = null
+            }}
+        />
+    </div>
+
+    {#snippet customScrollbar()}
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
+        <div class="h-1.5 shrink-0 mx-3 hidden sm:block">
             <div
-                class="fixed z-50 min-w-52 rounded-lg py-1.5 shadow-xl"
-                style="left: {contextPos.x}px; top: {contextPos.y}px; border: 1px solid {planner
-                    .theme.contextBorder}; background: {planner.theme.contextBg};"
+                bind:this={scrollbarTrack}
+                class="relative h-full rounded-full cursor-pointer"
+                style="background: {planner.theme.scrollbarTrack};"
+                onclick={handleTrackClick}
             >
-                {#if contextBlock.keyOps.length > 0}
-                    <div style="border-bottom: 1px solid {planner.theme.divider};">
-                        <div class="px-2 pt-1.5 pb-1">
-                            <div
-                                class="mb-1 px-1 text-xs font-semibold"
-                                style="color: {planner.theme.textSecondary};"
-                            >
-                                操作列表
-                            </div>
-                        </div>
-                        <div class="max-h-56 overflow-y-auto scrollbar-dark-thick px-2 pb-1.5">
-                            {#each contextBlock.keyOps as op, i}
-                                {#if op.key !== 'intro'}
-                                    <!-- svelte-ignore a11y_no_static_element_interactions -->
-                                    <div
-                                        draggable="true"
-                                        class="flex w-full cursor-default items-center gap-1.5 rounded px-1.5 py-1"
-                                        style="color: {planner.theme.textSecondary};"
-                                        onmouseenter={(e) =>
-                                            ((e.currentTarget as HTMLElement).style.background =
-                                                planner.theme.contextHover)}
-                                        onmouseleave={(e) =>
-                                            ((e.currentTarget as HTMLElement).style.background =
-                                                '')}
-                                        ondragstart={(e) => {
-                                            const data = JSON.stringify({
-                                                fromBlockId: contextBlock!.id,
-                                                keyOpIndex: i,
-                                                keyOp: op,
-                                            })
-                                            e.dataTransfer!.setData(
-                                                'application/wuwa-keyop-context',
-                                                data,
-                                            )
-                                            e.dataTransfer!.effectAllowed = 'move'
-                                            ;(e.currentTarget as HTMLElement).style.opacity = '0.4'
-                                        }}
-                                        ondragend={(e) => {
-                                            ;(e.currentTarget as HTMLElement).style.opacity = '1'
-                                        }}
-                                        ondragover={(e) => {
-                                            e.preventDefault()
-                                            e.stopPropagation()
-                                            e.dataTransfer!.dropEffect = 'move'
-                                        }}
-                                        ondrop={(e) => {
-                                            e.preventDefault()
-                                            e.stopPropagation()
-                                            const raw = e.dataTransfer!.getData(
-                                                'application/wuwa-keyop-context',
-                                            )
-                                            if (!raw) return
-                                            const parsed = JSON.parse(raw)
-                                            const fromBlockId = parsed.fromBlockId
-                                            const keyOpIndex = parsed.keyOpIndex
-                                            if (
-                                                fromBlockId !== contextBlock!.id ||
-                                                keyOpIndex === i
-                                            )
-                                                return
-                                            const ops = [...contextBlock!.keyOps]
-                                            const [moved] = ops.splice(keyOpIndex, 1)
-                                            ops.splice(i, 0, moved)
-                                            planner.updateBlock(contextBlock!.id, {
-                                                keyOps: ops,
-                                            })
-                                            const updated = planner.blocks.find(
-                                                (b) => b.id === contextBlock!.id,
-                                            )
-                                            if (updated) contextBlock = updated
-                                        }}
-                                    >
-                                        <span
-                                            class="cursor-grab active:cursor-grabbing"
-                                            style="color: {planner.theme.mutedText};">⠿</span
-                                        >
-                                        <span class="inline-flex items-center relative">
-                                            {#if op.strong}
-                                                <div class="absolute -left-1.5 -top-3 z-10">
-                                                    <StrongBadge size={10} />
-                                                </div>
-                                            {/if}
-                                            <KeyIcon
-                                                key={op.key}
-                                                size="sm"
-                                                color={planner.theme.nodeColors[op.key]}
-                                                mode={op.mode}
-                                            />
-                                        </span>
-                                        {#if op.comboStart && op.comboEnd && op.comboStart > 0 && op.comboEnd > 0}
-                                            <ComboNumbers
-                                                start={op.comboStart}
-                                                end={op.comboEnd}
-                                                theme={planner.theme}
-                                            />
-                                        {/if}
-                                        {#if op.comment}
-                                            <span
-                                                class="text-[10px] ml-0.5 rounded px-1"
-                                                style="background: {planner.theme
-                                                    .tagBg}; color: {planner.theme.tagText};"
-                                                >{op.comment}</span
-                                            >
-                                        {/if}
-                                        <span
-                                            class="flex-1 text-xs"
-                                            style="color: {planner.theme.textSecondary};"
-                                        >
-                                            {MODE_LABELS[op.mode] || '单击'}
-                                        </span>
-                                        <button
-                                            class="flex h-5 w-5 items-center justify-center rounded text-[10px]"
-                                            style="border: 1px solid {planner.theme
-                                                .deleteBtnBorder}; color: {planner.theme
-                                                .textSecondary};"
-                                            onmouseenter={(e) =>
-                                                ((e.currentTarget as HTMLElement).style.background =
-                                                    planner.theme.deleteBtnHover)}
-                                            onmouseleave={(e) =>
-                                                ((e.currentTarget as HTMLElement).style.background =
-                                                    '')}
-                                            onclick={(e) => {
-                                                e.stopPropagation()
-                                                planner.removeKeyOp(contextBlock!.id, i)
-                                                contextBlock = null
-                                            }}>✕</button
-                                        >
-                                    </div>
-                                {/if}
-                            {/each}
-                            {#if contextBlock.keyOps.some((op) => op.key === 'intro')}
-                                <div
-                                    class="flex items-center justify-between gap-1.5 px-1.5 py-1"
-                                    style="color: {planner.theme.accentText};"
-                                >
-                                    <div class="flex items-center gap-1.5">
-                                        <KeyIcon
-                                            key="intro"
-                                            size="sm"
-                                            color={planner.theme.nodeColors.intro}
-                                        />
-                                        <span class="text-xs">变奏入场</span>
-                                    </div>
-                                    <button
-                                        class="rounded border px-1.5 py-0.5 text-[10px] font-medium transition-colors"
-                                        style="border-color: {planner.theme.border}; color: {planner
-                                            .theme.textSecondary};"
-                                        onmouseenter={(e) => {
-                                            ;(e.currentTarget as HTMLElement).style.background =
-                                                planner.theme.buttonHover
-                                        }}
-                                        onmouseleave={(e) => {
-                                            ;(e.currentTarget as HTMLElement).style.background = ''
-                                        }}
-                                        onclick={(e) => {
-                                            e.stopPropagation()
-                                            const introIdx = contextBlock!.keyOps.findIndex(
-                                                (o) => o.key === 'intro',
-                                            )
-                                            if (introIdx < 0) return
-                                            const ops = [...contextBlock!.keyOps]
-                                            ops[introIdx] = {
-                                                ...ops[introIdx],
-                                                strong: !ops[introIdx].strong,
-                                            }
-                                            planner.updateBlock(contextBlock!.id, {
-                                                keyOps: ops,
-                                            })
-                                            const updated = planner.blocks.find(
-                                                (b) => b.id === contextBlock!.id,
-                                            )
-                                            if (updated) contextBlock = updated
-                                        }}
-                                    >
-                                        {contextBlock.keyOps.find((o) => o.key === 'intro')?.strong
-                                            ? '设为普通变奏'
-                                            : '设为强化变奏'}
-                                    </button>
-                                </div>
-                            {/if}
-                        </div>
-                    </div>
-                {/if}
-
-                <button
-                    class="flex w-full items-center px-4 py-2 text-left text-xs"
-                    style="color: {!getPrevBlock(contextBlock)
-                        ? planner.theme.mutedText
-                        : planner.theme.accentText}; cursor: {!getPrevBlock(contextBlock)
-                        ? 'not-allowed'
-                        : 'pointer'};"
-                    disabled={!getPrevBlock(contextBlock)}
-                    onmouseenter={(e) => {
-                        if (getPrevBlock(contextBlock!))
-                            (e.currentTarget as HTMLElement).style.background =
-                                planner.theme.accentHover
-                    }}
-                    onmouseleave={(e) => {
-                        ;(e.currentTarget as HTMLElement).style.background = ''
-                    }}
-                    onclick={() => {
-                        toggleStayField(contextBlock!)
-                        contextBlock = null
-                    }}
-                >
-                    {stayFieldWithPrev(contextBlock)
-                        ? '清除与上一个块之间的留场'
-                        : '与上一个块建立留场'}
-                </button>
-
-                <button
-                    class="flex w-full items-center px-4 py-2 text-left text-xs"
-                    style="color: {!hasArrowTo(contextBlock)
-                        ? planner.theme.mutedText
-                        : contextBlock.isIntro
-                          ? '#f59e0b'
-                          : planner.theme.accentText}; cursor: {!hasArrowTo(contextBlock)
-                        ? 'not-allowed'
-                        : 'pointer'};"
-                    disabled={!hasArrowTo(contextBlock)}
-                    onmouseenter={(e) => {
-                        if (hasArrowTo(contextBlock!))
-                            (e.currentTarget as HTMLElement).style.background =
-                                planner.theme.accentHover
-                    }}
-                    onmouseleave={(e) => {
-                        ;(e.currentTarget as HTMLElement).style.background = ''
-                    }}
-                    onclick={() => {
-                        toggleIntro(contextBlock!)
-                        contextBlock = null
-                    }}
-                >
-                    {contextBlock.isIntro ? '取消变奏入场' : '设为变奏入场'}
-                </button>
-
-                <div style="border-top: 1px solid {planner.theme.divider};"></div>
-
-                <button
-                    class="flex w-full items-center px-4 py-2 text-left text-xs"
-                    style="color: {planner.theme.dangerText};"
+                <!-- svelte-ignore a11y_no_static_element_interactions -->
+                <div
+                    bind:this={scrollbarThumb}
+                    class="absolute top-0 h-full rounded-full cursor-grab active:cursor-grabbing"
+                    style="left: {thumbLeft}px; width: {thumbWidthPx}px; background: {planner.theme
+                        .scrollbarThumb};"
                     onmouseenter={(e) =>
                         ((e.currentTarget as HTMLElement).style.background =
-                            planner.theme.dangerHover)}
-                    onmouseleave={(e) => ((e.currentTarget as HTMLElement).style.background = '')}
-                    onclick={() => {
-                        planner.removeBlock(contextBlock!.id)
-                        contextBlock = null
-                    }}>删除操作块</button
-                >
+                            planner.theme.scrollbarThumbHover)}
+                    onmouseleave={(e) =>
+                        ((e.currentTarget as HTMLElement).style.background =
+                            planner.theme.scrollbarThumb)}
+                    onpointerdown={handleThumbPointerDown}
+                    onpointermove={handleThumbPointerMove}
+                    onpointerup={handleThumbPointerUp}
+                ></div>
             </div>
-        {/if}
-    </div>
-
-    <!-- Custom horizontal scrollbar -->
-    <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <!-- svelte-ignore a11y_click_events_have_key_events -->
-    <div class="h-3 shrink-0 mx-3">
-        <div
-            bind:this={scrollbarTrack}
-            class="relative h-full rounded-full cursor-pointer"
-            style="background: {planner.theme.scrollbarTrack};"
-            onclick={handleTrackClick}
-        >
-            <!-- svelte-ignore a11y_no_static_element_interactions -->
-            <div
-                bind:this={scrollbarThumb}
-                class="absolute top-0 h-full rounded-full cursor-grab active:cursor-grabbing"
-                style="left: {thumbLeft}px; width: {thumbWidthPx}px; background: {planner.theme
-                    .scrollbarThumb};"
-                onmouseenter={(e) =>
-                    ((e.currentTarget as HTMLElement).style.background =
-                        planner.theme.scrollbarThumbHover)}
-                onmouseleave={(e) =>
-                    ((e.currentTarget as HTMLElement).style.background =
-                        planner.theme.scrollbarThumb)}
-                onpointerdown={handleThumbPointerDown}
-                onpointermove={handleThumbPointerMove}
-                onpointerup={handleThumbPointerUp}
-            ></div>
         </div>
-    </div>
+    {/snippet}
+
+    {#if isMobile}
+        <div class="flex items-center justify-center gap-2 shrink-0 pb-2 px-2">
+            <button
+                class="flex flex-1 h-9 items-center justify-center rounded text-lg font-bold transition-colors"
+                style="border: 1px solid {planner.theme.border}; color: {planner.theme.textSecondary}; background: {planner.theme.panelBg};"
+                onmouseenter={(e) => {
+                    ;(e.currentTarget as HTMLElement).style.background = planner.theme.buttonHover
+                    ;(e.currentTarget as HTMLElement).style.color = planner.theme.text
+                }}
+                onmouseleave={(e) => {
+                    ;(e.currentTarget as HTMLElement).style.background = planner.theme.panelBg
+                    ;(e.currentTarget as HTMLElement).style.color = planner.theme.textSecondary
+                }}
+                onpointerdown={(e) => e.preventDefault()}
+                onclick={() => scrollContainer?.scrollBy({ left: -Math.round(clientWidth * 0.2), behavior: 'smooth' })}
+            >‹</button>
+            <button
+                class="flex flex-1 h-9 items-center justify-center rounded text-lg font-bold transition-colors"
+                style="border: 1px solid {planner.theme.border}; color: {planner.theme.textSecondary}; background: {planner.theme.panelBg};"
+                onmouseenter={(e) => {
+                    ;(e.currentTarget as HTMLElement).style.background = planner.theme.buttonHover
+                    ;(e.currentTarget as HTMLElement).style.color = planner.theme.text
+                }}
+                onmouseleave={(e) => {
+                    ;(e.currentTarget as HTMLElement).style.background = planner.theme.panelBg
+                    ;(e.currentTarget as HTMLElement).style.color = planner.theme.textSecondary
+                }}
+                onpointerdown={(e) => e.preventDefault()}
+                onclick={() => scrollContainer?.scrollBy({ left: Math.round(clientWidth * 0.2), behavior: 'smooth' })}
+            >›</button>
+        </div>
+    {/if}
 </div>

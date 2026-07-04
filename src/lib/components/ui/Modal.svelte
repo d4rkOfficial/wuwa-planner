@@ -19,14 +19,14 @@
 {#if open}
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
-        class="fixed inset-0 z-50 flex items-center justify-center"
+        class="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-center"
         style="background: {t.overlayBackdrop};"
         role="dialog"
         aria-modal="true"
         tabindex="-1"
     >
         <div
-            class="min-w-80 max-w-lg rounded-lg shadow-2xl"
+            class="w-full sm:w-auto sm:min-w-80 max-w-lg rounded-t-xl sm:rounded-lg shadow-2xl max-h-[90vh] overflow-y-auto"
             style="border: 1px solid {t.modalBorder}; background: {t.modalBg};"
         >
             {#if title}

@@ -197,23 +197,12 @@ function createPlannerStore() {
         stayFieldMarkers = data.rotation.stayFieldMarkers
         title = data.metadata.title
         description = data.metadata.description
-        if ('theme' in data && data.theme) {
-            const baseTheme = themeStore.getTheme(data.theme.baseTheme) ?? getDefaultTheme()
-            const merged = {
-                ...baseTheme,
-                ...data.theme.overrides,
-                id: data.theme.id,
-                name: data.theme.name,
-            }
-            themeStore.addCustomTheme(merged as Theme)
-            themeStore.setActiveTheme(data.theme.id)
-        }
         updateIntroFlags()
     }
 
     function exportRotation(): RotationExport {
-        const base = {
-            version: '2.0' as const,
+        return {
+            version: '1.0' as const,
             metadata: {
                 title,
                 description,
@@ -224,47 +213,6 @@ function createPlannerStore() {
             rotation: {
                 blocks,
                 stayFieldMarkers,
-            },
-        }
-        if (theme.isBuiltin) return base
-        const overrides: Record<string, unknown> = {}
-        const skipKeys = new Set([
-            'id',
-            'name',
-            'key',
-            'isBuiltin',
-            'baseTheme',
-            'fontFamily',
-            'nodeColors',
-            'modeColors',
-            'keyIconPath',
-            'keyIcons',
-            'strongBadgeIcon',
-            'avatarOverrides',
-        ])
-        for (const [k, v] of Object.entries(theme)) {
-            if (k === 'id' || k === 'name' || k === 'isBuiltin') continue
-            if (k === 'baseTheme' || k === 'key' || k === 'fontFamily') {
-                overrides[k] = v
-                continue
-            }
-            if (!skipKeys.has(k)) {
-                overrides[k] = v
-            }
-        }
-        overrides.keyIcons = theme.keyIcons
-        overrides.keyIconPath = theme.keyIconPath
-        overrides.strongBadgeIcon = theme.strongBadgeIcon
-        overrides.avatarOverrides = theme.avatarOverrides
-        overrides.nodeColors = theme.nodeColors
-        overrides.modeColors = theme.modeColors
-        return {
-            ...base,
-            theme: {
-                id: theme.id,
-                name: theme.name,
-                baseTheme: theme.baseTheme ?? 'dark',
-                overrides,
             },
         }
     }

@@ -5,6 +5,8 @@
     import type { ActionBlock } from '$lib/types'
     import { toPng } from 'html-to-image'
     import Avatar from '../character/Avatar.svelte'
+    import { computeSegments } from '$lib/utils/timeline'
+    import { drawArrow, drawStayRect, drawFollowCurve } from '$lib/utils/timeline-canvas'
 
     let container = $state<HTMLDivElement | null>(null)
     let canvas = $state<HTMLCanvasElement | null>(null)
@@ -12,6 +14,16 @@
     let timelineRef = $state<HTMLDivElement | null>(null)
     let containerWidth = $state(600)
     let contextMenu = $state<{ x: number; y: number } | null>(null)
+    let isMobile = $state(false)
+
+    $effect(() => {
+        const check = () => {
+            isMobile = window.innerWidth < 768
+        }
+        check()
+        window.addEventListener('resize', check)
+        return () => window.removeEventListener('resize', check)
+    })
 
     const AVATAR_COL = 72
     const ROW_H = 24
@@ -33,34 +45,7 @@
         blocks: ActionBlock[]
     }
 
-    let segments = $derived.by((): Segment[] => {
-        const all = planner.blocks.toSorted((a, b) => a.x - b.x)
-        if (all.length === 0) return []
-        const segW = Math.max(containerWidth - AVATAR_COL - 32, 200)
-        const segs: Segment[] = []
-        let cur: ActionBlock[] = [],
-            curX = all[0].x
-        for (const b of all) {
-            // rough width estimate for overflow detection
-            const comboOps = b.keyOps.filter(
-                (o) => o.comboStart && o.comboEnd && o.comboStart > 0 && o.comboEnd > 0,
-            ).length
-            const estW = b.keyOps.length * 49 + b.customIcons.length * 80 + comboOps * 36 + 24
-            if (b.x - curX + estW > segW && cur.length > 0) {
-                segs.push({ startX: curX, blocks: cur })
-                curX = b.x
-                cur = [b]
-            } else if (b.x - curX >= segW) {
-                segs.push({ startX: curX, blocks: cur })
-                curX = b.x
-                cur = [b]
-            } else {
-                cur.push(b)
-            }
-        }
-        if (cur.length) segs.push({ startX: curX, blocks: cur })
-        return segs
-    })
+    let segments = $derived(computeSegments(planner.blocks, containerWidth))
 
     $effect(() => {
         if (!canvas) return
@@ -248,7 +233,7 @@
             }
         }
 
-        // ── Cross-segment curve arrows ──
+        // ── Cross-segment curve arrows (path stays within segment gap, not through track rows) ──
         if (segments.length >= 2 && segEls.length >= 2) {
             for (let s = 0; s < segments.length - 1; s++) {
                 const seg = segments[s],
@@ -271,27 +256,31 @@
                 const sR = sEl.getBoundingClientRect(),
                     nR = nEl.getBoundingClientRect()
 
+                const gapCY = (sR.bottom + nR.top) / 2
+
                 const x1 = toCanvasX(lR.right) + 2
                 const y1 = toCanvasY(lR.top + lR.height / 2)
                 const x2 = toCanvasX(aR.left)
                 const y2 = toCanvasY(aR.top + aR.height / 2)
+                const gy = toCanvasY(gapCY)
                 if (x2 <= 0 || y2 <= 0) continue
 
-                const yGap = (toCanvasY(sR.bottom) + toCanvasY(nR.top)) / 2
+                const ac = planner.getTrackColor(chars[tci].id, tci).border
+
                 const xR = x1 + GO_RIGHT
                 const xT = x2 - CORNER * 3
-                const ac = planner.getTrackColor(chars[tci].id, tci).border
 
                 cx.beginPath()
                 cx.moveTo(x1, y1)
                 cx.lineTo(xR, y1)
                 cx.arcTo(xR + CORNER, y1, xR + CORNER, y1 + CORNER, CORNER)
-                cx.lineTo(xR + CORNER, yGap)
-                cx.arcTo(xR + CORNER, yGap + CORNER, xR, yGap + CORNER, CORNER)
-                cx.lineTo(xT, yGap + CORNER)
-                cx.arcTo(xT - CORNER, yGap + CORNER, xT - CORNER, yGap + CORNER * 2, CORNER)
+                cx.lineTo(xR + CORNER, gy)
+                cx.arcTo(xR + CORNER, gy + CORNER, xR, gy + CORNER, CORNER)
+                cx.lineTo(xT, gy + CORNER)
+                cx.arcTo(xT - CORNER, gy + CORNER, xT - CORNER, gy + CORNER * 2, CORNER)
                 cx.lineTo(xT - CORNER, y2 - CORNER)
-                cx.arcTo(xT, y2, x2, y2, CORNER)
+                cx.arcTo(xT - CORNER, y2, xT, y2, CORNER)
+                cx.lineTo(x2, y2)
                 cx.strokeStyle = ac
                 cx.lineWidth = 2
                 cx.globalAlpha = 0.5
@@ -313,73 +302,26 @@
         }
     }
 
-    function roundRect(
-        cx: CanvasRenderingContext2D,
-        x: number,
-        y: number,
-        w: number,
-        h: number,
-        r: number,
-    ) {
-        cx.beginPath()
-        cx.moveTo(x + r, y)
-        cx.lineTo(x + w - r, y)
-        cx.arcTo(x + w, y, x + w, y + r, r)
-        cx.lineTo(x + w, y + h - r)
-        cx.arcTo(x + w, y + h, x + w - r, y + h, r)
-        cx.lineTo(x + r, y + h)
-        cx.arcTo(x, y + h, x, y + h - r, r)
-        cx.lineTo(x, y + r)
-        cx.arcTo(x, y, x + r, y, r)
-        cx.closePath()
-    }
+    let menuRef = $state<HTMLDivElement>()
+    let menuAdjX = $state(0)
+    let menuAdjY = $state(0)
 
-    function drawStayRect(
-        cx: CanvasRenderingContext2D,
-        x: number,
-        y: number,
-        right: number,
-        h: number,
-        color: string,
-    ) {
-        const w = right - x
-        if (w <= 0 || h <= 0) return
-        cx.strokeStyle = color
-        cx.lineWidth = 1.5
-        cx.setLineDash([4, 3])
-        roundRect(cx, x, y, w, h, 4)
-        cx.stroke()
-        cx.setLineDash([])
-    }
-
-    function drawArrow(
-        cx: CanvasRenderingContext2D,
-        x1: number,
-        y1: number,
-        x2: number,
-        y2: number,
-        color: string,
-    ) {
-        cx.strokeStyle = color
-        cx.lineWidth = 2
-        cx.globalAlpha = 0.7
-        cx.lineCap = 'round'
-        cx.beginPath()
-        cx.moveTo(x1, y1)
-        cx.lineTo(x2, y2)
-        cx.stroke()
-        cx.globalAlpha = 1
-        const a = Math.atan2(y2 - y1, x2 - x1)
-        cx.fillStyle = color
-        cx.globalAlpha = 0.7
-        cx.beginPath()
-        cx.moveTo(x2, y2)
-        cx.lineTo(x2 - 7 * Math.cos(a - Math.PI / 6), y2 - 7 * Math.sin(a - Math.PI / 6))
-        cx.lineTo(x2 - 7 * Math.cos(a + Math.PI / 6), y2 - 7 * Math.sin(a + Math.PI / 6))
-        cx.closePath()
-        cx.fill()
-        cx.globalAlpha = 1
-    }
+    $effect(() => {
+        if (!contextMenu) {
+            menuAdjX = 0
+            menuAdjY = 0
+            return
+        }
+        const m = contextMenu
+        menuAdjX = m.x
+        menuAdjY = m.y
+        requestAnimationFrame(() => {
+            if (!menuRef) return
+            const r = menuRef.getBoundingClientRect()
+            menuAdjX = Math.max(4, Math.min(m.x, innerWidth - r.width - 4))
+            menuAdjY = Math.max(4, Math.min(m.y, innerHeight - r.height - 4))
+        })
+    })
 
     function handleContextMenu(e: MouseEvent) {
         e.preventDefault()
@@ -420,8 +362,8 @@
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<div bind:this={container} class="relative w-full px-5" oncontextmenu={handleContextMenu}>
-    <div bind:this={timelineRef} style="position: relative; background: {planner.theme.exportBg};">
+<div bind:this={container} class="relative w-full px-5 {isMobile ? 'overflow-x-auto scrollbar-none' : ''}" oncontextmenu={handleContextMenu}>
+    <div bind:this={timelineRef} style="position: relative; background: {planner.theme.exportBg};{isMobile ? 'min-width: 1440px;' : ''}">
         {#if segments.length === 0}
             <div
                 class="flex h-20 items-center justify-center text-sm"
@@ -431,25 +373,7 @@
             </div>
         {:else}
             {#each segments as seg, si}
-                <div data-wseg={si} class="mb-3" style="position: relative;">
-                    <div class="flex items-center gap-1 mb-1.5">
-                        <!-- 隐藏 段n 行 -->
-                        <div
-                            class="h-px flex-1"
-                            style="background: {planner.theme.divider}; opacity: 0.5;"
-                            hidden
-                        ></div>
-                        <span
-                            class="text-[10px] font-medium"
-                            style="color: {planner.theme.segmentLabel};"
-                            hidden>段 {si + 1}</span
-                        >
-                        <div
-                            class="h-px flex-1"
-                            style="background: {planner.theme.divider}; opacity: 0.5;"
-                            hidden
-                        ></div>
-                    </div>
+                <div data-wseg={si} style="position: relative;{si < segments.length - 1 ? ' margin-bottom: 24px;' : ''}">
                     <div class="flex gap-0.5 pr-8">
                         <div
                             class="flex flex-col shrink-0"
@@ -527,8 +451,9 @@
 {#if contextMenu}
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
+        bind:this={menuRef}
         class="fixed z-50 w-36 rounded-lg py-1 shadow-xl"
-        style="left: {contextMenu.x}px; top: {contextMenu.y}px; border: 1px solid {planner.theme
+        style="left: {menuAdjX}px; top: {menuAdjY}px; border: 1px solid {planner.theme
             .contextBorder}; background: {planner.theme.contextBg};"
     >
         <button

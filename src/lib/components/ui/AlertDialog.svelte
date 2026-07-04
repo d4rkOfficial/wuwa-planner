@@ -9,7 +9,7 @@
 {#if s.visible}
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
-        class="fixed inset-0 z-100 flex items-center justify-center"
+        class="fixed inset-0 z-100 flex items-end sm:items-center sm:justify-center"
         style="background: {t.overlayBackdrop};"
         onclick={() => {}}
         onkeydown={() => {}}
@@ -17,7 +17,7 @@
         <!-- svelte-ignore a11y_no_static_element_interactions -->
         <!-- svelte-ignore a11y_click_events_have_key_events -->
         <div
-            class="w-80 rounded-lg p-5 shadow-2xl"
+            class="w-full sm:w-80 rounded-t-xl sm:rounded-lg p-5 shadow-2xl"
             style="border: 1px solid {t.modalBorder}; background: {t.modalBg};"
             onclick={(e) => e.stopPropagation()}
         >

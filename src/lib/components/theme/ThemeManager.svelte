@@ -224,8 +224,8 @@
 </script>
 
 <div
-    class="flex flex-col gap-3"
-    style="min-width: 360px; max-height: 500px; --scrollbar-track: {t.scrollbarTrack}; --scrollbar-thumb: {t.scrollbarThumb}; --scrollbar-thumb-hover: {t.scrollbarThumbHover};"
+    class="flex flex-col gap-3 w-full sm:w-auto"
+    style="max-height: 80vh; --scrollbar-track: {t.scrollbarTrack}; --scrollbar-thumb: {t.scrollbarThumb}; --scrollbar-thumb-hover: {t.scrollbarThumbHover};"
 >
     {#if showEditor}
         {#if editingTheme}
@@ -239,36 +239,39 @@
         {/if}
     {:else}
         <div class="flex flex-col gap-1 overflow-y-auto min-h-0 scrollable-area" style="flex: 1;">
-            {#each allThemes as theme}
+            {#snippet themeListItem(item: Theme)}
                 <div
                     class="flex items-center gap-2 rounded px-3 py-2 cursor-pointer transition-colors"
-                    style="background: {themeStore.activeThemeId === theme.id
+                    style="background: {themeStore.activeThemeId === item.id
                         ? t.selectedModeBg
-                        : 'transparent'}; border: 1px solid {themeStore.activeThemeId === theme.id
+                        : 'transparent'}; border: 1px solid {themeStore.activeThemeId === item.id
                         ? t.selectedModeRing
                         : 'transparent'};"
-                    onclick={() => selectTheme(theme.id)}
-                    onkeydown={(e) => e.key === 'Enter' && selectTheme(theme.id)}
+                    onclick={() => selectTheme(item.id)}
+                    onkeydown={(e) => e.key === 'Enter' && selectTheme(item.id)}
                     role="option"
-                    aria-selected={themeStore.activeThemeId === theme.id}
+                    aria-selected={themeStore.activeThemeId === item.id}
                     tabindex="0"
                 >
                     <div
                         class="w-4 h-4 rounded-full shrink-0"
-                        style="background: {theme.isBuiltin
-                            ? theme.background
-                            : theme.accentText}; border: 1px solid {theme.border};"
+                        style="background: {item.isBuiltin
+                            ? item.background
+                            : item.accentText}; border: 1px solid {item.border};"
                     ></div>
                     <span class="text-xs font-medium flex-1" style="color: {t.text};">
-                        {theme.name}
-                        {#if theme.isBuiltin}
+                        {item.name}
+                        {#if item.isBuiltin}
                             <span class="text-[10px]" style="color: {t.mutedText};">(内置)</span>
                         {/if}
                     </span>
-                    {#if themeStore.activeThemeId === theme.id}
+                    {#if themeStore.activeThemeId === item.id}
                         <span class="text-[10px]" style="color: {t.accentText};">使用中</span>
                     {/if}
                 </div>
+            {/snippet}
+            {#each allThemes as theme}
+                {@render themeListItem(theme)}
             {/each}
         </div>
         {#if onclose}

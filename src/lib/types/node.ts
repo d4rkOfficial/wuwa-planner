@@ -11,6 +11,7 @@ export interface KeyOperation {
     comment?: string
 }
 
+/** @todo 疑似deadcode */
 export interface IconTextPair {
     icon: string
     text: string
@@ -24,5 +25,14 @@ export interface ActionBlock {
     isIntro: boolean
     introOverride: boolean | null
     keyOps: KeyOperation[]
+    /** @todo 疑似deadcode */
     customIcons: IconTextPair[]
+}
+
+// 带拉表工具数据的 KeyOperation
+export interface KeyOperationV2 extends KeyOperation {}
+
+// 带拉表工具数据的 ActionBlock
+export interface ActionBlockV2 extends ActionBlock {
+    keyOps: KeyOperationV2[]
 }

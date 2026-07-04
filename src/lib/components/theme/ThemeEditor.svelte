@@ -2,12 +2,22 @@
     import { planner } from '$lib/stores/planner.svelte'
     import { getCharacterPresets } from '$lib/data/characters'
     import { fileToDataURI } from '$lib/utils/assets'
+    import {
+        COLOR_FIELDS,
+        KEY_ICON_DEFS,
+        NODE_COLOR_KEYS,
+        MODE_COLOR_KEYS,
+        NODE_GROUP_BASIC,
+        NODE_GROUP_MODIFIERS,
+        NODE_GROUP_PREINPUT,
+        getPresetName,
+    } from '$lib/data/theme-editor-constants'
     import ColorRow from './ColorRow.svelte'
     import CollapsibleSection from './CollapsibleSection.svelte'
-    import AvatarSelect from '../character/AvatarSelect.svelte'
+    import ThemeKeyIcons from './ThemeKeyIcons.svelte'
+    import ThemeAvatarSection from './ThemeAvatarSection.svelte'
     import CropDialog from './CropDialog.svelte'
     import type { Theme, CharacterPreset } from '$lib/types'
-    import StrongBadge from '../timeline/StrongBadge.svelte'
 
     let {
         theme,
@@ -42,114 +52,8 @@
     let initialNodeColors = $state<Record<string, string>>({})
     let initialModeColors = $state<Record<string, string>>({})
 
-    const KEY_ICON_DEFS = [
-        { id: 'lmb', label: '左键' },
-        { id: 'lmb_hold', label: '左键长按' },
-        { id: 'rmb', label: '闪避' },
-        { id: 'q', label: 'Q' },
-        { id: 'e', label: 'E' },
-        { id: 'r', label: 'R' },
-        { id: 't', label: 'T' },
-        { id: 'f', label: 'F / 处决' },
-        { id: 'x', label: 'X / 下落' },
-
-        { id: 'v', label: 'V / 空' },
-        { id: 'intro', label: '变奏' },
-        { id: 'jump', label: '跳跃' },
-    ]
-
-    const NODE_COLOR_KEYS = [
-        'LMB',
-        'RMB',
-        'Q',
-        'E',
-        'R',
-        'T',
-        'F',
-        'X',
-        'V',
-        'jump',
-        'intro',
-        'swap',
-        'click',
-        'hold',
-        'preinput_swap',
-        'preinput_action',
-        'rapid_click',
-    ]
-
-    const MODE_COLOR_KEYS = ['hold', 'preinput_swap', 'preinput_action', 'rapid_click']
-
-    const NODE_GROUP_BASIC = ['LMB', 'RMB', 'Q', 'E', 'R', 'T', 'F', 'X', 'V', 'jump', 'intro']
-    const NODE_GROUP_MODIFIERS = ['click', 'hold', 'swap']
-    const NODE_GROUP_PREINPUT = ['preinput_swap', 'preinput_action', 'rapid_click']
-
-    const COLOR_FIELDS: (keyof Theme)[] = [
-        'name',
-        'fontFamily',
-        'background',
-        'trackBg',
-        'text',
-        'textSecondary',
-        'mutedText',
-        'panelBg',
-        'exportBg',
-        'sidebarBg',
-        'sidebarBorder',
-        'sidebarText',
-        'sidebarTextActive',
-        'sidebarHover',
-        'border',
-        'borderLight',
-        'divider',
-        'inputBg',
-        'inputBorder',
-        'buttonBg',
-        'buttonHover',
-        'buttonText',
-        'blockBorder',
-        'blockCompactBorder',
-        'blockCompactBg',
-        'diagramItemBorder',
-        'deleteBtnBorder',
-        'deleteBtnHover',
-        'scrollbarTrack',
-        'scrollbarThumb',
-        'scrollbarThumbHover',
-        'ringOffset',
-        'overlayBackdrop',
-        'dragOverBg',
-        'selectedModeBg',
-        'selectedModeRing',
-        'alertBtnBg',
-        'confirmBtnBg',
-        'modalBg',
-        'modalBorder',
-        'contextBg',
-        'contextBorder',
-        'contextHover',
-        'badgeText',
-        'avatarText',
-        'accentText',
-        'accentHover',
-        'dangerText',
-        'dangerHover',
-        'segmentLabel',
-        'comboText',
-        'tagBg',
-        'tagText',
-        'stayField',
-        'wrapIndicator',
-        'fallbackTrack',
-        'comboBg',
-        'comboBorder',
-        'starRarity5',
-        'starRarity4',
-        'starRoverGradient',
-    ]
-
-    function getPresetName(presetId: string): string {
-        return allPresets.find((p) => p.id === presetId)?.name ?? presetId
+    function getPresetNameLocal(presetId: string): string {
+        return getPresetName(allPresets, presetId)
     }
 
     function initForm() {
@@ -184,7 +88,7 @@
                 if (url) {
                     avatarEntries.push({
                         presetId,
-                        name: getPresetName(presetId),
+                        name: getPresetNameLocal(presetId),
                         avatarUrl: url,
                     })
                 }
@@ -226,7 +130,7 @@
         if (avatarEntries.some((e) => e.presetId === presetId)) return
         avatarEntries = [
             ...avatarEntries,
-            { presetId, name: getPresetName(presetId), avatarUrl: '' },
+            { presetId, name: getPresetNameLocal(presetId), avatarUrl: '' },
         ]
     }
 
@@ -276,7 +180,7 @@
 
 <div
     class="flex flex-col gap-3 min-h-0"
-    style="min-width: 440px; flex: 1; --scrollbar-track: {t.scrollbarTrack}; --scrollbar-thumb: {t.scrollbarThumb}; --scrollbar-thumb-hover: {t.scrollbarThumbHover};"
+    style="flex: 1; --scrollbar-track: {t.scrollbarTrack}; --scrollbar-thumb: {t.scrollbarThumb}; --scrollbar-thumb-hover: {t.scrollbarThumbHover};"
 >
     <div class="flex items-center shrink-0">
         <span class="text-sm font-semibold" style="color: {t.text};">
@@ -307,8 +211,7 @@
             </div>
         </CollapsibleSection>
 
-        <!-- 配色 -->
-        <CollapsibleSection label="配色">
+        {#snippet coreColors()}
             <CollapsibleSection label="核心">
                 <ColorRow
                     label="背景"
@@ -359,6 +262,9 @@
                     theme={t}
                 />
             </CollapsibleSection>
+        {/snippet}
+
+        {#snippet sidebarColors()}
             <CollapsibleSection label="侧栏">
                 <ColorRow
                     label="侧栏背景"
@@ -391,6 +297,9 @@
                     theme={t}
                 />
             </CollapsibleSection>
+        {/snippet}
+
+        {#snippet uiColors()}
             <CollapsibleSection label="UI">
                 <ColorRow
                     label="边框"
@@ -507,6 +416,9 @@
                     theme={t}
                 />
             </CollapsibleSection>
+        {/snippet}
+
+        {#snippet modalColors()}
             <CollapsibleSection label="弹窗/菜单">
                 <ColorRow
                     label="弹窗背景"
@@ -557,6 +469,9 @@
                     theme={t}
                 />
             </CollapsibleSection>
+        {/snippet}
+
+        {#snippet tagColors()}
             <CollapsibleSection label="标签/角标">
                 <ColorRow
                     label="标签背景"
@@ -625,6 +540,9 @@
                     />
                 </div>
             </CollapsibleSection>
+        {/snippet}
+
+        {#snippet interactionColors()}
             <CollapsibleSection label="交互">
                 <ColorRow
                     label="强调文字（主颜色）"
@@ -701,9 +619,7 @@
                             />
                         {/each}
                     </div>
-
                     <div class="bg-neutral-500 opacity-25 w-full h-[0.1px]"></div>
-
                     <div class="flex flex-col gap-0">
                         {#each NODE_GROUP_MODIFIERS as key}
                             <ColorRow
@@ -714,9 +630,7 @@
                             />
                         {/each}
                     </div>
-
                     <div class="bg-neutral-500 opacity-25 w-full h-[0.1px]"></div>
-
                     <div class="flex flex-col gap-0">
                         {#each NODE_GROUP_PREINPUT as key}
                             <ColorRow
@@ -729,175 +643,38 @@
                     </div>
                 </CollapsibleSection>
             </CollapsibleSection>
+        {/snippet}
+
+        <CollapsibleSection label="配色">
+            {@render coreColors()}
+            {@render sidebarColors()}
+            {@render uiColors()}
+            {@render modalColors()}
+            {@render tagColors()}
+            {@render interactionColors()}
         </CollapsibleSection>
 
-        <!-- 按键图标 -->
-        <CollapsibleSection label="按键图标" open={false}>
-            <div class="grid grid-cols-2 gap-2">
-                {#each KEY_ICON_DEFS as def}
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs w-20 shrink-0" style="color: {t.textSecondary};"
-                            >{def.label}</span
-                        >
-                        <div
-                            class="w-7 h-7 shrink-0 flex items-center justify-center rounded"
-                            style="border: 1px solid {t.border}; background: {t.inputBg};"
-                        >
-                            {#if keyIconValues[def.id]}
-                                <img
-                                    src={keyIconValues[def.id]}
-                                    alt={def.label}
-                                    class="h-5 w-5 object-contain"
-                                />
-                            {:else if theme.keyIcons?.[def.id]}
-                                <img
-                                    src={theme.keyIcons[def.id]}
-                                    alt={def.label}
-                                    class="h-5 w-5 object-contain"
-                                    onerror={(e) => {
-                                        ;(e.target as HTMLElement).style.display = 'none'
-                                    }}
-                                />
-                            {:else}
-                                <span class="text-[10px]" style="color: {t.mutedText};">无</span>
-                            {/if}
-                        </div>
-                        <label
-                            class="text-[10px] px-1.5 py-0.5 rounded cursor-pointer transition-colors"
-                            style="color: {t.accentText}; border: 1px solid {t.accentText};"
-                        >
-                            上传
-                            <input
-                                type="file"
-                                accept="image/*"
-                                class="hidden"
-                                onchange={(e) => {
-                                    const file = (e.target as HTMLInputElement).files?.[0]
-                                    if (file) handleIconFileSelected(def.id, file)
-                                    ;(e.target as HTMLInputElement).value = ''
-                                }}
-                            />
-                        </label>
-                        {#if keyIconValues[def.id]}
-                            <button
-                                class="text-[10px] px-1.5 py-0.5 rounded transition-colors"
-                                style="color: {t.dangerText};"
-                                onclick={() => handleIconReset(def.id)}>重置</button
-                            >
-                        {/if}
-                    </div>
-                {/each}
-            </div>
-            <div class="flex items-center gap-2 mt-1">
-                <span class="text-xs min-w-20 shrink-0 truncate" style="color: {t.textSecondary};"
-                    >强化</span
-                >
-                <div
-                    class="w-7 h-7 shrink-0 flex items-center justify-center rounded"
-                    style="border: 1px solid {t.border}; background: {t.inputBg};"
-                >
-                    {#if strongIconValue}
-                        <img src={strongIconValue} alt="强" class="h-5 w-5 object-contain" />
-                    {:else if theme.strongBadgeIcon}
-                        <img
-                            src={theme.strongBadgeIcon}
-                            alt="强"
-                            class="h-5 w-5 object-contain"
-                            onerror={(e) => {
-                                ;(e.target as HTMLElement).style.display = 'none'
-                            }}
-                        />
-                    {:else}
-                        <!-- <span class="text-[10px]" style="color: {t.mutedText};">无</span> -->
-                        <StrongBadge />
-                    {/if}
-                </div>
-                <label
-                    class="text-[10px] px-1.5 py-0.5 rounded cursor-pointer transition-colors"
-                    style="color: {t.accentText}; border: 1px solid {t.accentText};"
-                >
-                    上传
-                    <input
-                        type="file"
-                        accept="image/*"
-                        class="hidden"
-                        onchange={(e) => {
-                            const file = (e.target as HTMLInputElement).files?.[0]
-                            if (file) handleStrongIconFileSelected(file)
-                            ;(e.target as HTMLInputElement).value = ''
-                        }}
-                    />
-                </label>
-                {#if strongIconValue}
-                    <button
-                        class="text-[10px] px-1.5 py-0.5 rounded transition-colors"
-                        style="color: {t.dangerText};"
-                        onclick={handleStrongIconReset}>重置</button
-                    >
-                {/if}
-            </div>
-        </CollapsibleSection>
+        <ThemeKeyIcons
+            {keyIconValues}
+            {strongIconValue}
+            {theme}
+            {t}
+            onIconFileSelected={handleIconFileSelected}
+            onIconReset={handleIconReset}
+            onStrongIconFileSelected={handleStrongIconFileSelected}
+            onStrongIconReset={handleStrongIconReset}
+        />
 
-        <!-- 角色头像 -->
-        <CollapsibleSection label="角色头像" open={false}>
-            {#each avatarEntries as entry, i}
-                <div class="flex items-center gap-2">
-                    <div
-                        class="w-7 h-7 shrink-0 rounded-full overflow-hidden flex items-center justify-center"
-                        style="border: 1px solid {t.border}; background: {t.inputBg};"
-                    >
-                        {#if entry.avatarUrl}
-                            <img
-                                src={entry.avatarUrl}
-                                alt={entry.name}
-                                class="h-full w-full object-cover"
-                            />
-                        {:else}
-                            <img
-                                src="/images/avatars/{entry.presetId}.png"
-                                alt={entry.name}
-                                class="h-full w-full object-cover"
-                                onerror={(e) => {
-                                    ;(e.target as HTMLElement).style.display = 'none'
-                                }}
-                            />
-                        {/if}
-                    </div>
-                    <span class="text-xs flex-1" style="color: {t.text};">{entry.name}</span>
-                    <label
-                        class="text-[10px] px-1.5 py-0.5 rounded cursor-pointer transition-colors"
-                        style="color: {t.accentText}; border: 1px solid {t.accentText};"
-                    >
-                        上传
-                        <input
-                            type="file"
-                            accept="image/*"
-                            class="hidden"
-                            onchange={(e) => {
-                                const file = (e.target as HTMLInputElement).files?.[0]
-                                if (file) handleAvatarFileSelected(i, file)
-                                ;(e.target as HTMLInputElement).value = ''
-                            }}
-                        />
-                    </label>
-                    <button
-                        class="text-[10px] px-1.5 py-0.5 rounded transition-colors"
-                        style="color: {t.dangerText};"
-                        onclick={() => handleAvatarRemove(i)}>删除</button
-                    >
-                </div>
-            {/each}
-
-            <button
-                class="my-3 w-full rounded px-2 py-1 text-xs transition-colors"
-                style="color: {t.accentText}; border: 1px solid {t.accentText};"
-                onclick={() => (showAvatarSelect = true)}
-                >{#if avatarEntries.length === 0}
-                    + 添加第一个自定义头像
-                {:else}+ 继续添加自定义头像
-                {/if}</button
-            >
-        </CollapsibleSection>
+        <ThemeAvatarSection
+            {avatarEntries}
+            {usedAvatarIds}
+            {showAvatarSelect}
+            {t}
+            onAddAvatar={handleAddAvatar}
+            onAvatarFileSelected={handleAvatarFileSelected}
+            onAvatarRemove={handleAvatarRemove}
+            onToggleAvatarSelect={() => (showAvatarSelect = !showAvatarSelect)}
+        />
     </div>
 
     <div class="flex justify-end gap-2 shrink-0">
@@ -913,14 +690,6 @@
         >
     </div>
 </div>
-
-{#if showAvatarSelect}
-    <AvatarSelect
-        excludeIds={usedAvatarIds}
-        onselect={handleAddAvatar}
-        onclose={() => (showAvatarSelect = false)}
-    />
-{/if}
 
 {#if showCropDialog && cropImageUrl}
     <CropDialog

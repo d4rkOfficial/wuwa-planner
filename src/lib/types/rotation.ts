@@ -1,7 +1,6 @@
 import type { Character } from './character'
-import type { ActionBlock } from './node'
+import type { ActionBlock, ActionBlockV2 } from './node'
 import type { StayFieldMarker } from './connection'
-import type { Theme } from './theme'
 
 export interface RotationExportV1 {
     version: '1.0'
@@ -28,14 +27,8 @@ export interface RotationExportV2 {
     }
     team: Character[]
     rotation: {
-        blocks: ActionBlock[]
+        blocks: ActionBlockV2[]
         stayFieldMarkers: StayFieldMarker[]
-    }
-    theme?: {
-        id: string
-        name: string
-        baseTheme: 'dark' | 'light'
-        overrides: Record<string, unknown>
     }
 }
 
