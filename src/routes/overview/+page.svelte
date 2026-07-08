@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from 'svelte'
+    import { goto } from '$app/navigation'
     import { planner } from '$lib/stores/planner.svelte'
     import { projects } from '$lib/stores/projects.svelte'
     import { loadCharacterPresets, getCharacterPresets } from '$lib/data/characters'
@@ -58,12 +59,12 @@
     }
 
     onMount(() => {
-        loadCharacterPresets().then((p) => (presets = p))
-        projects.loadFromStorage()
         if (projects.projects.length === 0) {
-            window.location.href = '/'
+            goto('/')
             return
         }
+        loadCharacterPresets().then((p) => (presets = p))
+        projects.loadFromStorage()
         const hashId = window.location.hash.slice(1)
         const targetId =
             hashId && projects.projects.find((p) => p.id === hashId)

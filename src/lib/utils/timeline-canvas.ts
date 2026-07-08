@@ -33,14 +33,8 @@ export function drawArrow(
     cx.globalAlpha = alpha
     cx.lineCap = 'round'
     cx.beginPath()
-    if (x1 === x2) {
-        const midY = (y1 + y2) / 2
-        cx.moveTo(x1, y1)
-        cx.quadraticCurveTo(x1 + 4, midY, x2, y2)
-    } else {
-        cx.moveTo(x1, y1)
-        cx.lineTo(x2, y2)
-    }
+    cx.moveTo(x1, y1)
+    cx.lineTo(x2, y2)
     cx.stroke()
     cx.globalAlpha = 1
     const a = Math.atan2(y2 - y1, x2 - x1)

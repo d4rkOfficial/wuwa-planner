@@ -39,6 +39,7 @@
         if (!isMobile) mobileSidebarOpen = false
     })
     let lastSaveTime = $state<string>('')
+    let saveTimerId: ReturnType<typeof setInterval> | undefined
     let themeOpen = $state(false)
     let themeManagerOpen = $state(false)
     let panelHeight = $state(260)
@@ -110,18 +111,38 @@
                 projects.syncPlannerToActive()
             }
         })
+    })
 
-        const saveTimer = setInterval(() => {
+    $effect(() => {
+        const id = projects.activeId
+
+        if (saveTimerId) {
+            clearInterval(saveTimerId)
+            saveTimerId = undefined
+        }
+
+        if (!id) return
+
+        const now = new Date()
+        lastSaveTime = now.toLocaleTimeString('zh-CN', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+        })
+
+        saveTimerId = setInterval(() => {
             projects.syncPlannerToActive()
-            const now = new Date()
-            lastSaveTime = now.toLocaleTimeString('zh-CN', {
+            const n = new Date()
+            lastSaveTime = n.toLocaleTimeString('zh-CN', {
                 hour: '2-digit',
                 minute: '2-digit',
                 second: '2-digit',
             })
         }, 5000)
 
-        return () => clearInterval(saveTimer)
+        return () => {
+            if (saveTimerId) clearInterval(saveTimerId)
+        }
     })
 
     let titleValue = $state('')

@@ -1,0 +1,150 @@
+import type {
+    ActionBlock,
+    KeyOperation,
+    StayFieldMarker,
+    Character,
+    CharacterPreset,
+} from '$lib/types'
+import { resolveTeamAliases } from '$lib/utils/resolveTeamAliases'
+
+export interface TimelineItem {
+    block: ActionBlock
+    alias: string
+    charIndex: number
+    prevBlock: ActionBlock | null
+    isSwitch: boolean
+    isSwitchIntro: boolean
+    isSwitchStay: boolean
+    hasStayField: boolean
+}
+
+export function keyOpText(op: KeyOperation): string {
+    const k = op.key
+    const kLabel = k === 'X' ? '下落' : k === 'F' ? '处决' : k === 'intro' ? '变奏' : k
+    const m = op.mode
+
+    let base: string
+    if (m === 'hold') {
+        if (k === 'LMB') base = 'Z'
+        else if (k === 'RMB') base = '长按闪'
+        else if (k === 'jump') base = '长按跳'
+        else base = '长按' + kLabel
+    } else {
+        if (k === 'LMB') base = 'a'
+        else if (k === 'RMB') base = '闪'
+        else if (k === 'jump') base = '跳'
+        else base = kLabel
+    }
+
+    if (op.strong) base = '强' + base
+
+    if (op.comboStart && op.comboEnd && op.comboStart > 0 && op.comboEnd > 0) {
+        if (op.comboStart === op.comboEnd) base = base + String(op.comboStart)
+        else {
+            const nums: number[] = []
+            for (let n = op.comboStart; n <= op.comboEnd; n++) nums.push(n)
+            base = base + nums.join('')
+        }
+    }
+
+    return base
+}
+
+function hasStayField(
+    block: ActionBlock,
+    allBlocks: ActionBlock[],
+    markers: StayFieldMarker[],
+): boolean {
+    const charBlocks = allBlocks
+        .filter((b) => b.characterId === block.characterId)
+        .sort((a, b) => a.x - b.x)
+    const idx = charBlocks.findIndex((b) => b.id === block.id)
+    if (idx <= 0) return false
+    const prevBlock = charBlocks[idx - 1]
+    return markers.some((m) => m.fromBlockId === prevBlock.id && m.toBlockId === block.id)
+}
+
+function resolveCharAliases(characters: Character[], presets: CharacterPreset[]): string[] {
+    const aliasLists: string[][] = []
+    const names: string[] = []
+    for (let i = 0; i < characters.length; i++) {
+        const char = characters[i]
+        const presetId = char?.presetId
+        if (!presetId) {
+            aliasLists.push([char?.name ?? `${i + 1}号角色`])
+            names.push(char?.name ?? `${i + 1}号角色`)
+        } else {
+            const preset = presets.find((p) => p.id === presetId)
+            if (preset) {
+                aliasLists.push([...preset.aliases])
+                names.push(preset.name)
+            } else {
+                aliasLists.push([char?.name ?? `${i + 1}号角色`])
+                names.push(char?.name ?? `${i + 1}号角色`)
+            }
+        }
+    }
+
+    for (let i = 0; i < aliasLists.length; i++) {
+        aliasLists[i].push(names[i])
+    }
+
+    const aliasCount = new Map<string, number>()
+    for (const list of aliasLists) {
+        const seen = new Set<string>()
+        for (const a of list) {
+            if (!seen.has(a)) {
+                aliasCount.set(a, (aliasCount.get(a) || 0) + 1)
+                seen.add(a)
+            }
+        }
+    }
+
+    for (let i = 0; i < aliasLists.length; i++) {
+        const filtered = aliasLists[i].filter((a) => aliasCount.get(a) === 1)
+        aliasLists[i] = filtered.length > 0 ? filtered : [names[i]]
+    }
+
+    return resolveTeamAliases(aliasLists)
+}
+
+export function getMergedTimeline(
+    characters: Character[],
+    blocks: ActionBlock[],
+    markers: StayFieldMarker[],
+    presets: CharacterPreset[],
+): TimelineItem[] {
+    const resolvedAliases = resolveCharAliases(characters, presets)
+
+    const all = blocks
+        .map((block) => {
+            const charIdx = characters.findIndex((c) => c.id === block.characterId)
+            return {
+                block,
+                alias: resolvedAliases[charIdx] ?? `${charIdx + 1}号角色`,
+                charIndex: charIdx,
+            }
+        })
+        .sort((a, b) => a.block.x - b.block.x)
+
+    const result: TimelineItem[] = []
+    let effectiveCharId: string | null = null
+    for (let i = 0; i < all.length; i++) {
+        const { block, alias, charIndex } = all[i]
+        const prevBlock = i > 0 ? all[i - 1].block : null
+        const isSwitch = effectiveCharId !== null && effectiveCharId !== block.characterId
+        if (!block.isOffHand) effectiveCharId = block.characterId
+        const stay = hasStayField(block, blocks, markers)
+        result.push({
+            block,
+            alias,
+            charIndex,
+            prevBlock,
+            isSwitch,
+            isSwitchIntro: isSwitch && block.isIntro,
+            isSwitchStay: isSwitch && !block.isIntro && stay,
+            hasStayField: stay,
+        })
+    }
+    return result
+}
