@@ -30,19 +30,23 @@
             <div class="flex justify-end gap-2">
                 {#if s.type === 'confirm'}
                     <button
-                        class="rounded px-3 py-1.5 text-xs transition-colors"
+                        class="inline-flex items-center gap-1 rounded px-3 py-1.5 text-xs transition-colors"
                         style="background: {t.buttonBg}; color: {t.buttonText};"
                         onmouseenter={(e) =>
                             ((e.target as HTMLElement).style.background = t.buttonHover)}
                         onmouseleave={(e) =>
                             ((e.target as HTMLElement).style.background = t.buttonBg)}
-                        onclick={() => s.resolve(false)}>取消</button
+                        onclick={() => s.resolve(false)}
+                        ><span class="material-icons">close</span>取消</button
                     >
                 {/if}
                 <button
-                    class="rounded px-3 py-1.5 text-xs font-medium text-white transition-colors"
+                    class="inline-flex items-center gap-1 rounded px-3 py-1.5 text-xs font-medium text-white transition-colors"
                     style="background: {s.type === 'alert' ? t.alertBtnBg : t.confirmBtnBg};"
-                    onclick={() => s.resolve(true)}>{s.type === 'alert' ? '确定' : '确认'}</button
+                    onclick={() => s.resolve(true)}
+                    ><span class="material-icons">check</span>{s.type === 'alert'
+                        ? '确定'
+                        : '确认'}</button
                 >
             </div>
         </div>

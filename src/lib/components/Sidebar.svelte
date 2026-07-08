@@ -266,24 +266,26 @@
         style="border-top: 1px solid {t.sidebarBorder};"
     >
         <button
-            class="font-black w-full rounded py-2 sm:py-1.5 text-xs transition-colors min-h-[36px]"
+            class="inline-flex items-center justify-center gap-1 font-black w-full rounded py-2 sm:py-1.5 text-xs transition-colors min-h-[36px]"
             style="background: {t.buttonBg}; color: {t.buttonText}; border: 1px solid {t.buttonHover};"
             onmouseenter={(e) =>
                 ((e.currentTarget as HTMLElement).style.background = t.buttonHover)}
             onmouseleave={(e) => {
                 ;(e.currentTarget as HTMLElement).style.background = t.buttonBg
             }}
-            onclick={handleNewProject}>创建空白工程</button
+            onclick={handleNewProject}
+            ><span class="material-icons">add_circle</span>创建空白工程</button
         >
         <button
-            class="font-black w-full rounded py-2 sm:py-1.5 text-xs transition-colors min-h-[36px]"
+            class="inline-flex items-center justify-center gap-1 font-black w-full rounded py-2 sm:py-1.5 text-xs transition-colors min-h-[36px]"
             style="background: {t.buttonBg}; color: {t.buttonText}; border: 1px solid {t.buttonHover};"
             onmouseenter={(e) =>
                 ((e.currentTarget as HTMLElement).style.background = t.buttonHover)}
             onmouseleave={(e) => {
                 ;(e.currentTarget as HTMLElement).style.background = t.buttonBg
             }}
-            onclick={handleImportProjectJSON}>从 JSON 导入工程</button
+            onclick={handleImportProjectJSON}
+            ><span class="material-icons">file_upload</span>从 JSON 导入工程</button
         >
     </div>
 </div>

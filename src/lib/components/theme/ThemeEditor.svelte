@@ -675,14 +675,14 @@
 
     <div class="flex justify-end gap-2 shrink-0">
         <button
-            class="rounded px-3 py-1.5 text-xs transition-colors"
+            class="inline-flex items-center gap-1 rounded px-3 py-1.5 text-xs transition-colors"
             style="background: {t.buttonBg}; color: {t.buttonText}; border: 1px solid {t.border};"
-            onclick={oncancel}>取消</button
+            onclick={oncancel}><span class="material-icons">close</span>取消</button
         >
         <button
-            class="rounded px-3 py-1.5 text-xs transition-colors"
+            class="inline-flex items-center gap-1 rounded px-3 py-1.5 text-xs transition-colors"
             style="background: {t.confirmBtnBg}; color: #ffffff;"
-            onclick={handleSave}>保存</button
+            onclick={handleSave}><span class="material-icons">save</span>保存</button
         >
     </div>
 </div>

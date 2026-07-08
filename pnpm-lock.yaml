@@ -10,6 +10,9 @@ importers:
             html-to-image:
                 specifier: ^1.11.13
                 version: 1.11.13
+            material-icons:
+                specifier: ^1.13.14
+                version: 1.13.14
             nanoid:
                 specifier: ^5.1.16
                 version: 5.1.16
@@ -1121,6 +1124,12 @@ packages:
                 integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==,
             }
 
+    material-icons@1.13.14:
+        resolution:
+            {
+                integrity: sha512-kZOfc7xCC0rAT8Q3DQixYAeT+tBqZnxkseQtp2bxBxz7q5pMAC+wmit7vJn1g/l7wRU+HEPq23gER4iPjGs5Cg==,
+            }
+
     minimatch@10.2.5:
         resolution:
             {
@@ -2050,6 +2059,8 @@ snapshots:
     magic-string@0.30.21:
         dependencies:
             '@jridgewell/sourcemap-codec': 1.5.5
+
+    material-icons@1.13.14: {}
 
     minimatch@10.2.5:
         dependencies:

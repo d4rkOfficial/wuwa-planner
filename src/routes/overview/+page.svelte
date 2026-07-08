@@ -177,7 +177,7 @@
 
         <div class="flex items-center rounded-lg p-0.5" style="background: {t.inputBg};">
             <button
-                class="rounded-md px-3 py-1 text-[11px] font-black transition-colors"
+                class="inline-flex items-center gap-1 rounded-md px-3 py-1 text-[11px] font-black transition-colors"
                 style="background: {tab === 'timeline'
                     ? t.selectedModeBg
                     : 'transparent'}; color: {tab === 'timeline'
@@ -185,10 +185,11 @@
                     : t.textSecondary};{tab === 'timeline'
                     ? 'box-shadow: inset 0 0 0 1px ' + t.selectedModeRing + ';'
                     : ''}"
-                onclick={() => (tab = 'timeline')}>图示轴</button
+                onclick={() => (tab = 'timeline')}
+                ><span class="material-icons">image</span>图示轴</button
             >
             <button
-                class="rounded-md px-3 py-1 text-[11px] font-black transition-colors"
+                class="inline-flex items-center gap-1 rounded-md px-3 py-1 text-[11px] font-black transition-colors"
                 style="background: {tab === 'description'
                     ? t.selectedModeBg
                     : 'transparent'}; color: {tab === 'description'
@@ -196,7 +197,8 @@
                     : t.textSecondary};{tab === 'description'
                     ? 'box-shadow: inset 0 0 0 1px ' + t.selectedModeRing + ';'
                     : ''}"
-                onclick={() => (tab = 'description')}>文字轴</button
+                onclick={() => (tab = 'description')}
+                ><span class="material-icons">text_fields</span>文字轴</button
             >
         </div>
 
@@ -205,7 +207,7 @@
         {#if !isMobile}
             {#if tab === 'timeline'}
                 <button
-                    class="rounded px-2.5 py-1 text-[11px] transition-colors"
+                    class="inline-flex items-center gap-1 rounded px-2.5 py-1 text-[11px] transition-colors"
                     style="border: 1px solid {t.inputBorder}; color: {t.textSecondary};"
                     onmouseenter={(e) => {
                         ;(e.currentTarget as HTMLElement).style.background = t.buttonHover
@@ -217,11 +219,12 @@
                     }}
                     onclick={handleDownloadTimeline}
                 >
+                    <span class="material-icons">download</span>
                     <span class="font-black">下载图示轴</span></button
                 >
             {:else}
                 <button
-                    class="rounded px-2.5 py-1 text-[11px] transition-colors"
+                    class="inline-flex items-center gap-1 rounded px-2.5 py-1 text-[11px] transition-colors"
                     style="border: 1px solid {t.inputBorder}; color: {t.textSecondary};"
                     onmouseenter={(e) => {
                         ;(e.currentTarget as HTMLElement).style.background = t.buttonHover
@@ -233,6 +236,7 @@
                     }}
                     onclick={handleOpenCopyMenu}
                 >
+                    <span class="material-icons">content_copy</span>
                     <span class="font-black">复制文字轴</span></button
                 >
             {/if}
@@ -240,7 +244,7 @@
 
         <a
             href="/#{projects.activeId}"
-            class="rounded px-2.5 py-1 text-[11px] no-underline transition-colors font-black"
+            class="inline-flex items-center gap-1 rounded px-2.5 py-1 text-[11px] no-underline transition-colors font-black"
             style="border: 1px solid {t.inputBorder}; color: {t.textSecondary};"
             onmouseenter={(e) => {
                 ;(e.currentTarget as HTMLElement).style.background = t.buttonHover
@@ -249,7 +253,7 @@
             onmouseleave={(e) => {
                 ;(e.currentTarget as HTMLElement).style.background = ''
                 ;(e.currentTarget as HTMLElement).style.color = t.textSecondary
-            }}>返回排轴</a
+            }}><span class="material-icons">arrow_back</span>返回排轴</a
         >
     </div>
 

@@ -488,7 +488,7 @@
             .contextBorder}; background: {planner.theme.contextBg};"
     >
         <button
-            class="flex w-full items-center px-4 py-2 text-left text-xs transition-colors"
+            class="flex w-full items-center gap-2 px-4 py-2 text-left text-xs transition-colors"
             style="color: {planner.theme.text};"
             onmouseenter={(e) => {
                 ;(e.currentTarget as HTMLElement).style.background = planner.theme.contextHover
@@ -496,7 +496,7 @@
             onmouseleave={(e) => {
                 ;(e.currentTarget as HTMLElement).style.background = ''
             }}
-            onclick={handleDownload}>下载为图片</button
+            onclick={handleDownload}><span class="material-icons">download</span>下载为图片</button
         >
     </div>
 {/if}

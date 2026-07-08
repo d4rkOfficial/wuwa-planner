@@ -300,7 +300,7 @@
                     ;(e.currentTarget as HTMLElement).style.background = ''
                     ;(e.currentTarget as HTMLElement).style.color = t.textSecondary
                 }}
-                onclick={tryClose}>✕</button
+                onclick={tryClose}><span class="material-icons">close</span></button
             >
         </div>
         <div class="p-4 flex flex-col sm:flex-row gap-4 overflow-y-auto min-h-0 scrollable-area">
@@ -338,16 +338,18 @@
                         </div>
                         <div class="flex items-center gap-1">
                             <button
-                                class="rounded px-2 py-1 text-[10px] transition-colors"
+                                class="inline-flex items-center gap-0.5 rounded px-2 py-1 text-[10px] transition-colors"
                                 style="color: {t.textSecondary}; border: 1px solid {t.border};"
                                 onclick={() => rotate(-90)}
-                                title="向左旋转 90°">↺ 90°</button
+                                title="向左旋转 90°"
+                                ><span class="material-icons mi--sm">rotate_left</span>90°</button
                             >
                             <button
-                                class="rounded px-2 py-1 text-[10px] transition-colors"
+                                class="inline-flex items-center gap-0.5 rounded px-2 py-1 text-[10px] transition-colors"
                                 style="color: {t.textSecondary}; border: 1px solid {t.border};"
                                 onclick={() => rotate(90)}
-                                title="向右旋转 90°">↻ 90°</button
+                                title="向右旋转 90°"
+                                ><span class="material-icons mi--sm">rotate_right</span>90°</button
                             >
                         </div>
                         <div class="text-[10px]" style="color: {t.mutedText};">
@@ -355,14 +357,16 @@
                         </div>
                         <div class="flex gap-2 mt-auto">
                             <button
-                                class="rounded px-3 py-1.5 text-xs transition-colors"
+                                class="inline-flex items-center gap-1 rounded px-3 py-1.5 text-xs transition-colors"
                                 style="background: {t.buttonBg}; color: {t.buttonText}; border: 1px solid {t.border};"
-                                onclick={tryClose}>取消</button
+                                onclick={tryClose}
+                                ><span class="material-icons">close</span>取消</button
                             >
                             <button
-                                class="rounded px-3 py-1.5 text-xs transition-colors"
+                                class="inline-flex items-center gap-1 rounded px-3 py-1.5 text-xs transition-colors"
                                 style="background: {t.confirmBtnBg}; color: #ffffff;"
-                                onclick={doCrop}>确认裁剪</button
+                                onclick={doCrop}
+                                ><span class="material-icons">check</span>确认裁剪</button
                             >
                         </div>
                     </div>

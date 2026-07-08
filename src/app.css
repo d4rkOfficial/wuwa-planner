@@ -1,4 +1,15 @@
 @import 'tailwindcss';
+@import 'material-icons/iconfont/material-icons.css';
+
+.material-icons {
+    font-size: 14px;
+    line-height: 1;
+    vertical-align: middle;
+    display: inline-block;
+}
+.material-icons.mi--sm {
+    font-size: 12px;
+}
 
 * {
     scrollbar-width: none !important;

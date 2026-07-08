@@ -280,42 +280,47 @@
                 <div class="flex items-center gap-0">
                     {#if !isActiveBuiltin}
                         <button
-                            class="px-1.5 py-0.5 text-[11px] transition-colors rounded"
+                            class="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[11px] transition-colors rounded"
                             style="color: {t.dangerText};"
                             onmouseenter={(e) => (e.currentTarget.style.opacity = '0.7')}
                             onmouseleave={(e) => (e.currentTarget.style.opacity = '1')}
-                            onclick={() => handleDelete(activeTheme.id)}>删除</button
+                            onclick={() => handleDelete(activeTheme.id)}
+                            ><span class="material-icons mi--sm">delete</span>删除</button
                         >
                         <button
-                            class="px-1.5 py-0.5 text-[11px] transition-colors rounded"
+                            class="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[11px] transition-colors rounded"
                             style="color: {t.textSecondary};"
                             onmouseenter={(e) => (e.currentTarget.style.color = t.text)}
                             onmouseleave={(e) => (e.currentTarget.style.color = t.textSecondary)}
-                            onclick={() => startEdit(activeTheme)}>编辑</button
+                            onclick={() => startEdit(activeTheme)}
+                            ><span class="material-icons mi--sm">edit</span>编辑</button
                         >
                         <button
-                            class="px-1.5 py-0.5 text-[11px] transition-colors rounded"
+                            class="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[11px] transition-colors rounded"
                             style="color: {t.textSecondary};"
                             onmouseenter={(e) => (e.currentTarget.style.color = t.text)}
                             onmouseleave={(e) => (e.currentTarget.style.color = t.textSecondary)}
-                            onclick={handleExportTheme}>导出</button
+                            onclick={handleExportTheme}
+                            ><span class="material-icons mi--sm">file_download</span>导出</button
                         >
                     {/if}
                 </div>
                 <div class="flex items-center gap-0">
                     <button
-                        class="px-1.5 py-0.5 text-[11px] transition-colors rounded"
+                        class="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[11px] transition-colors rounded"
                         style="color: {t.textSecondary};"
                         onmouseenter={(e) => (e.currentTarget.style.color = t.text)}
                         onmouseleave={(e) => (e.currentTarget.style.color = t.textSecondary)}
-                        onclick={handleImportTheme}>导入</button
+                        onclick={handleImportTheme}
+                        ><span class="material-icons mi--sm">file_upload</span>导入</button
                     >
                     <button
-                        class="px-1.5 py-0.5 text-[11px] transition-colors rounded"
+                        class="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[11px] transition-colors rounded"
                         style="color: {t.accentText};"
                         onmouseenter={(e) => (e.currentTarget.style.opacity = '0.7')}
                         onmouseleave={(e) => (e.currentTarget.style.opacity = '1')}
-                        onclick={startNewTheme}>+ 新建</button
+                        onclick={startNewTheme}
+                        ><span class="material-icons mi--sm">add</span>新建</button
                     >
                 </div>
             </div>

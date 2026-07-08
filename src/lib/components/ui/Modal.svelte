@@ -49,7 +49,7 @@
                             ;(e.currentTarget as HTMLElement).style.background = ''
                             ;(e.currentTarget as HTMLElement).style.color = t.textSecondary
                         }}
-                        onclick={onclose}>✕</button
+                        onclick={onclose}><span class="material-icons">close</span></button
                     >
                 </div>
             {/if}

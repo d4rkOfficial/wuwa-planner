@@ -298,7 +298,10 @@
                     } else {
                         sidebarCollapsed = !sidebarCollapsed
                     }
-                }}>{isMobile ? '☰' : sidebarCollapsed ? '☰' : '✕'}</button
+                }}
+                ><span class="material-icons"
+                    >{isMobile || sidebarCollapsed ? 'menu' : 'close'}</span
+                ></button
             >
             <input
                 type="text"
@@ -316,7 +319,7 @@
             />
             <div class="relative shrink-0">
                 <button
-                    class="font-black rounded px-2 py-1 text-[11px] transition-colors"
+                    class="inline-flex items-center gap-1 font-black rounded px-2 py-1 text-[11px] transition-colors"
                     style="border: 1px solid {planner.theme.inputBorder}; color: {planner.theme
                         .textSecondary};"
                     onmouseenter={(e) => {
@@ -329,7 +332,7 @@
                         ;(e.currentTarget as HTMLElement).style.color = planner.theme.textSecondary
                     }}
                     onclick={() => (themeOpen = !themeOpen)}
-                    ><span class="hidden sm:inline"
+                    ><span class="material-icons">palette</span><span class="hidden sm:inline"
                         >{themeStore.getTheme(themeStore.activeThemeId)?.name ?? '主题'}</span
                     ><span class="sm:hidden">主题</span></button
                 >
@@ -388,7 +391,7 @@
             </div>
             <a
                 href="/overview#{projects.activeId}"
-                class="font-black shrink-0 rounded px-2.5 py-1 text-[11px] no-underline transition-colors"
+                class="inline-flex items-center gap-1 font-black shrink-0 rounded px-2.5 py-1 text-[11px] no-underline transition-colors"
                 style="border: 1px solid {planner.theme.inputBorder}; color: {planner.theme
                     .textSecondary};"
                 onmouseenter={(e) => {
@@ -398,11 +401,11 @@
                 onmouseleave={(e) => {
                     ;(e.currentTarget as HTMLElement).style.background = ''
                     ;(e.currentTarget as HTMLElement).style.color = planner.theme.textSecondary
-                }}>总览</a
+                }}><span class="material-icons">visibility</span>总览</a
             >
             <a
                 href="/calculator#{projects.activeId}"
-                class="font-black shrink-0 rounded px-2.5 py-1 text-[11px] no-underline transition-colors"
+                class="inline-flex items-center gap-1 font-black shrink-0 rounded px-2.5 py-1 text-[11px] no-underline transition-colors"
                 style="border: 1px solid {planner.theme.inputBorder}; color: {planner.theme
                     .textSecondary};"
                 onmouseenter={(e) => {
@@ -412,7 +415,7 @@
                 onmouseleave={(e) => {
                     ;(e.currentTarget as HTMLElement).style.background = ''
                     ;(e.currentTarget as HTMLElement).style.color = planner.theme.textSecondary
-                }}>拉表</a
+                }}><span class="material-icons">table_chart</span>拉表</a
             >
         </div>
         <div class="flex flex-1 flex-col min-h-0">

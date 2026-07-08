@@ -131,14 +131,14 @@
     </p>
     <div class="flex justify-center gap-3">
         <button
-            class="rounded-lg px-5 py-2 text-sm font-semibold text-white transition-colors"
+            class="inline-flex items-center gap-1 rounded-lg px-5 py-2 text-sm font-semibold text-white transition-colors"
             style="background: {planner.theme.accentText};"
-            onclick={confirmSwap}>交换</button
+            onclick={confirmSwap}><span class="material-icons">swap_horiz</span>交换</button
         >
         <button
-            class="rounded-lg px-5 py-2 text-sm font-semibold transition-colors"
+            class="inline-flex items-center gap-1 rounded-lg px-5 py-2 text-sm font-semibold transition-colors"
             style="background: {planner.theme.buttonBg}; color: {planner.theme.buttonText};"
-            onclick={cancelSwap}>取消</button
+            onclick={cancelSwap}><span class="material-icons">close</span>取消</button
         >
     </div>
 </Modal>

@@ -212,7 +212,7 @@
         <div class="flex items-center gap-3">
             <span class="text-sm font-black" style="color: {t.text};">{planner.title}</span>
             <button
-                class="rounded px-2.5 py-1 text-[11px] font-black transition-colors"
+                class="inline-flex items-center gap-1 rounded px-2.5 py-1 text-[11px] font-black transition-colors"
                 style="border: 1px solid {t.inputBorder}; color: {t.textSecondary}; background: transparent;"
                 onmouseenter={(e) => {
                     ;(e.currentTarget as HTMLElement).style.background = t.buttonHover
@@ -221,10 +221,10 @@
                 onmouseleave={(e) => {
                     ;(e.currentTarget as HTMLElement).style.background = ''
                     ;(e.currentTarget as HTMLElement).style.color = t.textSecondary
-                }}>队伍配置</button
+                }}><span class="material-icons">settings</span>队伍配置</button
             >
             <button
-                class="rounded px-2.5 py-1 text-[11px] font-black transition-colors"
+                class="inline-flex items-center gap-1 rounded px-2.5 py-1 text-[11px] font-black transition-colors"
                 style="border: 1px solid {t.inputBorder}; color: {t.textSecondary}; background: transparent;"
                 onmouseenter={(e) => {
                     ;(e.currentTarget as HTMLElement).style.background = t.buttonHover
@@ -233,10 +233,10 @@
                 onmouseleave={(e) => {
                     ;(e.currentTarget as HTMLElement).style.background = ''
                     ;(e.currentTarget as HTMLElement).style.color = t.textSecondary
-                }}>敌人配置</button
+                }}><span class="material-icons">bug_report</span>敌人配置</button
             >
             <button
-                class="rounded px-2.5 py-1 text-[11px] font-black transition-colors"
+                class="inline-flex items-center gap-1 rounded px-2.5 py-1 text-[11px] font-black transition-colors"
                 style="border: 1px solid {t.inputBorder}; color: {t.textSecondary}; background: transparent;"
                 onmouseenter={(e) => {
                     ;(e.currentTarget as HTMLElement).style.background = t.buttonHover
@@ -245,10 +245,10 @@
                 onmouseleave={(e) => {
                     ;(e.currentTarget as HTMLElement).style.background = ''
                     ;(e.currentTarget as HTMLElement).style.color = t.textSecondary
-                }}>快速Buff配置</button
+                }}><span class="material-icons">bolt</span>快速Buff配置</button
             >
             <button
-                class="rounded px-2.5 py-1 text-[11px] font-black transition-colors"
+                class="inline-flex items-center gap-1 rounded px-2.5 py-1 text-[11px] font-black transition-colors"
                 style="border: 1px solid {t.inputBorder}; color: {t.textSecondary}; background: transparent;"
                 onmouseenter={(e) => {
                     ;(e.currentTarget as HTMLElement).style.background = t.buttonHover
@@ -257,10 +257,10 @@
                 onmouseleave={(e) => {
                     ;(e.currentTarget as HTMLElement).style.background = ''
                     ;(e.currentTarget as HTMLElement).style.color = t.textSecondary
-                }}>伤害对比</button
+                }}><span class="material-icons">compare_arrows</span>伤害对比</button
             >
             <button
-                class="rounded px-2.5 py-1 text-[11px] font-black transition-colors"
+                class="inline-flex items-center gap-1 rounded px-2.5 py-1 text-[11px] font-black transition-colors"
                 style="border: 1px solid {t.inputBorder}; color: {t.textSecondary}; background: transparent;"
                 onmouseenter={(e) => {
                     ;(e.currentTarget as HTMLElement).style.background = t.buttonHover
@@ -269,12 +269,12 @@
                 onmouseleave={(e) => {
                     ;(e.currentTarget as HTMLElement).style.background = ''
                     ;(e.currentTarget as HTMLElement).style.color = t.textSecondary
-                }}>伤害统计</button
+                }}><span class="material-icons">bar_chart</span>伤害统计</button
             >
         </div>
         <a
             href="/#{projects.activeId}"
-            class="rounded px-2.5 py-1 text-[11px] font-black no-underline transition-colors"
+            class="inline-flex items-center gap-1 rounded px-2.5 py-1 text-[11px] font-black no-underline transition-colors"
             style="border: 1px solid {t.inputBorder}; color: {t.textSecondary};"
             onmouseenter={(e) => {
                 ;(e.currentTarget as HTMLElement).style.background = t.buttonHover
@@ -283,7 +283,7 @@
             onmouseleave={(e) => {
                 ;(e.currentTarget as HTMLElement).style.background = ''
                 ;(e.currentTarget as HTMLElement).style.color = t.textSecondary
-            }}>返回排轴</a
+            }}><span class="material-icons">arrow_back</span>返回排轴</a
         >
     </div>
     <div
@@ -313,11 +313,11 @@
                         {#each extraHeaders as h, i (h)}
                             <th
                                 style="border: 1px solid {t.border}; padding: 6px 8px; width: 70px; position: sticky; top: 0; z-index: 3; background-clip: padding-box; {i ===
-                                    7
-                                        ? `background: ${t.buttonBg}; color: ${t.accentText};`
-                                        : i >= 8
-                                          ? `background: ${t.buttonBg}; color: ${t.textSecondary};`
-                                          : `background: ${t.buttonBg};`} font-weight: 700; font-size: 11px; text-align: center; white-space: nowrap;"
+                                7
+                                    ? `background: ${t.buttonBg}; color: ${t.accentText};`
+                                    : i >= 8
+                                      ? `background: ${t.buttonBg}; color: ${t.textSecondary};`
+                                      : `background: ${t.buttonBg};`} font-weight: 700; font-size: 11px; text-align: center; white-space: nowrap;"
                                 >{h}</th
                             >
                         {/each}
@@ -372,7 +372,11 @@
                             {#each extraHeaders as h, i (h)}
                                 <td
                                     style="border: 1px solid {t.border}; padding: 6px 8px; width: 70px; background-clip: padding-box; {i ===
-                                    7 ? `color: ${t.accentText}; background: transparent;` : i >= 8 ? `color: ${t.textSecondary}; background: transparent;` : `background: transparent;`} {bb}"
+                                    7
+                                        ? `color: ${t.accentText}; background: transparent;`
+                                        : i >= 8
+                                          ? `color: ${t.textSecondary}; background: transparent;`
+                                          : `background: transparent;`} {bb}"
                                 ></td>
                             {/each}
                         </tr>
