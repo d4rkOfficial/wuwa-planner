@@ -5,10 +5,12 @@
         presetId,
         name,
         size = 'md',
+        fillContainer = false,
     }: {
         presetId: string | null
         name: string
         size?: 'sm' | 'md' | 'lg'
+        fillContainer?: boolean
     } = $props()
 
     const sizeMap: Record<string, string> = {
@@ -24,9 +26,15 @@
         if (overrides?.[presetId]) return overrides[presetId]
         return `/images/avatars/${presetId}.png`
     })
+
+    let outerClass = $derived(
+        fillContainer
+            ? 'relative h-full w-full overflow-hidden'
+            : `relative ${sizeMap[size]} shrink-0 overflow-hidden rounded-full`,
+    )
 </script>
 
-<div class="relative {sizeMap[size]} shrink-0 overflow-hidden rounded-full">
+<div class={outerClass}>
     {#if src && !imgFailed}
         <img
             {src}

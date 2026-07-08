@@ -1,5 +1,7 @@
 node_modules
 .tmp
+.opencode
+AGENTS.md
 
 # Output
 .output

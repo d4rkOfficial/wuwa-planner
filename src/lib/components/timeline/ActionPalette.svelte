@@ -33,6 +33,33 @@
         keySingleRow?: boolean
     } = $props()
 
+    let pulseA = $state(false)
+    let pulseB = $state(false)
+    let aInited = $state(false)
+    let bInited = $state(false)
+
+    $effect(() => {
+        comboA
+        if (!aInited) {
+            aInited = true
+            return
+        }
+        pulseA = true
+        const t = setTimeout(() => (pulseA = false), 150)
+        return () => clearTimeout(t)
+    })
+
+    $effect(() => {
+        comboB
+        if (!bInited) {
+            bInited = true
+            return
+        }
+        pulseB = true
+        const t = setTimeout(() => (pulseB = false), 150)
+        return () => clearTimeout(t)
+    })
+
     function setComboA(v: number) {
         const r = calcComboA(v, { comboA, comboB })
         comboA = r.comboA
@@ -128,7 +155,9 @@
                             onclick={() => setComboA(Math.max(0, comboA - 1))}>−</button
                         >
                         <span
-                            class="inline-flex min-w-[16px] items-center justify-center rounded border font-bold leading-none shrink-0"
+                            class="inline-flex min-w-[16px] items-center justify-center rounded border font-bold leading-none shrink-0 {pulseA
+                                ? 'scale-pulse'
+                                : ''}"
                             style="border-color: {theme.accentText}; color: {theme.accentText}; background: {theme.selectedModeBg}; font-size: 11px; padding: 1px 3px;"
                             >{comboA}</span
                         >
@@ -144,7 +173,9 @@
                             onclick={() => setComboB(Math.max(0, comboB - 1))}>−</button
                         >
                         <span
-                            class="inline-flex min-w-[16px] items-center justify-center rounded border font-bold leading-none shrink-0"
+                            class="inline-flex min-w-[16px] items-center justify-center rounded border font-bold leading-none shrink-0 {pulseB
+                                ? 'scale-pulse'
+                                : ''}"
                             style="border-color: {theme.accentText}; color: {theme.accentText}; background: {theme.selectedModeBg}; font-size: 11px; padding: 1px 3px;"
                             >{comboB}</span
                         >
@@ -315,7 +346,9 @@
                                     onclick={() => setComboA(Math.max(0, comboA - 1))}>−</button
                                 >
                                 <div
-                                    class="flex h-6 items-center justify-center rounded border text-xs font-bold shrink-0"
+                                    class="flex h-6 items-center justify-center rounded border text-xs font-bold shrink-0 {pulseA
+                                        ? 'scale-pulse'
+                                        : ''}"
                                     style="border-color: {theme.accentText}; color: {theme.accentText}; background: {theme.selectedModeBg}; min-width: 24px; padding: 0 5px;"
                                 >
                                     {comboA}
@@ -335,7 +368,9 @@
                                     onclick={() => setComboB(comboB - 1)}>−</button
                                 >
                                 <div
-                                    class="flex h-6 items-center justify-center rounded border text-xs font-bold shrink-0"
+                                    class="flex h-6 items-center justify-center rounded border text-xs font-bold shrink-0 {pulseB
+                                        ? 'scale-pulse'
+                                        : ''}"
                                     style="border-color: {theme.accentText}; color: {theme.accentText}; background: {theme.selectedModeBg}; min-width: 24px; padding: 0 5px;"
                                 >
                                     {comboB}
@@ -440,7 +475,7 @@
                                 m.key
                                     ? theme.selectedModeBg
                                     : 'transparent'}; {selectedMode === m.key
-                                    ? `box-shadow: 0 0 0 2px ${theme.selectedModeRing};`
+                                    ? `box-shadow: 0 0 0 3px ${theme.selectedModeRing};`
                                     : ''}"
                                 onclick={() => (selectedMode = m.key)}
                             >
@@ -459,3 +494,20 @@
         </div>
     </div>
 {/if}
+
+<style>
+    .scale-pulse {
+        animation: scale-up 150ms ease-out;
+    }
+    @keyframes scale-up {
+        0% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.3);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+</style>

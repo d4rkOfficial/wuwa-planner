@@ -15,9 +15,9 @@ import { generateId } from '../utils/id'
 
 function createPlannerStore() {
     let characters = $state<Character[]>([
-        { id: generateId(), name: '角色1', presetId: null },
-        { id: generateId(), name: '角色2', presetId: null },
-        { id: generateId(), name: '角色3', presetId: null },
+        { id: generateId(), name: '1号角色', presetId: null },
+        { id: generateId(), name: '2号角色', presetId: null },
+        { id: generateId(), name: '3号角色', presetId: null },
     ])
 
     let blocks = $state<ActionBlock[]>([])
@@ -302,9 +302,9 @@ function createPlannerStore() {
     function reset() {
         _defaultsInited = false
         characters = [
-            { id: generateId(), name: '角色1', presetId: null },
-            { id: generateId(), name: '角色2', presetId: null },
-            { id: generateId(), name: '角色3', presetId: null },
+            { id: generateId(), name: '1号角色', presetId: null },
+            { id: generateId(), name: '2号角色', presetId: null },
+            { id: generateId(), name: '3号角色', presetId: null },
         ]
         blocks = []
         stayFieldMarkers = []

@@ -54,9 +54,9 @@ function createProjectsStore() {
             id: generateId(),
             title,
             characters: [
-                { id: generateId(), name: '角色1', presetId: null },
-                { id: generateId(), name: '角色2', presetId: null },
-                { id: generateId(), name: '角色3', presetId: null },
+                { id: generateId(), name: '1号角色', presetId: null },
+                { id: generateId(), name: '2号角色', presetId: null },
+                { id: generateId(), name: '3号角色', presetId: null },
             ],
             blocks: [],
             stayFieldMarkers: [],

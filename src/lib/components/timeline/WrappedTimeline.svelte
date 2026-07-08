@@ -20,16 +20,6 @@
     let timelineRef = $state<HTMLDivElement | null>(null)
     let containerWidth = $state(600)
     let contextMenu = $state<{ x: number; y: number } | null>(null)
-    let isMobile = $state(false)
-
-    $effect(() => {
-        const check = () => {
-            isMobile = window.innerWidth < 768
-        }
-        check()
-        window.addEventListener('resize', check)
-        return () => window.removeEventListener('resize', check)
-    })
 
     const AVATAR_COL = 72
     const ROW_H = 24
@@ -97,10 +87,40 @@
             nextBlockMap.set(allBlocks[i].id, allBlocks[i + 1].id)
         }
 
+        // ── Pre-compute all block/row/area DOM rects per segment ──
+        type SegRects = {
+            blocks: Map<string, DOMRect>
+            rows: Map<number, DOMRect>
+            area: DOMRect | null
+        }
+        const segRects: SegRects[] = []
+        for (let si = 0; si < segEls.length; si++) {
+            const segEl = segEls[si] as HTMLElement
+            const blocks = new Map<string, DOMRect>()
+            if (segEl) {
+                segEl.querySelectorAll('[data-block-id]').forEach((el) => {
+                    const id = el.getAttribute('data-block-id')
+                    if (id) blocks.set(id, el.getBoundingClientRect())
+                })
+            }
+            const rows = new Map<number, DOMRect>()
+            for (let ci = 0; ci < chars.length; ci++) {
+                const rowEl = segEl?.querySelector(`[data-track-row="${ci}"]`) as HTMLElement
+                if (rowEl) rows.set(ci, rowEl.getBoundingClientRect())
+            }
+            const areaEl = segEl?.querySelector('[data-track-area]') as HTMLElement
+            segRects.push({
+                blocks,
+                rows,
+                area: areaEl ? areaEl.getBoundingClientRect() : null,
+            })
+        }
+
         // ── Within-segment swap arrows ──
         segEls.forEach((segEl, si) => {
             const seg = segments[si]
             if (!seg || seg.blocks.length === 0) return
+            const sr = segRects[si]
 
             for (let srcIdx = 0; srcIdx < chars.length; srcIdx++) {
                 for (let dstIdx = 0; dstIdx < chars.length; dstIdx++) {
@@ -119,29 +139,17 @@
                         for (const sb of sbl) {
                             if (sb.isOffHand) continue
                             if (used.has(sb.id)) continue
-                            const sEl = segEl.querySelector(
-                                `[data-block-id="${sb.id}"]`,
-                            ) as HTMLElement
-                            if (!sEl) continue
-                            const dEl = segEl.querySelector(
-                                `[data-block-id="${db.id}"]`,
-                            ) as HTMLElement
-                            if (!dEl) continue
-                            const sR = sEl.getBoundingClientRect()
+                            const sR = sr.blocks.get(sb.id)
+                            const dR = sr.blocks.get(db.id)
+                            if (!sR || !dR) continue
                             const srcEnd = sb.x + sR.width
                             if (db.x < sb.x - 2 || db.x > srcEnd + 2) continue
 
-                            const sRow = segEl.querySelector(
-                                `[data-track-row="${srcIdx}"]`,
-                            ) as HTMLElement
-                            const dRow = segEl.querySelector(
-                                `[data-track-row="${dstIdx}"]`,
-                            ) as HTMLElement
-                            if (!sRow || !dRow) continue
-                            const srR = sRow.getBoundingClientRect()
-                            const drR = dRow.getBoundingClientRect()
+                            const srR = sr.rows.get(srcIdx)
+                            const drR = sr.rows.get(dstIdx)
+                            if (!srR || !drR) continue
 
-                            const ax = toCanvasX(dEl.getBoundingClientRect().left)
+                            const ax = toCanvasX(dR.left)
                             const ay1 = toCanvasY(srcIdx > dstIdx ? srR.top : srR.bottom)
                             const ay2 = toCanvasY(srcIdx > dstIdx ? drR.bottom : drR.top)
                             if (ax <= 0 || ay1 <= 0 || ay2 <= 0) continue
@@ -163,11 +171,9 @@
 
             // ── Same-segment stay-fields ──
             for (const m of planner.stayFieldMarkers) {
-                const fEl = segEl.querySelector(`[data-block-id="${m.fromBlockId}"]`) as HTMLElement
-                const tEl = segEl.querySelector(`[data-block-id="${m.toBlockId}"]`) as HTMLElement
-                if (!fEl || !tEl) continue
-                const fR = fEl.getBoundingClientRect(),
-                    tR = tEl.getBoundingClientRect()
+                const fR = sr.blocks.get(m.fromBlockId)
+                const tR = sr.blocks.get(m.toBlockId)
+                if (!fR || !tR) continue
                 const toBlock = planner.blocks.find((b) => b.id === m.toBlockId)
                 if (nextBlockMap.get(m.fromBlockId) === m.toBlockId || toBlock?.isOffHand) {
                     drawStayArrow(
@@ -199,17 +205,11 @@
             }
             if (fromSi < 0 || toSi < 0 || fromSi === toSi) continue
 
-            const fSegEl = segEls[fromSi] as HTMLElement
-            const tSegEl = segEls[toSi] as HTMLElement
-            const fEl = fSegEl.querySelector(`[data-block-id="${m.fromBlockId}"]`) as HTMLElement
-            const tEl = tSegEl.querySelector(`[data-block-id="${m.toBlockId}"]`) as HTMLElement
-            if (!fEl || !tEl) continue
-
-            const fR = fEl.getBoundingClientRect()
-            const tR = tEl.getBoundingClientRect()
-            const fArea = fSegEl.querySelector('[data-track-area]')
-            const tArea = tSegEl.querySelector('[data-track-area]')
-            if (!fArea || !tArea) continue
+            const fR = segRects[fromSi]?.blocks.get(m.fromBlockId)
+            const tR = segRects[toSi]?.blocks.get(m.toBlockId)
+            const fAreaR = segRects[fromSi]?.area
+            const tAreaR = segRects[toSi]?.area
+            if (!fR || !tR || !fAreaR || !tAreaR) continue
 
             const toBlock = planner.blocks.find((b) => b.id === m.toBlockId)
             if (toBlock?.isOffHand) {
@@ -224,7 +224,7 @@
                     cx,
                     toCanvasX(fR.left),
                     toCanvasY(fR.top),
-                    toCanvasX(fArea.getBoundingClientRect().right),
+                    toCanvasX(fAreaR.right),
                     fR.height,
                     planner.theme.stayField,
                     true,
@@ -232,7 +232,7 @@
                 )
                 drawStayRectOpen(
                     cx,
-                    toCanvasX(tArea.getBoundingClientRect().left),
+                    toCanvasX(tAreaR.left),
                     toCanvasY(tR.top),
                     toCanvasX(tR.right),
                     tR.height,
@@ -245,21 +245,16 @@
 
         // ── Long-block wrap indicators ──
         for (let si = 0; si < segments.length; si++) {
-            const segEl = segEls[si] as HTMLElement
-            if (!segEl) continue
-            const area = segEl.querySelector('[data-track-area]') as HTMLElement
-            if (!area) continue
-            const areaR = area.getBoundingClientRect()
             const seg = segments[si]
             if (!seg) continue
+            const areaR = segRects[si]?.area
+            if (!areaR) continue
 
             for (const b of seg.blocks) {
-                const bEl = segEl.querySelector(`[data-block-id="${b.id}"]`) as HTMLElement
-                if (!bEl) continue
-                const bR = bEl.getBoundingClientRect()
-                if (bR.right <= areaR.right + 2) continue // no overflow
+                const bR = segRects[si]?.blocks.get(b.id)
+                if (!bR) continue
+                if (bR.right <= areaR.right + 2) continue
 
-                // Upper half: left-closed (block left), right-open (area right)
                 drawStayRect(
                     cx,
                     toCanvasX(bR.left),
@@ -271,7 +266,7 @@
             }
         }
 
-        // ── Cross-segment curve arrows (path stays within segment gap, not through track rows) ──
+        // ── Cross-segment curve arrows ──
         if (segments.length >= 2 && segEls.length >= 2) {
             for (let s = 0; s < segments.length - 1; s++) {
                 const seg = segments[s],
@@ -281,18 +276,16 @@
                 const fb = nseg.blocks[0]
                 const tci = chars.findIndex((c) => c.id === fb.characterId)
                 if (tci < 0) continue
-                const lci = chars.findIndex((c) => c.id === lb.characterId)
 
-                const sEl = segEls[s] as HTMLElement
-                const nEl = segEls[s + 1] as HTMLElement
-                const lE = sEl.querySelector(`[data-block-id="${lb.id}"]`) as HTMLElement
-                const aE = nEl.querySelector(`[data-avatar-idx="${tci}"]`) as HTMLElement
-                if (!lE || !aE) continue
+                const lR = segRects[s]?.blocks.get(lb.id)
+                const aE = (segEls[s + 1] as HTMLElement)?.querySelector(
+                    `[data-avatar-idx="${tci}"]`,
+                ) as HTMLElement
+                if (!lR || !aE) continue
 
-                const lR = lE.getBoundingClientRect(),
-                    aR = aE.getBoundingClientRect()
-                const sR = sEl.getBoundingClientRect(),
-                    nR = nEl.getBoundingClientRect()
+                const sR = (segEls[s] as HTMLElement).getBoundingClientRect()
+                const nR = (segEls[s + 1] as HTMLElement).getBoundingClientRect()
+                const aR = aE.getBoundingClientRect()
 
                 const gapCY = (sR.bottom + nR.top) / 2
 
@@ -375,14 +368,10 @@
         if (!container) return
         try {
             await document.fonts.ready
-            const w = container.offsetWidth
-            const h = container.offsetHeight
             const dataUrl = await toPng(container, {
                 backgroundColor: planner.theme.exportBg,
                 pixelRatio: 2,
                 cacheBust: true,
-                width: w,
-                height: h,
             })
             const a = document.createElement('a')
             a.download = `${planner.title || 'rotation'}.png`
@@ -400,17 +389,8 @@
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<div
-    bind:this={container}
-    class="relative w-full px-5 {isMobile ? 'overflow-x-auto scrollbar-none' : ''}"
-    oncontextmenu={handleContextMenu}
->
-    <div
-        bind:this={timelineRef}
-        style="position: relative; background: {planner.theme.exportBg};{isMobile
-            ? 'min-width: 1440px;'
-            : ''}"
-    >
+<div bind:this={container} class="relative w-full px-5" oncontextmenu={handleContextMenu}>
+    <div bind:this={timelineRef} style="position: relative; background: {planner.theme.exportBg};">
         {#if segments.length === 0}
             <div
                 class="flex h-20 items-center justify-center text-sm"
@@ -451,14 +431,13 @@
                             style="display: flex; flex-direction: column; gap: {ROW_GAP}px;"
                         >
                             {#each planner.characters as char, ci}
-                                {@const tc = planner.getTrackColor(char.id, ci)}
                                 {@const cbl = seg.blocks
                                     .filter((b) => b.characterId === char.id)
                                     .toSorted((a, b) => a.x - b.x)}
                                 <div
                                     data-track-row={ci}
                                     class="relative rounded px-1 py-0"
-                                    style="border-left: 3px solid {tc.gradient}; min-height: {ROW_H}px;"
+                                    style="min-height: {ROW_H}px;"
                                 >
                                     {#if cbl.length === 0}
                                         <div

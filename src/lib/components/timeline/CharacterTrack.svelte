@@ -35,7 +35,6 @@
     const MIN_BLOCK_X = 4
 
     let blocks = $derived(planner.getCharacterBlocks(character.id).toSorted((a, b) => a.x - b.x))
-    let color = $derived(planner.getTrackColor(character.id, trackIndex).gradient)
 
     let trackEl = $state<HTMLDivElement | null>(null)
     let isDragOver = $state(false)
@@ -243,8 +242,10 @@
 <div
     bind:this={trackEl}
     data-track={character.id}
-    class={'relative rounded-lg p-2 pl-1 transition-colors ' + (isDragOver ? 'bg-white/5' : '')}
-    style="background: {planner.theme.trackBg}; border-left: 3px solid {color}; min-height: 48px;"
+    class="relative rounded-lg p-2 pl-1 transition-colors {blocks.length === 0
+        ? 'border border-dashed border-zinc-600'
+        : ''} {isDragOver ? 'bg-white/5' : ''}"
+    style="background: {planner.theme.trackBg}; min-height: 48px;"
     ondragover={handleDragOver}
     ondragleave={handleDragLeave}
     ondrop={handleDrop}
@@ -252,9 +253,7 @@
 >
     <div class="relative" style="min-height: 36px; width: 100%;">
         {#if blocks.length === 0}
-            <div
-                class="flex h-9 w-full items-center rounded border border-dashed border-zinc-600 pl-2"
-            >
+            <div class="flex h-9 w-full items-center pl-2">
                 <span class="text-[11px] font-medium text-zinc-400"
                     >从面板拖拽、单击左侧头像或双击空白编辑区域添加操作块</span
                 >

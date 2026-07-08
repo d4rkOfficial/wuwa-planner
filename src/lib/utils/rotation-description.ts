@@ -25,16 +25,16 @@ function resolveCharAliases(characters: Character[], presets: CharacterPreset[])
         const char = characters[i]
         const presetId = char?.presetId
         if (!presetId) {
-            aliasLists.push([char?.name ?? `角色${i + 1}`])
-            names.push(char?.name ?? `角色${i + 1}`)
+            aliasLists.push([char?.name ?? `${i + 1}号角色`])
+            names.push(char?.name ?? `${i + 1}号角色`)
         } else {
             const preset = presets.find((p) => p.id === presetId)
             if (preset) {
                 aliasLists.push([...preset.aliases])
                 names.push(preset.name)
             } else {
-                aliasLists.push([char?.name ?? `角色${i + 1}`])
-                names.push(char?.name ?? `角色${i + 1}`)
+                aliasLists.push([char?.name ?? `${i + 1}号角色`])
+                names.push(char?.name ?? `${i + 1}号角色`)
             }
         }
     }
@@ -133,7 +133,7 @@ export function getMergedTimeline(
             const charIdx = characters.findIndex((c) => c.id === block.characterId)
             return {
                 block,
-                alias: resolvedAliases[charIdx] ?? `角色${charIdx + 1}`,
+                alias: resolvedAliases[charIdx] ?? `${charIdx + 1}号角色`,
                 charIndex: charIdx,
             }
         })

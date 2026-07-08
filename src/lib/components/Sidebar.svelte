@@ -227,13 +227,13 @@
                     />
                 {:else}
                     <div
-                        class="mb-1 truncate text-xs font-bold"
+                        class="mb-1 truncate text-xs {proj.title ? 'font-bold' : ''}"
                         style="color: {isActive ? t.sidebarTextActive : t.sidebarText};"
                         ondblclick={isTouch
                             ? undefined
                             : () => handleRenameStart(proj.id, proj.title)}
                     >
-                        {proj.title}
+                        {proj.title || '无名称'}
                     </div>
                 {/if}
 

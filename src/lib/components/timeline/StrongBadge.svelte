@@ -24,7 +24,7 @@
     </div>
 {:else}
     <div
-        class="inline-flex items-center justify-center rounded font-bold leading-none shrink-0"
+        class="inline-flex items-center justify-center rounded font-black leading-none shrink-0"
         style="border: 1px solid {resolvedColor}; background: {bg}; width: {size}px; height: {size}px; font-size: {fontSize}px; color: {resolvedColor};"
     >
         强

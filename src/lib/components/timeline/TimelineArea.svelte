@@ -7,6 +7,9 @@
     import Avatar from '../character/Avatar.svelte'
     import { getPrevBlock, canBeIntro } from '$lib/utils/timeline'
     import { notification } from '$lib/stores/notification.svelte'
+    import { mediaStore } from '$lib/stores/media.svelte'
+    let isMobile = $derived(mediaStore.isMobile)
+    let windowWidth = $derived(mediaStore.windowWidth)
 
     let {
         selectedKey,
@@ -23,18 +26,6 @@
         strong?: boolean
         comment?: string
     } = $props()
-
-    let viewportWidth = $state(typeof window !== 'undefined' ? window.innerWidth : 1024)
-
-    let isMobile = $derived(viewportWidth < 768)
-
-    $effect(() => {
-        const handler = () => {
-            viewportWidth = window.innerWidth
-        }
-        window.addEventListener('resize', handler)
-        return () => window.removeEventListener('resize', handler)
-    })
 
     let blockRightEdge = $state(0)
 
@@ -57,9 +48,9 @@
 
     let timelineMinWidth = $derived.by(() => {
         const blocks = planner.blocks
-        if (blocks.length === 0) return viewportWidth
+        if (blocks.length === 0) return windowWidth
         const rightEdge = blockRightEdge || Math.max(...blocks.map((b) => b.x)) + 120
-        return Math.max(viewportWidth, rightEdge + viewportWidth / 2)
+        return Math.max(windowWidth, rightEdge + windowWidth / 2)
     })
 
     let contextBlock = $state<ActionBlock | null>(null)
@@ -311,17 +302,23 @@
                         <!-- svelte-ignore a11y_no_static_element_interactions -->
                         <!-- svelte-ignore a11y_click_events_have_key_events -->
                         <div
-                            class="sticky left-0 z-10 flex items-center justify-center pl-1"
+                            class="sticky left-0 z-20 flex justify-center pl-1"
                             style="min-height: 52px;"
                             onclick={() => handleAvatarClick(char.id)}
                         >
                             <div
-                                class="relative h-8 w-8 shrink-0 overflow-hidden rounded-full"
-                                style="border: 2px solid {planner.getTrackColor(char.id, i)
-                                    .border};"
+                                class="relative shrink-0 overflow-hidden self-stretch rounded-sm"
+                                style="border-width: 0 2px 2px 0; border-style: solid; border-color: {planner.getTrackColor(
+                                    char.id,
+                                    i,
+                                )
+                                    .border}; aspect-ratio: 1 / 1; box-sizing: border-box; background: linear-gradient(135deg, transparent, {planner.getTrackColor(
+                                    char.id,
+                                    i,
+                                ).border}66);"
                                 title={char.name}
                             >
-                                <Avatar presetId={char.presetId} name={char.name} size="md" />
+                                <Avatar presetId={char.presetId} name={char.name} fillContainer />
                             </div>
                         </div>
                         <CharacterTrack

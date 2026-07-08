@@ -3,6 +3,8 @@
     import { planner } from '$lib/stores/planner.svelte'
     import { projects } from '$lib/stores/projects.svelte'
     import { themeStore } from '$lib/stores/themes.svelte'
+    import { mediaStore } from '$lib/stores/media.svelte'
+    let isMobile = $derived(mediaStore.isMobile)
     import { loadCharacterPresets } from '$lib/data/characters'
     import { isInputFocused } from '$lib/utils/planner'
     import Sidebar from './Sidebar.svelte'
@@ -11,8 +13,6 @@
     import TimelineArea from './timeline/TimelineArea.svelte'
     import ActionPalette from './timeline/ActionPalette.svelte'
     import CharacterSelect from './character/CharacterSelect.svelte'
-    import RotationDescription from './timeline/RotationDescription.svelte'
-    import WrappedTimeline from './timeline/WrappedTimeline.svelte'
     import Modal from './ui/Modal.svelte'
     import ThemeManager from './theme/ThemeManager.svelte'
     import type { KeyType, KeyMode } from '$lib/types'
@@ -21,6 +21,11 @@
     let selectedMode = $state<KeyMode>('click')
     let comboA = $state(0)
     let comboB = $state(0)
+    let comboBuffer = $state('')
+
+    $effect(() => {
+        if (comboA === 0 && comboB === 0) comboBuffer = ''
+    })
     let strong = $state(false)
     let comment = $state('')
     let openCharTrigger = $state<{ index: number; nonce: number }>({
@@ -29,19 +34,11 @@
     })
     let sidebarCollapsed = $state(false)
     let mobileSidebarOpen = $state(false)
-    let isMobile = $state(false)
 
     $effect(() => {
-        const check = () => {
-            isMobile = window.innerWidth < 768
-            if (!isMobile) mobileSidebarOpen = false
-        }
-        check()
-        window.addEventListener('resize', check)
-        return () => window.removeEventListener('resize', check)
+        if (!isMobile) mobileSidebarOpen = false
     })
     let lastSaveTime = $state<string>('')
-    let showDescription = $state(false)
     let themeOpen = $state(false)
     let themeManagerOpen = $state(false)
     let panelHeight = $state(260)
@@ -99,8 +96,12 @@
     onMount(() => {
         loadCharacterPresets().then(() => {
             projects.loadFromStorage()
+            const hashId = window.location.hash.slice(1)
             if (projects.projects.length > 0) {
-                const id = projects.projects[0].id
+                const id =
+                    hashId && projects.projects.find((p) => p.id === hashId)
+                        ? hashId
+                        : projects.projects[0].id
                 projects.loadProjectToPlanner(id)
             } else {
                 const id = projects.addProject('未命名轴')
@@ -160,7 +161,6 @@
     }
 
     const immediateHoldKeys = new Set(['z'])
-    const keyOrder: KeyType[] = ['LMB', 'RMB', 'Q', 'E', 'R', 'T', 'F', 'X', 'V', 'jump']
     const modeOrder: KeyMode[] = [
         'click',
         'hold',
@@ -173,7 +173,6 @@
     let heldKey: string | null = null
 
     function handleKeyDown(e: KeyboardEvent) {
-        if (showDescription) return
         if (isInputFocused()) return
         const key = e.key.toLowerCase()
 
@@ -197,19 +196,33 @@
             return
         }
 
-        if (key === 'arrowup' || key === 'arrowdown') {
+        const digitMatch = e.key.match(/^(\d)$/) || e.key.match(/^Numpad(\d)$/i)
+        if (digitMatch) {
             e.preventDefault()
-            const idx = keyOrder.indexOf(selectedKey)
-            const dir = key === 'arrowup' ? -1 : 1
-            selectedKey = keyOrder[(idx + dir + keyOrder.length) % keyOrder.length]
-            return
-        }
-
-        if (key === 'arrowleft' || key === 'arrowright') {
-            e.preventDefault()
-            const idx = modeOrder.indexOf(selectedMode)
-            const dir = key === 'arrowright' ? 1 : -1
-            selectedMode = modeOrder[(idx + dir + modeOrder.length) % modeOrder.length]
+            const digit = digitMatch[1]
+            if (digit === '0') {
+                comboA = 0
+                comboB = 0
+                comboBuffer = ''
+                return
+            }
+            comboBuffer += digit
+            let isContinuous = true
+            for (let i = 1; i < comboBuffer.length; i++) {
+                if (+comboBuffer[i] !== +comboBuffer[i - 1] + 1) {
+                    isContinuous = false
+                    break
+                }
+            }
+            if (isContinuous) {
+                comboA = +comboBuffer[0]
+                comboB = +comboBuffer[comboBuffer.length - 1]
+            } else {
+                const n = +digit
+                comboA = n
+                comboB = n
+                comboBuffer = digit
+            }
             return
         }
     }
@@ -352,8 +365,9 @@
                     </div>
                 {/if}
             </div>
-            <button
-                class="font-black shrink-0 rounded px-2.5 py-1 text-[11px] transition-colors"
+            <a
+                href="/overview#{projects.activeId}"
+                class="font-black shrink-0 rounded px-2.5 py-1 text-[11px] no-underline transition-colors"
                 style="border: 1px solid {planner.theme.inputBorder}; color: {planner.theme
                     .textSecondary};"
                 onmouseenter={(e) => {
@@ -363,8 +377,21 @@
                 onmouseleave={(e) => {
                     ;(e.currentTarget as HTMLElement).style.background = ''
                     ;(e.currentTarget as HTMLElement).style.color = planner.theme.textSecondary
+                }}>总览</a
+            >
+            <a
+                href="/calculator#{projects.activeId}"
+                class="font-black shrink-0 rounded px-2.5 py-1 text-[11px] no-underline transition-colors"
+                style="border: 1px solid {planner.theme.inputBorder}; color: {planner.theme
+                    .textSecondary};"
+                onmouseenter={(e) => {
+                    ;(e.currentTarget as HTMLElement).style.background = planner.theme.buttonHover
+                    ;(e.currentTarget as HTMLElement).style.color = planner.theme.text
                 }}
-                onclick={() => (showDescription = true)}>总览</button
+                onmouseleave={(e) => {
+                    ;(e.currentTarget as HTMLElement).style.background = ''
+                    ;(e.currentTarget as HTMLElement).style.color = planner.theme.textSecondary
+                }}>拉表</a
             >
         </div>
         <div class="flex flex-1 flex-col min-h-0">
@@ -459,80 +486,6 @@
             </div>
         </div>
     </div>
-
-    {#if showDescription}
-        <div
-            class="fixed inset-0 z-50 flex items-center justify-center"
-            style="background: {planner.theme.overlayBackdrop};"
-        >
-            <div
-                class="flex w-[92vw] max-w-6xl h-[90vh] flex-col rounded-xl shadow-2xl"
-                style="border: 1px solid {planner.theme.modalBorder}; background: {planner.theme
-                    .modalBg};"
-            >
-                <div
-                    class="flex items-center justify-between px-5 py-3 shrink-0"
-                    style="border-bottom: 1px solid {planner.theme.border};"
-                >
-                    <div class="flex items-center gap-3">
-                        <span class="text-sm font-bold" style="color: {planner.theme.text};"
-                            >工程总览</span
-                        >
-                        <span class="text-xs" style="color: {planner.theme.mutedText};"
-                            >{planner.title}</span
-                        >
-                    </div>
-                    <button
-                        class="flex h-7 w-7 items-center justify-center rounded-md text-sm transition-colors"
-                        style="color: {planner.theme.textSecondary};"
-                        onmouseenter={(e) => {
-                            ;(e.currentTarget as HTMLElement).style.background =
-                                planner.theme.buttonHover
-                            ;(e.currentTarget as HTMLElement).style.color = planner.theme.text
-                        }}
-                        onmouseleave={(e) => {
-                            ;(e.currentTarget as HTMLElement).style.background = ''
-                            ;(e.currentTarget as HTMLElement).style.color =
-                                planner.theme.textSecondary
-                        }}
-                        onclick={() => (showDescription = false)}>✕</button
-                    >
-                </div>
-                <div class="flex flex-1 flex-col min-h-0 overflow-y-auto scrollbar-dark-thick">
-                    <div class="shrink-0 pt-4 pb-3 px-5">
-                        <div class="flex items-center gap-2 mb-3">
-                            <span
-                                class="text-xs font-semibold"
-                                style="color: {planner.theme.textSecondary};">排轴总览</span
-                            >
-                            <div
-                                class="h-px flex-1"
-                                style="background: {planner.theme.divider};"
-                            ></div>
-                        </div>
-                        <WrappedTimeline />
-                    </div>
-                    <div
-                        class="shrink-0"
-                        style="border-top: 1px solid {planner.theme.divider};"
-                    ></div>
-                    <div class="shrink-0 pt-3 pb-4 px-5">
-                        <div class="flex items-center gap-2 mb-2">
-                            <span
-                                class="text-xs font-semibold"
-                                style="color: {planner.theme.textSecondary};">文字轴</span
-                            >
-                            <div
-                                class="h-px flex-1"
-                                style="background: {planner.theme.divider};"
-                            ></div>
-                        </div>
-                        <RotationDescription fillHeight={false} />
-                    </div>
-                </div>
-            </div>
-        </div>
-    {/if}
 
     <div class="md:hidden">
         <Sidebar
